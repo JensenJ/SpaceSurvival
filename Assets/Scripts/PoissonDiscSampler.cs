@@ -12,6 +12,8 @@ public class PoissonDiscSampler : MonoBehaviour
 { 
     public static List<Vector2> GenerateSample(float radius, Vector2 sampleRegionSize, int numSamplesBeforeRejection = 30)
     {
+        float time = Time.realtimeSinceStartup;
+
         NativeList<float2> positions = new NativeList<float2>(Allocator.TempJob);
         DiscSamplerJob job = new DiscSamplerJob()
         {
@@ -39,6 +41,8 @@ public class PoissonDiscSampler : MonoBehaviour
         }
 
         positions.Dispose();
+
+        Debug.Log("Poisson Generation " + (Time.realtimeSinceStartup - time) + "ms");
 
         return generatedPositions;
     }
@@ -115,7 +119,7 @@ public struct DiscSamplerJob : IJob
                 int searchStartX = math.max(0, cellX - 2);
                 int searchEndX = math.min(cellX + 2, _grid.GetLength(0) - 1);
                 int searchStartY = math.max(0, cellY - 2);
-                int searchEndY = Mathf.Min(cellY + 2, _grid.GetLength(0) - 1);
+                int searchEndY = Mathf.Min(cellY + 2, _grid.GetLength(1) - 1);
 
                 for (int x = searchStartX; x <= searchEndX; x++)
                 {
