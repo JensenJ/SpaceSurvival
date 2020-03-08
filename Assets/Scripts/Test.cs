@@ -10,28 +10,34 @@ public class Test : MonoBehaviour
     public int rejectionSamples = 30;
     public float displayRadius = 1;
 
-    List<Vector2> points;
+    List<List<Vector2>> galaxies;
 
     private void OnValidate()
     {
-        points = new List<Vector2>();
+        galaxies = new List<List<Vector2>>();
         if(radius == 0)
         {
             return;
         }
-        points = PoissonDiscSampler.GenerateSample(radius, regionSize, rejectionSamples);
-
-        Debug.Log(points.Count);
+        List<Vector2> galaxyOrigins = PoissonDiscSampler.GenerateSample(radius, regionSize, rejectionSamples);
+        for (int i = 0; i < galaxyOrigins.Count; i++)
+        { 
+            galaxies.Add(GalaxyGenerator.GenerateStarPositions(galaxyOrigins[i]));
+        }
+        Debug.Log(galaxies.Count);
     }
 
     private void OnDrawGizmos()
     {
         Gizmos.DrawWireCube(regionSize / 2, regionSize);
-        if (points != null)
+        if (galaxies != null)
         {
-            foreach (Vector2 point in points)
+            foreach (List<Vector2> galaxy in galaxies)
             {
-                Gizmos.DrawWireSphere(point, displayRadius);
+                foreach (Vector2 star in galaxy)
+                {
+                    Gizmos.DrawWireSphere(star, displayRadius);
+                }
             }
         }
     }

@@ -48,6 +48,7 @@ public class PoissonDiscSampler : MonoBehaviour
     }
 }
 
+[BurstCompile]
 public struct DiscSamplerJob : IJob
 {
     public float radius;
@@ -60,7 +61,8 @@ public struct DiscSamplerJob : IJob
     {
         float cellsize = radius / math.sqrt(2);
 
-        int[,] grid = new int[(int)math.ceil(sampleRegionSize.x / cellsize), (int)math.ceil(sampleRegionSize.y / cellsize)];
+        //int[,] grid = new int[(int)math.ceil(sampleRegionSize.x / cellsize), (int)math.ceil(sampleRegionSize.y / cellsize)];
+        NativeArray2D<int> grid = new NativeArray2D<int>((int)math.ceil(sampleRegionSize.x / cellsize), (int)math.ceil(sampleRegionSize.y / cellsize), Allocator.Temp);
         NativeList<float2> points = new NativeList<float2>(Allocator.Temp);
         NativeList<float2> spawnPoints = new NativeList<float2>(Allocator.Temp);
 
@@ -109,17 +111,17 @@ public struct DiscSamplerJob : IJob
 
         points.Dispose();
         spawnPoints.Dispose();
-
-        bool IsValid(float2 candidate, float2 sampleRegionSize, float cellSize, float radius, NativeList<float2> _points, int[,] _grid)
+        
+        bool IsValid(float2 candidate, float2 sampleRegionSize, float cellSize, float radius, NativeList<float2> _points, NativeArray2D<int> _grid)
         {
             if(candidate.x >= 0 && candidate.x < sampleRegionSize.x && candidate.y >= 0 && candidate.y < sampleRegionSize.y)
             {
                 int cellX = (int)(candidate.x / cellSize);
                 int cellY = (int)(candidate.y / cellSize);
                 int searchStartX = math.max(0, cellX - 2);
-                int searchEndX = math.min(cellX + 2, _grid.GetLength(0) - 1);
+                int searchEndX = math.min(cellX + 2, _grid.Length0 - 1);
                 int searchStartY = math.max(0, cellY - 2);
-                int searchEndY = Mathf.Min(cellY + 2, _grid.GetLength(1) - 1);
+                int searchEndY = Mathf.Min(cellY + 2, _grid.Length1 - 1);
 
                 for (int x = searchStartX; x <= searchEndX; x++)
                 {

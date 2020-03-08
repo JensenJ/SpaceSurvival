@@ -8,51 +8,37 @@ using Unity.Mathematics;
 public class GalaxyGenerator : MonoBehaviour
 {
     //Static function to generate star positions
-    public static List<List<Vector2>> GenerateStarPositions(List<Vector2> galaxyOrigins)
+    public static List<Vector2> GenerateStarPositions(Vector2 galaxyOrigin)
     {
         //List initialisation 
-        NativeList<GenerateStarPositionJob> generationJobs = new NativeList<GenerateStarPositionJob>(Allocator.Temp);
-        NativeList<JobHandle> generationHandles = new NativeList<JobHandle>(Allocator.Temp);
         NativeList<float2> starPositions = new NativeList<float2>(Allocator.TempJob);
 
-        //For all galaxy origins given, basically how many galaxies to generate
-        for (int i = 0; i < galaxyOrigins.Count; i++)
+        //Job creation
+        GenerateStarPositionJob job = new GenerateStarPositionJob()
         {
-            //Job creation
-            GenerateStarPositionJob job = new GenerateStarPositionJob()
-            {
-                positions = starPositions,
-                galaxyOffset = new float2(galaxyOrigins[i].x, galaxyOrigins[i].y),
-            };
-            //Job scheduling
-            generationHandles.Add(job.Schedule());
-        }
+            positions = starPositions,
+            galaxyOffset = new float2(galaxyOrigin.x, galaxyOrigin.y),
+            randomSeed = (uint)UnityEngine.Random.Range(1, 10000),
+            starCount = 10,
+        };
 
-        //Complete all galaxy generations
-        JobHandle.CompleteAll(generationHandles);
+        //Job scheduling
+        JobHandle handle = job.Schedule();
+        handle.Complete();
 
-        //2D list initialisation for return
-        List<List<Vector2>> finalStarPositionsForAllGalaxies = new List<List<Vector2>>();
+        List<Vector2> finalStarPositions = new List<Vector2>();
 
-        //Add star positions to lists
-        for (int i = 0; i < generationJobs.Length; i++)
+        starPositions = job.positions;
+
+        for (int i = 0; i < starPositions.Length; i++)
         {
-            //Create sub list for each galaxy generation
-            List<Vector2> finalStarPositions = new List<Vector2>();
-            for (int j = 0; j < generationJobs[i].positions.Length; j++)
-            {
-                finalStarPositions.Add(generationJobs[i].positions[j]);
-            }
-            finalStarPositionsForAllGalaxies.Add(finalStarPositions);
+            finalStarPositions.Add(starPositions[i]);
         }
-
         //Dispose of lists
         starPositions.Dispose();
-        generationJobs.Dispose();
-        generationHandles.Dispose();
 
-        //Return all star positions for all galaxies
-        return finalStarPositionsForAllGalaxies;
+        //Return all star positions
+        return finalStarPositions;
     }
 }
 
@@ -61,9 +47,22 @@ public struct GenerateStarPositionJob : IJob
 {
     public NativeList<float2> positions;
     public float2 galaxyOffset;
+    public uint randomSeed;
+    public int starCount;
 
     public void Execute()
     {
-        
+        Unity.Mathematics.Random random = new Unity.Mathematics.Random(randomSeed);
+
+        for (int i = 0; i < starCount; i++)
+        {
+            float angle = random.NextFloat(0.0f, 1.0f) * Mathf.PI * 2f;
+            //Vector2 newPos = new Vector2(Mathf.Cos(angle) * (ringRadius + systemCenterRadius) + Random.Range(-systemRingCount, systemRingWidth),
+            //    Mathf.Sin(angle) * (ringRadius + systemCenterRadius) + random.Range(-systemRingWidth, systemRingWidth));
+
+            float2 newPos = new float2(math.cos(angle), math.sin(angle)) + galaxyOffset;
+
+            positions.Add(newPos);
+        }
     }
 }

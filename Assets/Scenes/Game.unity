@@ -392,7 +392,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb587f5d5cd315141b05345d1924e71d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  radius: 2
+  radius: 10
   regionSize: {x: 100, y: 100}
-  rejectionSamples: 30
+  rejectionSamples: 50
   displayRadius: 0.5
