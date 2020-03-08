@@ -9,12 +9,12 @@ using Unity.Rendering;
 
 public class Spawner : MonoBehaviour
 {
-    [SerializeField] private Mesh mesh;
-    [SerializeField] private Material material;
-    [SerializeField] private GameObject gameObjectPrefab;
-    [SerializeField] private int dimX;
-    [SerializeField] private int dimY;
-    [SerializeField] private float spacing;
+    [SerializeField] private Mesh mesh = null;
+    [SerializeField] private Material material = null;
+    [SerializeField] private GameObject gameObjectPrefab = null;
+    [SerializeField] private int dimX = 20;
+    [SerializeField] private int dimY = 20;
+    [SerializeField] private float spacing = 1.0f;
 
     private Entity entityPrefab;
     private World defaultWorld;

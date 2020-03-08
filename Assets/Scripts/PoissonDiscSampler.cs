@@ -9,11 +9,10 @@ using Unity.Burst;
 using System.Collections.Generic;
 
 public class PoissonDiscSampler : MonoBehaviour
-{ 
-    public static List<Vector2> GenerateSample(float radius, Vector2 sampleRegionSize, int numSamplesBeforeRejection = 30)
+{
+    public static List<Vector2> GenerateSingleSample(float radius, Vector2 generationOffset, Vector2 sampleRegionSize,  int numSamplesBeforeRejection = 30)
     {
         float time = Time.realtimeSinceStartup;
-
         NativeList<float2> positions = new NativeList<float2>(Allocator.TempJob);
         DiscSamplerJob job = new DiscSamplerJob()
         {
@@ -22,6 +21,7 @@ public class PoissonDiscSampler : MonoBehaviour
             numSamplesBeforeRejection = numSamplesBeforeRejection,
             generatedPositions = positions,
             randomSeed = (uint)UnityEngine.Random.Range(1, 10000),
+            positionOffset = new float2(generationOffset.x, generationOffset.y),
         };
 
 
@@ -42,7 +42,7 @@ public class PoissonDiscSampler : MonoBehaviour
 
         positions.Dispose();
 
-        Debug.Log("Poisson Generation " + (Time.realtimeSinceStartup - time) + "ms");
+        Debug.Log("Single Poisson Generation: " + ((Time.realtimeSinceStartup - time) * 1000f) + "ms");
 
         return generatedPositions;
     }
@@ -55,6 +55,7 @@ public struct DiscSamplerJob : IJob
     public float2 sampleRegionSize;
     public int numSamplesBeforeRejection;
     public NativeList<float2> generatedPositions;
+    public float2 positionOffset;
     public uint randomSeed;
 
     public void Execute()
@@ -105,8 +106,7 @@ public struct DiscSamplerJob : IJob
 
         for (int i = 0; i < points.Length; i++)
         {
-            generatedPositions.Add(points[i]);
-            //Debug.Log(generatedPositions[i]);
+            generatedPositions.Add(points[i] + positionOffset);
         }
 
         points.Dispose();
