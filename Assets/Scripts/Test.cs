@@ -1,19 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Unity.Jobs;
 using UnityEditor;
-using Unity.Mathematics;
-using Unity.Burst;
-using Unity.Collections;
 
+//Custom inspector button for generating within edit mode
 [CustomEditor(typeof(Test))]
 public class TestInspector : Editor
 {
+    
     public override void OnInspectorGUI()
     {
+        //Draw default Test variables
         DrawDefaultInspector();
 
+        //Button init
         Test test = (Test)target;
         if (GUILayout.Button("Generate"))
         {
@@ -22,37 +22,43 @@ public class TestInspector : Editor
     }
 }
 
+//Actual test class
 public class Test : MonoBehaviour
 {
+    //Galaxy spawn settings
     [Header("Galaxy Spawn Settings")]
     public float galaxyRadius = 5;
     public Vector2 galaxySize = Vector2.one;
     public int galaxyRejectionSamples = 30;
     public float galaxyDisplayRadius = 1;
 
+    //Solar system settings
     [Header("Solar System Spawn Settings")]
     public float solarRadius = 1;
     public Vector2 solarSize = Vector2.one;
     public int solarRejectionSamples = 30;
     public float solarDisplayRadius = 0.5f;
 
-    List<List<Vector2>> galaxies;
-    List<Vector2> galaxyOrigins;
+    //Lists for keeping track of positions
+    List<List<Vector2>> galaxies; //Multi generation, keeps track of the positions of stars within each galaxy
+    List<Vector2> galaxyOrigins; //Single generation, keeps track of the positions of galaxies, used to calculate star / solar system positions
 
+    //When editor refreshes
     private void OnValidate()
     {
         Generate();
     }
 
+    //Every frame
     private void Update()
     {
         Generate();
     }
 
+    //Function to generate a universe
     public void Generate()
     {
         //Checking values
-        galaxies = new List<List<Vector2>>();
         if (galaxyRadius == 0 || solarRadius == 0)
         {
             return;
@@ -72,9 +78,10 @@ public class Test : MonoBehaviour
             galaxyOrigins[i] = galaxy;
         }
 
-        //Setting up galaxy spawn positions and data
+        //Setting up galaxy and data, this can be used in future to add randomness such as different radii, galaxy sizes etc.
         float[] radii = new float[galaxyOrigins.Count];
         Vector2[] sampleSizes = new Vector2[galaxyOrigins.Count];
+        //Data filling
         for (int i = 0; i < radii.Length; i++)
         {
             radii[i] = solarRadius;
@@ -101,21 +108,28 @@ public class Test : MonoBehaviour
         }
     }
 
+    //Draw debug symbols for now until entity system created that handles universe generation
     private void OnDrawGizmos()
     {
+        //Whole universe boundary box
         Gizmos.DrawWireCube((galaxySize + solarSize) / 2, galaxySize + solarSize);
         if (galaxies != null)
         {
+            //For every galaxy
             foreach (List<Vector2> galaxy in galaxies)
             {
+                //For every star / solar system
                 foreach (Vector2 star in galaxy)
                 {
+                    //Draw the star
                     Gizmos.DrawWireSphere(star, solarDisplayRadius);
                 }
             }
 
+            //For every galaxy
             foreach (Vector2 galaxy in galaxyOrigins)
             {
+                //Draw bounding box and galaxy origin
                 Gizmos.DrawWireSphere(galaxy, galaxyDisplayRadius);
                 Gizmos.DrawWireCube(galaxy, solarSize);
             }

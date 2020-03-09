@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using Unity.Entities;
+﻿using Unity.Entities;
 
 [GenerateAuthoringComponent]
 public struct MoveSpeed : IComponentData
