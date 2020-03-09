@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Jobs;
 using UnityEditor;
+using Unity.Mathematics;
+using Unity.Burst;
+using Unity.Collections;
 
 [CustomEditor(typeof(Test))]
 public class TestInspector : Editor
@@ -41,24 +44,60 @@ public class Test : MonoBehaviour
         Generate();
     }
 
+    private void Update()
+    {
+        Generate();
+    }
+
     public void Generate()
     {
+        //Checking values
         galaxies = new List<List<Vector2>>();
         if (galaxyRadius == 0 || solarRadius == 0)
         {
             return;
         }
+
+        //Galaxy origin positions
         galaxyOrigins = PoissonDiscSampler.GenerateSingleSample(galaxyRadius, new Vector2(0, 0), galaxySize, galaxyRejectionSamples);
+
+        //Galaxy offset to keep it within boundaries
+        //For every galaxy
         for (int i = 0; i < galaxyOrigins.Count; i++)
         {
-            galaxies.Add(PoissonDiscSampler.GenerateSingleSample(solarRadius, galaxyOrigins[i], solarSize, solarRejectionSamples));
+            //Get galaxy origin position
+            Vector2 galaxy = galaxyOrigins[i];
+            //Apply galaxy offset
+            galaxy += (solarSize / 2);
+            galaxyOrigins[i] = galaxy;
         }
 
-        for (int i = 0; i < galaxyOrigins.Count; i++)
+        //Setting up galaxy spawn positions and data
+        float[] radii = new float[galaxyOrigins.Count];
+        Vector2[] sampleSizes = new Vector2[galaxyOrigins.Count];
+        for (int i = 0; i < radii.Length; i++)
         {
-            Vector2 star = galaxyOrigins[i];
-            star += (solarSize / 2);
-            galaxyOrigins[i] = star;
+            radii[i] = solarRadius;
+            sampleSizes[i] = solarSize;
+        }
+
+        //Generate multiple galaxy samples from an array
+        galaxies = PoissonDiscSampler.GenerateMultiSample(radii, galaxyOrigins.ToArray(), sampleSizes, solarRejectionSamples);
+
+        //Stars within each galaxy offset to fit within galaxy boundaries.
+        //For each galaxy
+        for (int i = 0; i < galaxies.Count; i++)
+        {
+            //For each star
+            for (int j = 0; j < galaxies[i].Count; j++)
+            {
+                //Get star
+                Vector2 star = galaxies[i][j];
+                //Apply offset to star
+                star += (solarSize / 2) - solarSize;
+                //Reassign star into array
+                galaxies[i][j] = star;
+            }
         }
     }
 

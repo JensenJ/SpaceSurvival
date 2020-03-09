@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -337,7 +337,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1077424252}
-  - component: {fileID: 1077424251}
   - component: {fileID: 1077424253}
   m_Layer: 0
   m_Name: Spawner
@@ -346,26 +345,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1077424251
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1077424250}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 99df387a393cbed438b53eaab8b78e1f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  material: {fileID: -541183925614865120, guid: 86da14ce8aa0efb45a86452aeabb0ad1,
-    type: 3}
-  gameObjectPrefab: {fileID: 3623554414467201057, guid: 77eaa1ea797055e4698c554b344ca56b,
-    type: 3}
-  dimX: 50
-  dimY: 50
-  spacing: 1.1
 --- !u!4 &1077424252
 Transform:
   m_ObjectHideFlags: 0
@@ -392,7 +371,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb587f5d5cd315141b05345d1924e71d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  radius: 10
-  regionSize: {x: 100, y: 100}
-  rejectionSamples: 50
-  displayRadius: 0.5
+  galaxyRadius: 25
+  galaxySize: {x: 200, y: 200}
+  galaxyRejectionSamples: 30
+  galaxyDisplayRadius: 2
+  solarRadius: 3
+  solarSize: {x: 20, y: 20}
+  solarRejectionSamples: 30
+  solarDisplayRadius: 0.5

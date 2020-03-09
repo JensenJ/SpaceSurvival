@@ -24,20 +24,13 @@ public class PoissonDiscSampler : MonoBehaviour
             positionOffset = new float2(generationOffset.x, generationOffset.y),
         };
 
-
         JobHandle jobHandle = job.Schedule();
         jobHandle.Complete();
-        
-        positions = job.generatedPositions;
-        //Debug.Log("Testing job" + job.generatedPositions[0]);
 
         List<Vector2> generatedPositions = new List<Vector2>();
         for (int i = 0; i < positions.Length; i++)
         {
-            if(positions[i].x > 0 && positions[i].y > 0)
-            {
-                generatedPositions.Add(positions[i]);
-            }
+            generatedPositions.Add(positions[i]);
         }
 
         positions.Dispose();
@@ -45,6 +38,58 @@ public class PoissonDiscSampler : MonoBehaviour
         Debug.Log("Single Poisson Generation: " + ((Time.realtimeSinceStartup - time) * 1000f) + "ms");
 
         return generatedPositions;
+    }
+
+    public static List<List<Vector2>> GenerateMultiSample(float[] radii, Vector2[] generationOffsets, Vector2[] sampleRegionSizes, int numSamplesBeforeRejection = 30)
+    {
+        float time = Time.realtimeSinceStartup;
+
+        NativeList<JobHandle> handles = new NativeList<JobHandle>(Allocator.Temp);
+        List<NativeList<float2>> positions = new List<NativeList<float2>>();
+
+        for (int i = 0; i < radii.Length; i++)
+        {
+            positions.Add(new NativeList<float2>(Allocator.TempJob));
+        }
+
+        for (int i = 0; i < radii.Length; i++)
+        {
+            if (radii[i] < ((sampleRegionSizes[i].x * sampleRegionSizes[i].y) / 1000))
+            {
+                Debug.LogWarning("Poisson Disc Sampler: Radius is too small for the size of the grid, performance cannot be guaranteed!");
+            }
+
+            DiscSamplerJob job = new DiscSamplerJob()
+            {
+                numSamplesBeforeRejection = numSamplesBeforeRejection,
+                radius = radii[i],
+                randomSeed = (uint)UnityEngine.Random.Range(1, 100000),
+                generatedPositions = positions[i],
+                sampleRegionSize = new float2(sampleRegionSizes[i]),
+                positionOffset = new float2(generationOffsets[i]),
+            };
+            handles.Add(job.Schedule());
+        }
+        JobHandle.CompleteAll(handles);
+        handles.Dispose();
+
+        List<List<Vector2>> finalPositions = new List<List<Vector2>>();
+
+        for (int i = 0; i < positions.Count; i++)
+        {
+            List<Vector2> positionList = new List<Vector2>();
+            for (int j = 0; j < positions[i].Length; j++)
+            {
+                positionList.Add(positions[i][j]);
+            }
+            finalPositions.Add(positionList);
+            positions[i].Dispose();
+        }
+        
+
+        Debug.Log("Poisson Test Time:" + ((Time.realtimeSinceStartup - time) * 1000f) + "ms");
+
+        return finalPositions;
     }
 }
 
@@ -62,7 +107,6 @@ public struct DiscSamplerJob : IJob
     {
         float cellsize = radius / math.sqrt(2);
 
-        //int[,] grid = new int[(int)math.ceil(sampleRegionSize.x / cellsize), (int)math.ceil(sampleRegionSize.y / cellsize)];
         NativeArray2D<int> grid = new NativeArray2D<int>((int)math.ceil(sampleRegionSize.x / cellsize), (int)math.ceil(sampleRegionSize.y / cellsize), Allocator.Temp);
         NativeList<float2> points = new NativeList<float2>(Allocator.Temp);
         NativeList<float2> spawnPoints = new NativeList<float2>(Allocator.Temp);
@@ -84,10 +128,8 @@ public struct DiscSamplerJob : IJob
 
             for (int i = 0; i < numSamplesBeforeRejection; i++)
             {
-                //float angle = UnityEngine.Random.value * math.PI * 2;
                 float angle = random.NextFloat(0, 1) * math.PI * 2;
                 float2 dir = new float2(math.sin(angle), math.cos(angle));
-                //float2 candidate = spawnCentre + dir * UnityEngine.Random.Range(radius, 2 * radius);
                 float2 candidate = spawnCentre + dir * random.NextFloat(radius, 2 * radius);
                 if (IsValid(candidate, sampleRegionSize, cellsize, radius, points, grid))
                 {
@@ -133,16 +175,13 @@ public struct DiscSamplerJob : IJob
                             float sqrDist = math.distancesq(candidate, _points[pointIndex]);
                             if(sqrDist < radius * radius)
                             {
-                                //_points.Dispose();
                                 return false;
                             }
                         }
                     }
                 }
-                //_points.Dispose();
                 return true;
             }
-            //_points.Dispose();
             return false;
         }
     }
