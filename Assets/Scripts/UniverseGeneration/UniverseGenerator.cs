@@ -4,8 +4,8 @@ using UnityEngine;
 using UnityEditor;
 
 //Custom inspector button for generating within edit mode
-[CustomEditor(typeof(Test))]
-public class TestInspector : Editor
+[CustomEditor(typeof(UniverseGenerator))]
+public class UniverseGenInspector : Editor
 {
     
     public override void OnInspectorGUI()
@@ -14,7 +14,7 @@ public class TestInspector : Editor
         DrawDefaultInspector();
 
         //Button init
-        Test test = (Test)target;
+        UniverseGenerator test = (UniverseGenerator)target;
         if (GUILayout.Button("Generate"))
         {
             test.Generate();
@@ -23,7 +23,7 @@ public class TestInspector : Editor
 }
 
 //Actual test class
-public class Test : MonoBehaviour
+public class UniverseGenerator : MonoBehaviour
 {
     //Galaxy spawn settings
     [Header("Galaxy Spawn Settings")]
