@@ -23,6 +23,10 @@ public class UniverseGenInspector : Editor
         {
             test.Generate();
         }
+        if (GUILayout.Button("Clear Universe"))
+        {
+            test.ClearMap();
+        }
     }
 }
 
@@ -56,6 +60,8 @@ public class UniverseGenerator : MonoBehaviour
     EntityManager entityManager;
     EntityArchetype starArchetype;
 
+    List<List<Entity>> starEntities;
+
     //When editor refreshes
     private void OnValidate()
     {
@@ -63,13 +69,9 @@ public class UniverseGenerator : MonoBehaviour
     }
 
     //Every frame
-    //private void Update()
-    //{
-    //    Generate(true);
-    //}
-
-    private void Start()
+    private void Update()
     {
+        ClearMap();
         Generate();
     }
 
@@ -121,11 +123,14 @@ public class UniverseGenerator : MonoBehaviour
             );
         }
 
+        starEntities = new List<List<Entity>>();
+
         //Stars within each galaxy offset to fit within galaxy boundaries.
         //For each galaxy
         for (int i = 0; i < galaxies.Count; i++)
         {
             //For each star
+            List<Entity> starEntitiesForGalaxy = new List<Entity>();
             for (int j = 0; j < galaxies[i].Count; j++)
             {
                 //Get star
@@ -152,14 +157,28 @@ public class UniverseGenerator : MonoBehaviour
                         material = starMaterial,
                         castShadows = UnityEngine.Rendering.ShadowCastingMode.On
                     });
+
+                    starEntitiesForGalaxy.Add(starEntity);
+                    
                 }
             }
+
+            starEntities.Add(starEntitiesForGalaxy);
         }
     }
 
-    public void ClearGalaxy()
+    public void ClearMap()
     {
+        for (int i = 0; i < starEntities.Count; i++)
+        {
+            for (int j= 0; j < starEntities[i].Count; j++)
+            {
+                Entity star = starEntities[i][j];
+                entityManager.DestroyEntity(star);
+            }
+        }
 
+        starEntities = new List<List<Entity>>();
     }
     //Draw debug symbols for now until entity system created that handles universe generation
     private void OnDrawGizmos()
