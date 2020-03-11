@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using Unity.Entities;
+using Unity.Transforms;
+using Unity.Rendering;
+using Unity.Collections;
 
 //Custom inspector button for generating within edit mode
 [CustomEditor(typeof(UniverseGenerator))]
@@ -26,22 +30,31 @@ public class UniverseGenInspector : Editor
 public class UniverseGenerator : MonoBehaviour
 {
     //Galaxy spawn settings
-    [Header("Galaxy Spawn Settings")]
+    [Header("Galaxy Spawn Settings: ")]
     public float galaxyRadius = 5;
     public Vector2 galaxySize = Vector2.one;
     public int galaxyRejectionSamples = 30;
     public float galaxyDisplayRadius = 1;
 
     //Solar system settings
-    [Header("Solar System Spawn Settings")]
+    [Header("Solar System Spawn Settings: ")]
     public float solarRadius = 1;
     public Vector2 solarSize = Vector2.one;
     public int solarRejectionSamples = 30;
     public float solarDisplayRadius = 0.5f;
 
+    [Header("Celestial Entity Spawn Settings: ")]
+    public Mesh starMesh;
+    public Material starMaterial;
+
+    [Header("Debug Settings: ")]
+    public bool showDebugGizmos = false;
     //Lists for keeping track of positions
     List<List<Vector2>> galaxies; //Multi generation, keeps track of the positions of stars within each galaxy
     List<Vector2> galaxyOrigins; //Single generation, keeps track of the positions of galaxies, used to calculate star / solar system positions
+
+    EntityManager entityManager;
+    EntityArchetype starArchetype;
 
     //When editor refreshes
     private void OnValidate()
@@ -50,7 +63,12 @@ public class UniverseGenerator : MonoBehaviour
     }
 
     //Every frame
-    private void Update()
+    //private void Update()
+    //{
+    //    Generate(true);
+    //}
+
+    private void Start()
     {
         Generate();
     }
@@ -91,6 +109,18 @@ public class UniverseGenerator : MonoBehaviour
         //Generate multiple galaxy samples from an array
         galaxies = PoissonDiscSampler.GenerateMultiSample(radii, galaxyOrigins.ToArray(), sampleSizes, solarRejectionSamples);
 
+        if (Application.isPlaying)
+        {
+            //Entity initialisation
+            entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+            starArchetype = entityManager.CreateArchetype(
+                typeof(Translation),
+                typeof(RenderMesh),
+                typeof(LocalToWorld),
+                typeof(RenderBounds)
+            );
+        }
+
         //Stars within each galaxy offset to fit within galaxy boundaries.
         //For each galaxy
         for (int i = 0; i < galaxies.Count; i++)
@@ -104,34 +134,60 @@ public class UniverseGenerator : MonoBehaviour
                 star += (solarSize / 2) - solarSize;
                 //Reassign star into array
                 galaxies[i][j] = star;
+
+                if (Application.isPlaying)
+                {
+                    //Entity creation and placement
+                    Entity starEntity = entityManager.CreateEntity(starArchetype);
+
+                    //Set position
+                    entityManager.SetComponentData(starEntity, new Translation
+                    {
+                        Value = new Vector3(galaxies[i][j].x, galaxies[i][j].y, 0)
+                    }); ;
+
+                    entityManager.SetSharedComponentData(starEntity, new RenderMesh
+                    {
+                        mesh = starMesh,
+                        material = starMaterial,
+                        castShadows = UnityEngine.Rendering.ShadowCastingMode.On
+                    });
+                }
             }
         }
     }
 
+    public void ClearGalaxy()
+    {
+
+    }
     //Draw debug symbols for now until entity system created that handles universe generation
     private void OnDrawGizmos()
     {
-        //Whole universe boundary box
-        Gizmos.DrawWireCube((galaxySize + solarSize) / 2, galaxySize + solarSize);
-        if (galaxies != null)
+        if (showDebugGizmos)
         {
-            //For every galaxy
-            foreach (List<Vector2> galaxy in galaxies)
+            //Whole universe boundary box
+            Gizmos.DrawWireCube((galaxySize + solarSize) / 2, galaxySize + solarSize);
+            if (galaxies != null)
             {
-                //For every star / solar system
-                foreach (Vector2 star in galaxy)
+                //For every galaxy
+                foreach (List<Vector2> galaxy in galaxies)
                 {
-                    //Draw the star
-                    Gizmos.DrawWireSphere(star, solarDisplayRadius);
+                    //For every star / solar system
+                    foreach (Vector2 star in galaxy)
+                    {
+                        //Draw the star
+                        Gizmos.DrawWireSphere(star, solarDisplayRadius);
+                    }
                 }
-            }
 
-            //For every galaxy
-            foreach (Vector2 galaxy in galaxyOrigins)
-            {
-                //Draw bounding box and galaxy origin
-                Gizmos.DrawWireSphere(galaxy, galaxyDisplayRadius);
-                Gizmos.DrawWireCube(galaxy, solarSize);
+                //For every galaxy
+                foreach (Vector2 galaxy in galaxyOrigins)
+                {
+                    //Draw bounding box and galaxy origin
+                    Gizmos.DrawWireSphere(galaxy, galaxyDisplayRadius);
+                    Gizmos.DrawWireCube(galaxy, solarSize);
+                }
             }
         }
     }
