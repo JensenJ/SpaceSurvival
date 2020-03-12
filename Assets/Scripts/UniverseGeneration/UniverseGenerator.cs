@@ -6,6 +6,7 @@ using Unity.Entities;
 using Unity.Transforms;
 using Unity.Rendering;
 using Unity.Collections;
+using Unity.Mathematics;
 
 //Custom inspector button for generating within edit mode
 [CustomEditor(typeof(UniverseGenerator))]
@@ -143,42 +144,10 @@ public class UniverseGenerator : MonoBehaviour
 
                 if (Application.isPlaying)
                 {
-                    //Entity creation and placement
-                    Entity starEntity = entityManager.CreateEntity(starArchetype);
+                    Entity starEntity = GenerateStarEntity(i, j);
 
-                    //Set position
-                    entityManager.SetComponentData(starEntity, new Translation
-                    {
-                        Value = new Vector3(galaxies[i][j].x, galaxies[i][j].y, 0)
-                    });
-
-                    //Set render settings
-                    entityManager.SetSharedComponentData(starEntity, new RenderMesh
-                    {
-                        mesh = starMesh,
-                        material = starMaterial,
-                        castShadows = UnityEngine.Rendering.ShadowCastingMode.On
-                    });
-
-                    //Generate star scale
-                    float starScale = Random.Range(0.1f, 1.0f);
-
-                    //Set scale
-                    entityManager.SetComponentData(starEntity, new Scale
-                    {
-                        Value = starScale
-                    });
-
-                    //Generate star data
-                    StarData data = UniverseData.CreateStarData(starScale);
-
-                    //Set stardata field
-                    entityManager.SetComponentData(starEntity, new StarData
-                    {
-                        starSize = data.starSize,
-                        starType = data.starType
-                    });
-
+                    List<Entity> celestials = GenerateCelestials(starEntity); //TODO: Do something with celestials array, e.g. store for later deletion etc.
+                    
                     //Add to star entities for galaxy list
                     starEntitiesForGalaxy.Add(starEntity);
                 }
@@ -186,6 +155,74 @@ public class UniverseGenerator : MonoBehaviour
             //Add sublist to entire list.
             starEntities.Add(starEntitiesForGalaxy);
         }
+    }
+
+    //Function to generate star entity data
+    private Entity GenerateStarEntity(int i, int j)
+    {
+        //Entity creation and placement
+        Entity starEntity = entityManager.CreateEntity(starArchetype);
+
+        //Set position
+        entityManager.SetComponentData(starEntity, new Translation
+        {
+            Value = new Vector3(galaxies[i][j].x, galaxies[i][j].y, 0)
+        });
+
+        //Set render settings
+        entityManager.SetSharedComponentData(starEntity, new RenderMesh
+        {
+            mesh = starMesh,
+            material = starMaterial,
+            castShadows = UnityEngine.Rendering.ShadowCastingMode.On
+        });
+
+        //Generate star scale
+        float starScale = UnityEngine.Random.Range(0.1f, 1.0f);
+
+        //Set scale
+        entityManager.SetComponentData(starEntity, new Scale
+        {
+            Value = starScale
+        });
+
+        //Generate star data
+        StarData data = UniverseData.CreateStarData(starScale);
+
+        //Set stardata field
+        entityManager.SetComponentData(starEntity, new StarData
+        {
+            starSize = data.starSize,
+            starType = data.starType
+        });
+
+        return starEntity;
+    }
+
+    //Function that will be run on all stars to generate their orbiting celestial objects such as planets and asteroids
+    private List<Entity> GenerateCelestials(Entity star)
+    {
+        Translation transform = entityManager.GetComponentData<Translation>(star);
+        float3 position = transform.Value;
+
+        int terrestrialPlanetCount = UnityEngine.Random.Range(0, 5);
+        int gasGiantPlanetCount = UnityEngine.Random.Range(0, 3);
+        int iceGiantPlanetCount = UnityEngine.Random.Range(0, 2);
+
+        //Celestial generation rules:
+        //  As you move away from the star:
+        //      Surface temperature decreases
+        //      Planet size tends to increase
+        //      Time to orbit increases as orbital speed decreases
+        //      Terrestrial planets -> Gas Giants -> Ice Giants
+        //      Between significant layers (for example between terrestrial planets and gas giants) there can be asteroid belts.
+        //      Planets tend to have more moons
+        //  Other Celestial Rules:
+        //      Only gas giants can have rings
+        //      Planets rotate anticlockwise
+        //      Asteroid belts are very wide, but not very tall 
+
+        return null;
     }
 
     //Function to remove all entities in the star entities array

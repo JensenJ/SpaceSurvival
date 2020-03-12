@@ -56,3 +56,23 @@ public enum StarType
     BlackDwarf,
     NeutronStar,
 }
+
+//Data struct to be placed on planet entities
+public struct PlanetData : IComponentData
+{
+    public PlanetType planetType;
+    public float planetSize;
+    public float planetSurfaceTemperature;
+    public float planetOrbitSpeed;
+    public float planetOrbitDistance;
+    public float planetRotationSpeed;
+    public bool isRinged;
+}
+
+//Enum for planet types
+public enum PlanetType
+{
+    Terrestrial,
+    GasGiant,
+    IceGiant,
+}
