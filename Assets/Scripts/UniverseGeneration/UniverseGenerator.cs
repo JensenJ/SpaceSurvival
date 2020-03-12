@@ -11,7 +11,6 @@ using Unity.Collections;
 [CustomEditor(typeof(UniverseGenerator))]
 public class UniverseGenInspector : Editor
 {
-    
     public override void OnInspectorGUI()
     {
         //Draw default Test variables
@@ -119,7 +118,9 @@ public class UniverseGenerator : MonoBehaviour
                 typeof(Translation),
                 typeof(RenderMesh),
                 typeof(LocalToWorld),
-                typeof(RenderBounds)
+                typeof(RenderBounds),
+                typeof(Scale),
+                typeof(StarData)
             );
         }
 
@@ -149,8 +150,9 @@ public class UniverseGenerator : MonoBehaviour
                     entityManager.SetComponentData(starEntity, new Translation
                     {
                         Value = new Vector3(galaxies[i][j].x, galaxies[i][j].y, 0)
-                    }); ;
+                    });
 
+                    //Set render settings
                     entityManager.SetSharedComponentData(starEntity, new RenderMesh
                     {
                         mesh = starMesh,
@@ -158,26 +160,51 @@ public class UniverseGenerator : MonoBehaviour
                         castShadows = UnityEngine.Rendering.ShadowCastingMode.On
                     });
 
+                    //Generate star scale
+                    float starScale = Random.Range(0.1f, 1.0f);
+
+                    //Set scale
+                    entityManager.SetComponentData(starEntity, new Scale
+                    {
+                        Value = starScale
+                    });
+
+                    //Generate star data
+                    StarData data = UniverseData.CreateStarData(starScale);
+
+                    //Set stardata field
+                    entityManager.SetComponentData(starEntity, new StarData
+                    {
+                        starSize = data.starSize,
+                        starType = data.starType
+                    });
+
+                    //Add to star entities for galaxy list
                     starEntitiesForGalaxy.Add(starEntity);
-                    
                 }
             }
-
+            //Add sublist to entire list.
             starEntities.Add(starEntitiesForGalaxy);
         }
     }
 
+    //Function to remove all entities in the star entities array
     public void ClearMap()
     {
+        //For every galaxy
         for (int i = 0; i < starEntities.Count; i++)
         {
+            //For every star
             for (int j= 0; j < starEntities[i].Count; j++)
             {
+                //Get the star
                 Entity star = starEntities[i][j];
+                //Destroy it
                 entityManager.DestroyEntity(star);
             }
         }
 
+        //Reinit list
         starEntities = new List<List<Entity>>();
     }
     //Draw debug symbols for now until entity system created that handles universe generation

@@ -371,11 +371,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb587f5d5cd315141b05345d1924e71d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  galaxyRadius: 28
+  galaxyRadius: 30
   galaxySize: {x: 200, y: 200}
   galaxyRejectionSamples: 30
-  galaxyDisplayRadius: 2
-  solarRadius: 3
+  galaxyDisplayRadius: 1
+  solarRadius: 5
   solarSize: {x: 20, y: 20}
   solarRejectionSamples: 30
   solarDisplayRadius: 0.5
