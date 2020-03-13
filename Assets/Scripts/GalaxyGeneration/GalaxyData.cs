@@ -1,7 +1,7 @@
 ﻿using Unity.Entities;
 
-//A class to hold all data types to do with the universe generation
-public static class UniverseData
+//A class to hold all data types to do with the Galaxy generation
+public static class GalaxyData
 {
     //Static function to create star data from the scale given, mainly calculates the type of star based on size.
     public static StarData CreateStarData(float scale)
@@ -11,29 +11,30 @@ public static class UniverseData
             starSize = scale
         };
 
-        if (scale > 0.96f)
-        {
-            starData.starType = StarType.NeutronStar;
-        }
-        else if(scale > 0.83f)
+        if(scale > 0.90f)
         {
             starData.starType = StarType.RedSuperGiant;
+            starData.starTemperature = 4700;
         }
-        else if(scale > 0.70f)
+        else if(scale > 0.75f)
         {
             starData.starType = StarType.RedGiant;
+            starData.starTemperature = 5000;
         }
         else if(scale > 0.20f)
         {
             starData.starType = StarType.Main;
+            starData.starTemperature = 18000000;
         }
         else if(scale > 0.10f)
         {
             starData.starType = StarType.WhiteDwarf;
+            starData.starTemperature = 100000;
         }
         else 
         {
             starData.starType = StarType.BlackDwarf;
+            starData.starTemperature = 0;
         }
         return starData;
     }
@@ -44,6 +45,7 @@ public struct StarData : IComponentData
 {
     public StarType starType;
     public float starSize;
+    public float starTemperature; //Kelvin temperatures used
 }
 
 //Enum for star types.
@@ -54,7 +56,6 @@ public enum StarType
     RedSuperGiant,
     WhiteDwarf,
     BlackDwarf,
-    NeutronStar,
 }
 
 //Data struct to be placed on planet entities
