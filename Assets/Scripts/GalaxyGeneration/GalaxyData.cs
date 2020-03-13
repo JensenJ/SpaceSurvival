@@ -14,27 +14,22 @@ public static class GalaxyData
         if(scale > 0.90f)
         {
             starData.starType = StarType.RedSuperGiant;
-            starData.starTemperature = 4700;
         }
         else if(scale > 0.75f)
         {
             starData.starType = StarType.RedGiant;
-            starData.starTemperature = 5000;
         }
         else if(scale > 0.20f)
         {
             starData.starType = StarType.Main;
-            starData.starTemperature = 18000000;
         }
         else if(scale > 0.10f)
         {
             starData.starType = StarType.WhiteDwarf;
-            starData.starTemperature = 100000;
         }
         else 
         {
             starData.starType = StarType.BlackDwarf;
-            starData.starTemperature = 0;
         }
         return starData;
     }
@@ -45,7 +40,6 @@ public struct StarData : IComponentData
 {
     public StarType starType;
     public float starSize;
-    public float starTemperature; //Kelvin temperatures used
 }
 
 //Enum for star types.
@@ -64,9 +58,11 @@ public struct PlanetData : IComponentData
     public PlanetType planetType;
     public float planetSize;
     public float planetSurfaceTemperature;
-    public float planetOrbitSpeed;
+    public float planetOrbitTime;
     public float planetOrbitDistance;
     public float planetRotationSpeed;
+    public float surfaceAlbedo;
+    public float greenhouseEffect;
     public bool isRinged;
 }
 

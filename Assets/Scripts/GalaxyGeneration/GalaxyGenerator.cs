@@ -154,7 +154,6 @@ public class GalaxyGenerator : MonoBehaviour
         {
             starSize = data.starSize,
             starType = data.starType,
-            starTemperature = data.starTemperature
         });
 
         return starEntity;
@@ -168,13 +167,14 @@ public class GalaxyGenerator : MonoBehaviour
 
         StarData starData = entityManager.GetComponentData<StarData>(star);
 
-        int terrestrialPlanetCount = UnityEngine.Random.Range(0, 5);
+        //int terrestrialPlanetCount = UnityEngine.Random.Range(0, 5);
+        int terrestrialPlanetCount = 4;
         int gasGiantPlanetCount = UnityEngine.Random.Range(0, 3);
         int iceGiantPlanetCount = UnityEngine.Random.Range(0, 2);
 
         //Celestial generation rules:
         //  As you move away from the star:
-        //      Surface temperature decreases
+        //      Surface temperature decreases (not always on atmospheric planets as they have greenhouse effect / albedo)
         //      Planet size tends to increase
         //      Time to orbit increases as orbital speed decreases
         //      Terrestrial planets -> Gas Giants -> Ice Giants
@@ -185,25 +185,68 @@ public class GalaxyGenerator : MonoBehaviour
         //      Planets rotate anticlockwise
         //      Asteroid belts are very wide, but not very tall 
 
-        //TODO: Recalculate distance correctly
+        float terrestrialBaseDistanceMultiplier = 1.57f;
+        float terrestrialDistanceUncertainty = 0.2f;
+
+        float distance = UnityEngine.Random.Range(3.5f, 3.65f) - (0.75f * terrestrialBaseDistanceMultiplier);
+
+        Debug.Log("StarType = " + starData.starType + ", Size = " + starData.starSize);
+
         for (int i = 0; i < terrestrialPlanetCount; i++)
         {
-            float planetDistance = 10 * (i + 1);
-            float3 planetPosition = new float3(position.x + planetDistance, position.y, position.z);
-            float distanceFromStar = math.distancesq(position * position, planetPosition * planetPosition);
+            distance *= (terrestrialBaseDistanceMultiplier + UnityEngine.Random.Range(-terrestrialDistanceUncertainty / 2, terrestrialDistanceUncertainty));
+            float3 planetPosition = new float3(position.x + distance, position.y, position.z);
+            float distanceFromStar = math.distance(position, planetPosition);
 
+            //Temperature variable generation
+            float greenhouseEffect = UnityEngine.Random.Range(1.0f, 30.0f); //Higher this is, the higher the temperature
+            float albedo = UnityEngine.Random.Range(0.0f, 40.0f); //Lower this is, the higher the temperature
+
+            //Get temperature
+            float temperature = GetPlanetSurfaceTemperature(starData.starSize, distanceFromStar, albedo, greenhouseEffect);
+            if (temperature < 0)
+            {
+                temperature = 0;
+            }
+
+            //Create planet data and populate with generated data
             PlanetData planetData = new PlanetData
             {
                 isRinged = false,
                 planetOrbitDistance = distanceFromStar,
-                planetSurfaceTemperature = starData.starTemperature,
+                planetSurfaceTemperature = temperature,
+                surfaceAlbedo = albedo,
+                greenhouseEffect = greenhouseEffect,
+                planetSize = UnityEngine.Random.Range(0.1f, 1.0f),
+                planetType = PlanetType.Terrestrial,
+                planetRotationSpeed = UnityEngine.Random.Range(1.0f, 250.0f),
+                planetOrbitTime = distance * 40,
             };
 
             //Debug.Log("PlanetData (Distance " + i + ")" + planetData.planetOrbitDistance);
-            //Debug.Log("PlanetData (Temperature " + i + ")" + planetData.planetSurfaceTemperature);
+            //Debug.Log("PlanetData (Temperature " + i + ")" + (planetData.planetSurfaceTemperature -273) + "C");
+            //Debug.Log("PlanetData (OrbitSpeed " + i + ")" + planetData.planetOrbitTime + " days");
         }
 
         return null;
+    }
+
+    //Function to return the planet's surface temperature when given information about the planet
+    public float GetPlanetSurfaceTemperature(float size, float distanceFromStar, float albedo, float greenhouse)
+    {
+        float pi = math.PI;
+        float sigma = 5.6703f * math.pow(10, -5);
+        float L = 3.846f * math.pow(10, 33) * math.pow(size, 3);
+        float D = distanceFromStar * 1.496f * math.pow(10, 13);
+        float A = albedo / 100;
+        float T = greenhouse * 0.5841f;
+        float X = math.sqrt((1 - A) * L / (16 * pi * sigma));
+        float T_eff = math.sqrt(X) * (1 / math.sqrt(D));
+        float T_eq = (math.pow(T_eff, 4)) * (1 + (3 * T / 4));
+        float T_sur = T_eq / 0.9f;
+        float T_kel = math.sqrt(math.sqrt(T_sur));
+        T_kel = math.round(T_kel);
+        return T_kel + 250;
     }
 
     //Function to remove all entities in the star entities array
