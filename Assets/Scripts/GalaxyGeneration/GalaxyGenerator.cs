@@ -39,6 +39,8 @@ public class GalaxyGenerator : MonoBehaviour
     public Vector2 galaxySize = Vector2.one;
     public int galaxyRejectionSamples = 30;
     public float starDisplayRadius = 1;
+    public float galaxyInnerRadius = 30;
+    public float galaxyOuterRadius = 100;
 
     [Header("Celestial Entity Spawn Settings: ")]
     public Mesh starMesh;
@@ -82,7 +84,9 @@ public class GalaxyGenerator : MonoBehaviour
         }
 
         //Generate star positions
-        starPositions = PoissonDiscSampler.GenerateSingleSample(starSpawnRadius, new Vector2(), galaxySize, 30);
+        starPositions = PoissonDiscSampler.GenerateSingleSample(starSpawnRadius, new Vector2(), galaxySize, true, galaxyInnerRadius, galaxyOuterRadius, galaxyRejectionSamples);
+
+        Debug.Log("Generation Count: " + starPositions.Count);
 
         //If in play mode
         if (Application.isPlaying)
@@ -185,6 +189,14 @@ public class GalaxyGenerator : MonoBehaviour
         StarData starData = entityManager.GetComponentData<StarData>(star);
 
         int terrestrialPlanetCount = UnityEngine.Random.Range(0, 5);
+        int asteroidBeltGeneration = UnityEngine.Random.Range(0, 2);
+
+        bool hasAsteroidBelt = false;
+        if(asteroidBeltGeneration == 1)
+        {
+            hasAsteroidBelt = true;
+        }
+
         int gasGiantPlanetCount = UnityEngine.Random.Range(0, 3);
         int iceGiantPlanetCount = UnityEngine.Random.Range(0, 2);
 
@@ -317,20 +329,23 @@ public class GalaxyGenerator : MonoBehaviour
     //Function to remove all entities in the star entities array
     public void ClearMap()
     {
-        //For every star
-        for (int i = 0; i < starEntities.Count; i++)
+        if (Application.isPlaying)
         {
-            //Destroy star entity
-            entityManager.DestroyEntity(starEntities[i]);
-        }
-        //For every star/planet
-        for (int i = 0; i < planetEntities.Count; i++)
-        {
-            //For every planet
-            for (int j = 0; j < planetEntities[i].Count; j++)
+            //For every star
+            for (int i = 0; i < starEntities.Count; i++)
             {
-                //Destroy planet entity
-                entityManager.DestroyEntity(planetEntities[i][j]);
+                //Destroy star entity
+                entityManager.DestroyEntity(starEntities[i]);
+            }
+            //For every star/planet
+            for (int i = 0; i < planetEntities.Count; i++)
+            {
+                //For every planet
+                for (int j = 0; j < planetEntities[i].Count; j++)
+                {
+                    //Destroy planet entity
+                    entityManager.DestroyEntity(planetEntities[i][j]);
+                }
             }
         }
 

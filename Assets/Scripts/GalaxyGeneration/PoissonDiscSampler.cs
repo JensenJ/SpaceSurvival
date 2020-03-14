@@ -10,7 +10,8 @@ using System.Collections.Generic;
 public class PoissonDiscSampler : MonoBehaviour
 {
     //Function to generate a simgle sample of vectors from given data
-    public static List<Vector2> GenerateSingleSample(float radius, Vector2 generationOffset, Vector2 sampleRegionSize,  int numSamplesBeforeRejection = 30)
+    public static List<Vector2> GenerateSingleSample(float radius, Vector2 generationOffset, Vector2 sampleRegionSize,
+        bool useRingPattern = false, float ringInnerRadius = 10, float ringOuterRadius = 50, int numSamplesBeforeRejection = 30)
     {
         //Debug time
         float time = Time.realtimeSinceStartup;
@@ -26,6 +27,9 @@ public class PoissonDiscSampler : MonoBehaviour
             generatedPositions = positions,
             randomSeed = (uint)UnityEngine.Random.Range(1, 10000),
             positionOffset = new float2(generationOffset.x, generationOffset.y),
+            useRingPattern = useRingPattern,
+            ringInnerRadius = ringInnerRadius,
+            ringOuterRadius = ringOuterRadius,
         };
 
         //Job scheduling and completion
@@ -52,7 +56,8 @@ public class PoissonDiscSampler : MonoBehaviour
 
     //Function to generate a multi-dimensional list of vectors for multi-sampling when given arrays of data to process. 
     //This function is more efficient for multisampling than just iterating over the single sample as it uses multi-threading.
-    public static List<List<Vector2>> GenerateMultiSample(float[] radii, Vector2[] generationOffsets, Vector2[] sampleRegionSizes, int numSamplesBeforeRejection = 30)
+    public static List<List<Vector2>> GenerateMultiSample(float[] radii, Vector2[] generationOffsets, Vector2[] sampleRegionSizes, 
+        bool useRingPattern = false, float ringInnerRadius = 10, float ringOuterRadius = 50, int numSamplesBeforeRejection = 30)
     {
         //Debug time
         float time = Time.realtimeSinceStartup;
@@ -86,6 +91,9 @@ public class PoissonDiscSampler : MonoBehaviour
                 generatedPositions = positions[i],
                 sampleRegionSize = new float2(sampleRegionSizes[i]),
                 positionOffset = new float2(generationOffsets[i]),
+                useRingPattern = useRingPattern,
+                ringInnerRadius = ringInnerRadius,
+                ringOuterRadius = ringOuterRadius,
             };
             //Add scheduled job to handle list, ready for mass completion
             handles.Add(job.Schedule());
@@ -133,7 +141,9 @@ public struct DiscSamplerJob : IJob
     public NativeList<float2> generatedPositions;
     public float2 positionOffset;
     public uint randomSeed;
-
+    public bool useRingPattern;
+    public float ringInnerRadius;
+    public float ringOuterRadius;
 
     //Job execution
     public void Execute()
@@ -185,6 +195,33 @@ public struct DiscSamplerJob : IJob
             }
         }
 
+        //Checks ring pattern
+        if (useRingPattern == true)
+        {
+            //For every point generated so far
+            for (int i = 0; i < points.Length; i++)
+            {
+                //Gets the distance between the middle of sample region and the candidate
+                float ringDistance = math.distancesq(points[i], sampleRegionSize / 2);
+
+                //Check if point is out of the inner radius
+                if (ringDistance < ringInnerRadius * ringInnerRadius)
+                {
+                    //Remove point
+                    points.RemoveAtSwapBack(i);
+                    i--;
+                }
+
+                //Check if point is out of the outer radius
+                if (ringDistance > ringOuterRadius * ringOuterRadius)
+                {
+                    //Remove point
+                    points.RemoveAtSwapBack(i);
+                    i--;
+                }
+            }
+        }
+
         //For every point that is valid, add it to generated positions list with the given offset applied.
         for (int i = 0; i < points.Length; i++)
         {
@@ -222,6 +259,7 @@ public struct DiscSamplerJob : IJob
                         {
                             //Get the distance between the candidate and the new point
                             float sqrDist = math.distancesq(candidate, _points[pointIndex]);
+
                             //If distance is less than the given radius
                             if(sqrDist < radius * radius)
                             {
@@ -231,6 +269,7 @@ public struct DiscSamplerJob : IJob
                         }
                     }
                 }
+
                 //This candidate is valid if it passes through all points without being in range of another
                 return true;
             }
