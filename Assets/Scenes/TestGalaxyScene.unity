@@ -271,6 +271,7 @@ MonoBehaviour:
   starDisplayRadius: 0.5
   galaxyInnerRadius: 200
   galaxyOuterRadius: 500
+  generateEveryFrame: 0
   starMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   starMaterial: {fileID: 2100000, guid: d47ae0396110840289d47476d8289fbf, type: 3}
   planetMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}

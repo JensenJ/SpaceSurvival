@@ -41,6 +41,7 @@ public class GalaxyGenerator : MonoBehaviour
     public float starDisplayRadius = 1;
     public float galaxyInnerRadius = 30;
     public float galaxyOuterRadius = 100;
+    public bool generateEveryFrame = false;
 
     [Header("Celestial Entity Spawn Settings: ")]
     public Mesh starMesh;
@@ -67,11 +68,19 @@ public class GalaxyGenerator : MonoBehaviour
         Generate();
     }
 
-    //Every frame
-    private void Update()
+    private void Start()
     {
         ClearMap();
         Generate();
+    }
+
+    //Every frame
+    private void Update() {
+        if (generateEveryFrame)
+        {
+            ClearMap();
+            Generate();
+        }
     }
 
     //Function to generate a Galaxy
@@ -166,9 +175,6 @@ public class GalaxyGenerator : MonoBehaviour
 
         //Generate star data
         StarData data = GalaxyData.CreateStarData(starScale);
-        List<Entity> celestials = GenerateCelestials(starEntity); //TODO: Do something with array, store for later destruction
-
-        planetEntities.Add(celestials);
 
         //Set stardata field
         entityManager.SetComponentData(starEntity, new StarData
@@ -176,6 +182,11 @@ public class GalaxyGenerator : MonoBehaviour
             starSize = data.starSize,
             starType = data.starType,
         });
+
+        List<Entity> celestials = GenerateCelestials(starEntity); //TODO: Do something with array, store for later destruction
+
+        planetEntities.Add(celestials);
+
         
         return starEntity;
     }
@@ -253,10 +264,6 @@ public class GalaxyGenerator : MonoBehaviour
             {
                 temperature = 0;
             }
-
-            //Debug.Log("PlanetData (Distance " + i + ")" + planetData.planetOrbitDistance);
-            //Debug.Log("PlanetData (Temperature " + i + ")" + (planetData.planetSurfaceTemperature -273) + "C");
-            //Debug.Log("PlanetData (OrbitSpeed " + i + ")" + planetData.planetOrbitTime + " days");
 
             Entity planetEntity = GeneratePlanetEntity(planetPosition, distanceFromStar, temperature, albedo, greenhouseEffect);
 
