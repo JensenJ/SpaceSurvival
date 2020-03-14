@@ -100,6 +100,7 @@ public class GalaxyGenerator : MonoBehaviour
 
             planetArchetype = entityManager.CreateArchetype(
                 typeof(Translation),
+                typeof(Rotation),
                 typeof(RenderMesh),
                 typeof(LocalToWorld),
                 typeof(RenderBounds),
@@ -179,14 +180,15 @@ public class GalaxyGenerator : MonoBehaviour
     private List<Entity> GenerateCelestials(Entity star)
     {
         Translation transform = entityManager.GetComponentData<Translation>(star);
-        float3 position = transform.Value;
+        float3 starPosition = transform.Value;
 
         StarData starData = entityManager.GetComponentData<StarData>(star);
 
-        //int terrestrialPlanetCount = UnityEngine.Random.Range(0, 5);
-        int terrestrialPlanetCount = 4;
+        int terrestrialPlanetCount = UnityEngine.Random.Range(0, 5);
         int gasGiantPlanetCount = UnityEngine.Random.Range(0, 3);
         int iceGiantPlanetCount = UnityEngine.Random.Range(0, 2);
+
+        List<Entity> celestialList = new List<Entity>();
 
         //Celestial generation rules:
         //  As you move away from the star:
@@ -197,31 +199,44 @@ public class GalaxyGenerator : MonoBehaviour
         //      Between significant layers (for example between terrestrial planets and gas giants) there can be asteroid belts.
         //      Planets tend to have more moons
         //  Other Celestial Rules:
-        //      Only gas giants can have rings
+        //      Only gas/ice giants can have rings
         //      Planets rotate anticlockwise
         //      Asteroid belts are very wide, but not very tall 
+
+        //Debug.Log("StarType = " + starData.starType + ", Size = " + starData.starSize);
+
+        List<Entity> terrestrialPlanets = GenerateTerrestrialPlanets(terrestrialPlanetCount, starPosition, starData.starSize);
+
+        for (int i = 0; i < terrestrialPlanets.Count; i++)
+        {
+            celestialList.Add(terrestrialPlanets[i]);
+        }
+
+        return celestialList;
+    }
+
+    //Function to generate the terrestrial planets within a solar system
+    public List<Entity> GenerateTerrestrialPlanets(int terrestrialPlanetCount, float3 starPosition, float starSize)
+    {
+        List<Entity> terrestrialPlanets = new List<Entity>();
 
         float terrestrialBaseDistanceMultiplier = 1.57f;
         float terrestrialDistanceUncertainty = 0.2f;
 
         float distance = UnityEngine.Random.Range(3.5f, 3.65f) - (0.75f * terrestrialBaseDistanceMultiplier);
 
-        //Debug.Log("StarType = " + starData.starType + ", Size = " + starData.starSize);
-
-        List<Entity> planetList = new List<Entity>();
-
         for (int i = 0; i < terrestrialPlanetCount; i++)
         {
             distance *= (terrestrialBaseDistanceMultiplier + UnityEngine.Random.Range(-terrestrialDistanceUncertainty / 2, terrestrialDistanceUncertainty));
-            float3 planetPosition = new float3(position.x + distance, position.y, position.z);
-            float distanceFromStar = math.distance(position, planetPosition);
+            float3 planetPosition = new float3(starPosition.x + distance, starPosition.y, starPosition.z);
+            float distanceFromStar = math.distance(starPosition, planetPosition);
 
             //Temperature variable generation
             float greenhouseEffect = UnityEngine.Random.Range(1.0f, 30.0f); //Higher this is, the higher the temperature
             float albedo = UnityEngine.Random.Range(0.0f, 40.0f); //Lower this is, the higher the temperature
 
             //Get temperature
-            float temperature = GetPlanetSurfaceTemperature(starData.starSize, distanceFromStar, albedo, greenhouseEffect);
+            float temperature = GetPlanetSurfaceTemperature(starSize, distanceFromStar, albedo, greenhouseEffect);
             if (temperature < 0)
             {
                 temperature = 0;
@@ -231,49 +246,11 @@ public class GalaxyGenerator : MonoBehaviour
             //Debug.Log("PlanetData (Temperature " + i + ")" + (planetData.planetSurfaceTemperature -273) + "C");
             //Debug.Log("PlanetData (OrbitSpeed " + i + ")" + planetData.planetOrbitTime + " days");
 
-            //Entity creation and placement
-            Entity planetEntity = entityManager.CreateEntity(planetArchetype);
+            Entity planetEntity = GeneratePlanetEntity(planetPosition, distanceFromStar, temperature, albedo, greenhouseEffect);
 
-            //Set position
-            entityManager.SetComponentData(planetEntity, new Translation
-            {
-                Value = planetPosition
-            });
-
-            //Set render settings
-            entityManager.SetSharedComponentData(planetEntity, new RenderMesh
-            {
-                mesh = planetMesh,
-                material = planetMaterial,
-                castShadows = UnityEngine.Rendering.ShadowCastingMode.On
-            });
-
-            float planetSize = UnityEngine.Random.Range(0.1f, 1.0f);
-
-            //Set scale
-            entityManager.SetComponentData(planetEntity, new Scale
-            {
-                Value = planetSize
-            });
-
-            //Set other planet data
-            entityManager.SetComponentData(planetEntity, new PlanetData
-            {
-                isRinged = false,
-                planetOrbitDistance = distanceFromStar,
-                planetSurfaceTemperature = temperature,
-                surfaceAlbedo = albedo,
-                greenhouseEffect = greenhouseEffect,
-                planetSize = planetSize,
-                planetType = PlanetType.Terrestrial,
-                planetRotationSpeed = UnityEngine.Random.Range(1.0f, 250.0f),
-                planetOrbitTime = distance * 40,
-            });
-            planetList.Add(planetEntity);
+            terrestrialPlanets.Add(planetEntity);
         }
-
-
-        return planetList;
+        return terrestrialPlanets;
     }
 
     //Function to return the planet's surface temperature when given information about the planet
@@ -292,6 +269,49 @@ public class GalaxyGenerator : MonoBehaviour
         float T_kel = math.sqrt(math.sqrt(T_sur));
         T_kel = math.round(T_kel);
         return T_kel + 250;
+    }
+
+    public Entity GeneratePlanetEntity(float3 planetPosition, float distanceFromStar, float temperature, float albedo, float greenhouseEffect)
+    {
+        //Entity creation and placement
+        Entity planetEntity = entityManager.CreateEntity(planetArchetype);
+
+        //Set position
+        entityManager.SetComponentData(planetEntity, new Translation
+        {
+            Value = planetPosition
+        });
+
+        //Set render settings
+        entityManager.SetSharedComponentData(planetEntity, new RenderMesh
+        {
+            mesh = planetMesh,
+            material = planetMaterial,
+            castShadows = UnityEngine.Rendering.ShadowCastingMode.On
+        });
+
+        float planetSize = UnityEngine.Random.Range(0.1f, 1.0f);
+
+        //Set scale
+        entityManager.SetComponentData(planetEntity, new Scale
+        {
+            Value = planetSize
+        });
+
+        //Set other planet data
+        entityManager.SetComponentData(planetEntity, new PlanetData
+        {
+            isRinged = false,
+            planetOrbitDistance = distanceFromStar,
+            planetSurfaceTemperature = temperature,
+            surfaceAlbedo = albedo,
+            greenhouseEffect = greenhouseEffect,
+            planetSize = planetSize,
+            planetType = PlanetType.Terrestrial,
+            planetRotationSpeed = UnityEngine.Random.Range(1.0f, 250.0f),
+            planetOrbitTime = distanceFromStar * 40,
+        });
+        return planetEntity;
     }
 
     //Function to remove all entities in the star entities array
