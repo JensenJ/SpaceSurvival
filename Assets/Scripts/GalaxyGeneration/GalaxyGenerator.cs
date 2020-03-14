@@ -44,6 +44,9 @@ public class GalaxyGenerator : MonoBehaviour
     public Mesh starMesh;
     public Material starMaterial;
 
+    public Mesh planetMesh;
+    public Material planetMaterial;
+
     [Header("Debug Settings: ")]
     public bool showDebugGizmos = false;
     //Lists for keeping track of positions
@@ -51,8 +54,10 @@ public class GalaxyGenerator : MonoBehaviour
 
     EntityManager entityManager;
     EntityArchetype starArchetype;
+    EntityArchetype planetArchetype;
 
     List<Entity> starEntities;
+    List<List<Entity>> planetEntities;
 
     //When editor refreshes
     private void OnValidate()
@@ -93,7 +98,17 @@ public class GalaxyGenerator : MonoBehaviour
                 typeof(StarData)
             );
 
+            planetArchetype = entityManager.CreateArchetype(
+                typeof(Translation),
+                typeof(RenderMesh),
+                typeof(LocalToWorld),
+                typeof(RenderBounds),
+                typeof(Scale),
+                typeof(PlanetData)
+            );
+
             starEntities = new List<Entity>();
+            planetEntities = new List<List<Entity>>();
 
             //Stars within each galaxy offset to fit within galaxy boundaries.
             //For each galaxy
@@ -107,8 +122,6 @@ public class GalaxyGenerator : MonoBehaviour
                 if (Application.isPlaying)
                 {
                     Entity starEntity = GenerateStarEntity(i);
-
-                    List<Entity> celestials = GenerateCelestials(starEntity); //TODO: Do something with celestials array, e.g. store for later deletion etc.
 
                     //Add sublist to entire list.
                     starEntities.Add(starEntity);
@@ -148,6 +161,9 @@ public class GalaxyGenerator : MonoBehaviour
 
         //Generate star data
         StarData data = GalaxyData.CreateStarData(starScale);
+        List<Entity> celestials = GenerateCelestials(starEntity); //TODO: Do something with array, store for later destruction
+
+        planetEntities.Add(celestials);
 
         //Set stardata field
         entityManager.SetComponentData(starEntity, new StarData
@@ -155,7 +171,7 @@ public class GalaxyGenerator : MonoBehaviour
             starSize = data.starSize,
             starType = data.starType,
         });
-
+        
         return starEntity;
     }
 
@@ -190,7 +206,9 @@ public class GalaxyGenerator : MonoBehaviour
 
         float distance = UnityEngine.Random.Range(3.5f, 3.65f) - (0.75f * terrestrialBaseDistanceMultiplier);
 
-        Debug.Log("StarType = " + starData.starType + ", Size = " + starData.starSize);
+        //Debug.Log("StarType = " + starData.starType + ", Size = " + starData.starSize);
+
+        List<Entity> planetList = new List<Entity>();
 
         for (int i = 0; i < terrestrialPlanetCount; i++)
         {
@@ -209,26 +227,53 @@ public class GalaxyGenerator : MonoBehaviour
                 temperature = 0;
             }
 
-            //Create planet data and populate with generated data
-            PlanetData planetData = new PlanetData
+            //Debug.Log("PlanetData (Distance " + i + ")" + planetData.planetOrbitDistance);
+            //Debug.Log("PlanetData (Temperature " + i + ")" + (planetData.planetSurfaceTemperature -273) + "C");
+            //Debug.Log("PlanetData (OrbitSpeed " + i + ")" + planetData.planetOrbitTime + " days");
+
+            //Entity creation and placement
+            Entity planetEntity = entityManager.CreateEntity(planetArchetype);
+
+            //Set position
+            entityManager.SetComponentData(planetEntity, new Translation
+            {
+                Value = planetPosition
+            });
+
+            //Set render settings
+            entityManager.SetSharedComponentData(planetEntity, new RenderMesh
+            {
+                mesh = planetMesh,
+                material = planetMaterial,
+                castShadows = UnityEngine.Rendering.ShadowCastingMode.On
+            });
+
+            float planetSize = UnityEngine.Random.Range(0.1f, 1.0f);
+
+            //Set scale
+            entityManager.SetComponentData(planetEntity, new Scale
+            {
+                Value = planetSize
+            });
+
+            //Set other planet data
+            entityManager.SetComponentData(planetEntity, new PlanetData
             {
                 isRinged = false,
                 planetOrbitDistance = distanceFromStar,
                 planetSurfaceTemperature = temperature,
                 surfaceAlbedo = albedo,
                 greenhouseEffect = greenhouseEffect,
-                planetSize = UnityEngine.Random.Range(0.1f, 1.0f),
+                planetSize = planetSize,
                 planetType = PlanetType.Terrestrial,
                 planetRotationSpeed = UnityEngine.Random.Range(1.0f, 250.0f),
                 planetOrbitTime = distance * 40,
-            };
-
-            //Debug.Log("PlanetData (Distance " + i + ")" + planetData.planetOrbitDistance);
-            //Debug.Log("PlanetData (Temperature " + i + ")" + (planetData.planetSurfaceTemperature -273) + "C");
-            //Debug.Log("PlanetData (OrbitSpeed " + i + ")" + planetData.planetOrbitTime + " days");
+            });
+            planetList.Add(planetEntity);
         }
 
-        return null;
+
+        return planetList;
     }
 
     //Function to return the planet's surface temperature when given information about the planet
@@ -255,11 +300,23 @@ public class GalaxyGenerator : MonoBehaviour
         //For every star
         for (int i = 0; i < starEntities.Count; i++)
         {
+            //Destroy star entity
             entityManager.DestroyEntity(starEntities[i]);
         }
+        //For every star/planet
+        for (int i = 0; i < planetEntities.Count; i++)
+        {
+            //For every planet
+            for (int j = 0; j < planetEntities[i].Count; j++)
+            {
+                //Destroy planet entity
+                entityManager.DestroyEntity(planetEntities[i][j]);
+            }
+        }
 
-        //Reinit list
+        //Reinit lists
         starEntities = new List<Entity>();
+        planetEntities = new List<List<Entity>>();
     }
     //Draw debug symbols for now until entity system created that handles Galaxy generation
     private void OnDrawGizmos()

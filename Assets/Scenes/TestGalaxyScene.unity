@@ -265,12 +265,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb587f5d5cd315141b05345d1924e71d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  starSpawnRadius: 10
+  starSpawnRadius: 30
   galaxySize: {x: 100, y: 100}
   galaxyRejectionSamples: 30
   starDisplayRadius: 0.5
   starMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   starMaterial: {fileID: 2100000, guid: d47ae0396110840289d47476d8289fbf, type: 3}
+  planetMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  planetMaterial: {fileID: 2100000, guid: d47ae0396110840289d47476d8289fbf, type: 3}
   showDebugGizmos: 1
 --- !u!4 &1072082470
 Transform:
