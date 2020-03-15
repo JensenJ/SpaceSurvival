@@ -5,16 +5,16 @@ using UnityEngine;
 public static class MarchingData
 {
     // offsets from the minimal corner to other corners
-    public static readonly Vector3[] vertexTable = new Vector3[8]
+    public static readonly Vector3Int[] vertexTable = new Vector3Int[8] 
     {
-        new Vector3(0.0f, 0.0f, 0.0f),
-        new Vector3(1.0f, 0.0f, 0.0f),
-        new Vector3(1.0f, 1.0f, 0.0f),
-        new Vector3(0.0f, 1.0f, 0.0f),
-        new Vector3(0.0f, 0.0f, 1.0f),
-        new Vector3(1.0f, 0.0f, 1.0f),
-        new Vector3(1.0f, 1.0f, 1.0f),
-        new Vector3(0.0f, 1.0f, 1.0f)
+        new Vector3Int(0, 0, 0),
+        new Vector3Int(1, 0, 0),
+        new Vector3Int(1, 1, 0),
+        new Vector3Int(0, 1, 0),
+        new Vector3Int(0, 0, 1),
+        new Vector3Int(1, 0, 1),
+        new Vector3Int(1, 1, 1),
+        new Vector3Int(0, 1, 1)
     };
 
     // offsets from the minimal corner to 2 ends of the edges

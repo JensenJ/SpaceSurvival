@@ -9,26 +9,96 @@ public class Marching : MonoBehaviour
 
     MeshFilter meshFilter;
 
+    float terrainSurface = 0.5f;
+    int width = 32;
+    int height = 8;
+    float[,,] terrainMap;
+
     int configIndex = -1;
 
     private void Start()
     {
         meshFilter = GetComponent<MeshFilter>();
+        terrainMap = new float[width + 1, height + 1, width + 1];
+        PopulateTerrainMap();
+        CreateMeshData();
+        BuildMesh();
     }
 
-    private void Update()
+    void CreateMeshData()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        for (int x = 0; x < width; x++)
         {
-            configIndex++;
-            ClearMeshData();
-            MarchCube(Vector3.zero, configIndex);
-            BuildMesh();
+            for (int y = 0; y < height; y++)
+            {
+                for (int z = 0; z < width; z++)
+                {
+                    float[] cube = new float[8];
+                    for (int i = 0; i < 8; i++)
+                    {
+                        Vector3Int corner = new Vector3Int(x, y, z) + MarchingData.vertexTable[i];
+                        cube[i] = terrainMap[corner.x, corner.y, corner.z];
+                    }
+
+                    MarchCube(new Vector3(x, y, z), cube);
+                }
+            }
         }
     }
 
-    void MarchCube(Vector3 position, int configIndex)
+    void PopulateTerrainMap()
     {
+        for (int x = 0; x < width + 1; x++)
+        {
+            for (int y = 0; y < height + 1; y++)
+            {
+                for (int z = 0; z < width + 1; z++)
+                {
+                    float thisHeight = (float)height * Mathf.PerlinNoise((float)x / 16f * 1.5f + 0.001f, (float)z / 16f * 1.5f + 0.001f);
+
+                    float point;
+
+                    if(y <= thisHeight - 0.5f)
+                    {
+                        point = 0f;
+                    }
+                    else if(y > thisHeight + 0.5f)
+                    {
+                        point = 1f;
+                    }
+                    else if(y > thisHeight)
+                    {
+                        point = (float)y - thisHeight;
+                    }
+                    else
+                    {
+                        point = thisHeight - (float)y;
+                    }
+
+                    terrainMap[x, y, z] = point;
+                }
+            }
+        }
+    }
+
+    int GetCubeConfiguration(float[] cube)
+    {
+        int configurationIndex = 0;
+        for (int i = 0; i < 8; i++)
+        {
+            if(cube[i] > terrainSurface)
+            {
+                configurationIndex |= 1 << i;
+            }
+        }
+
+        return configurationIndex;
+    }
+
+    void MarchCube(Vector3 position, float[] cube)
+    {
+        int configIndex = GetCubeConfiguration(cube);
+
         if (configIndex == 0 || configIndex == 255)
         {
             return;
