@@ -16,6 +16,8 @@ public class Marching : MonoBehaviour
     int width = 32;
     float[,,] terrainMap;
     public float frequency;
+    public bool smoothTerrain = false;
+    public bool flatShading = false;
 
     //Start function
     private void Start()
@@ -23,46 +25,10 @@ public class Marching : MonoBehaviour
         //Create arrays and get components
         meshFilter = GetComponent<MeshFilter>();
         terrainMap = new float[width + 1, height + 1, width + 1];
-        
-    }
-
-    //Update function, useful for live editing values
-    private void Update()
-    {
-        ClearMeshData();
         PopulateTerrainMap();
         CreateMeshData();
         BuildMesh();
-    }
-
-    //Function to create the mesh data from returned perlin noise
-    void CreateMeshData()
-    {
-        //For every point on x axis
-        for (int x = 0; x < width; x++)
-        {
-            //For every point on y axis
-            for (int y = 0; y < height; y++)
-            {
-                //For every point on z axis
-                for (int z = 0; z < width; z++)
-                {
-                    //Create cube array
-                    float[] cube = new float[8];
-                    //For every vertex in cube
-                    for (int i = 0; i < 8; i++)
-                    {
-                        //Get the vertex for this position
-                        Vector3Int corner = new Vector3Int(x, y, z) + MarchingData.vertexTable[i];
-                        //Generate cube data
-                        cube[i] = terrainMap[corner.x, corner.y, corner.z];
-                    }
-
-                    //March the cube
-                    MarchCube(new Vector3(x, y, z), cube);
-                }
-            }
-        }
+        
     }
 
     //Function to populate the terrain map array
@@ -87,6 +53,26 @@ public class Marching : MonoBehaviour
         }
     }
 
+    //Function to create the mesh data from returned perlin noise
+    void CreateMeshData()
+    {
+        //For every point on x axis
+        for (int x = 0; x < width; x++)
+        {
+            //For every point on y axis
+            for (int y = 0; y < height; y++)
+            {
+                //For every point on z axis
+                for (int z = 0; z < width; z++)
+                {
+                    //March the cube
+                    MarchCube(new Vector3Int(x, y, z));
+                }
+            }
+        }
+    }
+
+
     //Function to generate the triangle table index when given the cube data
     int GetCubeConfiguration(float[] cube)
     {
@@ -106,8 +92,16 @@ public class Marching : MonoBehaviour
     }
 
     //Function to march the cube
-    void MarchCube(Vector3 position, float[] cube)
+    void MarchCube(Vector3Int position)
     {
+        //Create cube array
+        float[] cube = new float[8];
+        //For every vertex in cube
+        for (int i = 0; i < 8; i++)
+        {
+            cube[i] = SampleTerrain(position + MarchingData.vertexTable[i]);
+        }
+
         //Get configuration index
         int configIndex = GetCubeConfiguration(cube);
 
@@ -138,15 +132,70 @@ public class Marching : MonoBehaviour
                 Vector3 vert1 = position + MarchingData.vertexTable[MarchingData.edgeTable[index, 0]];
                 Vector3 vert2 = position + MarchingData.vertexTable[MarchingData.edgeTable[index, 1]];
 
-                //Get vertex midpoint position from edge
-                Vector3 vertPosition = (vert1 + vert2) / 2f;
+                Vector3 vertPosition;
+                if (smoothTerrain)
+                {
+                    //Get the terrain values at either end of the edge
+                    float vert1Sample = cube[MarchingData.edgeTable[index, 0]];
+                    float vert2Sample = cube[MarchingData.edgeTable[index, 1]];
+
+                    //Calculate the difference between the two terrain values. 
+                    float difference = vert2Sample - vert1Sample;
+                    //If difference is 0, then the terrain passes through middle.
+                    if(difference == 0)
+                    {
+                        difference = terrainSurface;
+                    }
+                    else
+                    {
+                        difference = (terrainSurface - vert1Sample) / difference;
+                    }
+                    //Calculate the point along the edge that the terrain passes through.
+                    vertPosition = vert1 + ((vert2 - vert1) * difference);
+                }
+                else
+                {
+                    //Get vertex midpoint position from edge
+                    vertPosition = (vert1 + vert2) / 2f;
+
+                }
 
                 //Add generated data to mesh data lists
-                vertices.Add(vertPosition);
-                triangles.Add(vertices.Count - 1);
+                if (flatShading)
+                {
+                    vertices.Add(vertPosition);
+                    triangles.Add(vertices.Count - 1);
+
+                }
+                else
+                {
+                    triangles.Add(VertForIndex(vertPosition));
+                }
                 edgeIndex++;
             }
         }
+    }
+
+    float SampleTerrain(Vector3Int point)
+    {
+        return terrainMap[point.x, point.y, point.z];
+    }
+
+    int VertForIndex(Vector3 vert)
+    {
+        //Loop through all vertices currently in the vertices list.
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            //If a vert is found that matches passed in vert, return this index.
+            if(vertices[i] == vert)
+            {
+                return i;
+            }
+        }
+
+        //If not found, add to list and return its index
+        vertices.Add(vert);
+        return vertices.Count - 1;
     }
 
     //Function to clear mesh data lists
