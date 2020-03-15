@@ -50,6 +50,9 @@ public class GalaxyGenerator : MonoBehaviour
     public Mesh planetMesh;
     public Material planetMaterial;
 
+    public Mesh asteroidMesh;
+    public Material asteroidMaterial;
+
     [Header("Debug Settings: ")]
     public bool showDebugGizmos = false;
     //Lists for keeping track of positions
@@ -58,9 +61,10 @@ public class GalaxyGenerator : MonoBehaviour
     EntityManager entityManager;
     EntityArchetype starArchetype;
     EntityArchetype planetArchetype;
+    EntityArchetype asteroidArchetype;
 
     List<Entity> starEntities;
-    List<List<Entity>> planetEntities;
+    List<List<Entity>> celestialEntities;
 
     //When editor refreshes
     private void OnValidate()
@@ -70,7 +74,6 @@ public class GalaxyGenerator : MonoBehaviour
 
     private void Start()
     {
-        ClearMap();
         Generate();
     }
 
@@ -78,7 +81,6 @@ public class GalaxyGenerator : MonoBehaviour
     private void Update() {
         if (generateEveryFrame)
         {
-            ClearMap();
             Generate();
         }
     }
@@ -86,6 +88,9 @@ public class GalaxyGenerator : MonoBehaviour
     //Function to generate a Galaxy
     public void Generate()
     {
+        //Clear map before generating
+        ClearMap();
+
         //Checking values
         if (starSpawnRadius == 0)
         {
@@ -121,8 +126,17 @@ public class GalaxyGenerator : MonoBehaviour
                 typeof(PlanetData)
             );
 
+            asteroidArchetype = entityManager.CreateArchetype(
+                typeof(Translation),
+                typeof(Rotation),
+                typeof(RenderMesh),
+                typeof(LocalToWorld),
+                typeof(RenderBounds),
+                typeof(Scale)
+            );
+
             starEntities = new List<Entity>();
-            planetEntities = new List<List<Entity>>();
+            celestialEntities = new List<List<Entity>>();
 
             //Stars within each galaxy offset to fit within galaxy boundaries.
             //For each galaxy
@@ -149,6 +163,7 @@ public class GalaxyGenerator : MonoBehaviour
     {
         //Entity creation and placement
         Entity starEntity = entityManager.CreateEntity(starArchetype);
+        entityManager.SetName(starEntity, "Star");
 
         //Set position
         entityManager.SetComponentData(starEntity, new Translation
@@ -185,7 +200,7 @@ public class GalaxyGenerator : MonoBehaviour
 
         List<Entity> celestials = GenerateCelestials(starEntity); //TODO: Do something with array, store for later destruction
 
-        planetEntities.Add(celestials);
+        celestialEntities.Add(celestials);
 
         
         return starEntity;
@@ -200,18 +215,17 @@ public class GalaxyGenerator : MonoBehaviour
         StarData starData = entityManager.GetComponentData<StarData>(star);
 
         int terrestrialPlanetCount = UnityEngine.Random.Range(0, 5);
-        int asteroidBeltGeneration = UnityEngine.Random.Range(0, 2);
+        int asteroidBeltGeneration = UnityEngine.Random.Range(0, 100);
 
         bool hasAsteroidBelt = false;
-        if(asteroidBeltGeneration == 1)
+
+        if(asteroidBeltGeneration >= 50)
         {
             hasAsteroidBelt = true;
         }
 
         int gasGiantPlanetCount = UnityEngine.Random.Range(0, 3);
         int iceGiantPlanetCount = UnityEngine.Random.Range(0, 2);
-
-        List<Entity> celestialList = new List<Entity>();
 
         //Celestial generation rules:
         //  As you move away from the star:
@@ -228,11 +242,25 @@ public class GalaxyGenerator : MonoBehaviour
 
         //Debug.Log("StarType = " + starData.starType + ", Size = " + starData.starSize);
 
-        List<Entity> terrestrialPlanets = GenerateTerrestrialPlanets(terrestrialPlanetCount, starPosition, starData.starSize);
+        //Celestial Entity List Generation
+        List<Entity> celestialList = new List<Entity>();
 
+        //Terrestrial Planets
+        List<Entity> terrestrialPlanets = GenerateTerrestrialPlanets(terrestrialPlanetCount, starPosition, starData.starSize);
         for (int i = 0; i < terrestrialPlanets.Count; i++)
         {
             celestialList.Add(terrestrialPlanets[i]);
+        }
+
+        //Asteroid Belt between terrestrial and ice giants
+        List<Entity> asteroidBelt = new List<Entity>();
+        if (hasAsteroidBelt)
+        {
+            asteroidBelt = GenerateAsteroidBelt(starPosition);
+            for (int i = 0; i < asteroidBelt.Count; i++)
+            {
+                celestialList.Add(asteroidBelt[i]);
+            }
         }
 
         return celestialList;
@@ -250,6 +278,7 @@ public class GalaxyGenerator : MonoBehaviour
 
         for (int i = 0; i < terrestrialPlanetCount; i++)
         {
+            //Distance Calculation
             distance *= (terrestrialBaseDistanceMultiplier + UnityEngine.Random.Range(-terrestrialDistanceUncertainty / 2, terrestrialDistanceUncertainty));
             float3 planetPosition = new float3(starPosition.x + distance, starPosition.y, starPosition.z);
             float distanceFromStar = math.distance(starPosition, planetPosition);
@@ -272,28 +301,63 @@ public class GalaxyGenerator : MonoBehaviour
         return terrestrialPlanets;
     }
 
-    //Function to return the planet's surface temperature when given information about the planet
-    public float GetPlanetSurfaceTemperature(float size, float distanceFromStar, float albedo, float greenhouse)
+    public List<Entity> GenerateAsteroidBelt(float3 starPosition)
     {
-        float pi = math.PI;
-        float sigma = 5.6703f * math.pow(10, -5);
-        float L = 3.846f * math.pow(10, 33) * math.pow(size, 3);
-        float D = distanceFromStar * 1.496f * math.pow(10, 13);
-        float A = albedo / 100;
-        float T = greenhouse * 0.5841f;
-        float X = math.sqrt((1 - A) * L / (16 * pi * sigma));
-        float T_eff = math.sqrt(X) * (1 / math.sqrt(D));
-        float T_eq = (math.pow(T_eff, 4)) * (1 + (3 * T / 4));
-        float T_sur = T_eq / 0.9f;
-        float T_kel = math.sqrt(math.sqrt(T_sur));
-        T_kel = math.round(T_kel);
-        return T_kel + 250;
+        List<Entity> asteroidBelt = new List<Entity>();
+
+        //Generate asteroid positions
+        //TODO: Generate proper values randomly for asteroid belt, such as width etc.
+
+        Vector2 beltSize = new Vector2(50, 50);
+
+        List<Vector2> asteroidPositions = PoissonDiscSampler.GenerateSingleSample(2.5f, new Vector2(starPosition.x, starPosition.z), beltSize, true, 20, 24, 30);
+
+        
+
+        for (int i = 0; i < asteroidPositions.Count; i++)
+        {
+
+            float3 asteroidPosition = new float3(asteroidPositions[i].x, 0, asteroidPositions[i].y) - (new float3(beltSize.x, 0, beltSize.y) / 2);
+
+
+            //Entity creation and placement
+            Entity asteroidEntity = entityManager.CreateEntity(asteroidArchetype);
+            entityManager.SetName(asteroidEntity, "Asteroid");
+
+            //Set position
+            entityManager.SetComponentData(asteroidEntity, new Translation
+            {
+                Value = asteroidPosition,
+            });
+
+            //Set render settings
+            entityManager.SetSharedComponentData(asteroidEntity, new RenderMesh
+            {
+                mesh = asteroidMesh,
+                material = asteroidMaterial,
+                castShadows = UnityEngine.Rendering.ShadowCastingMode.On
+            });
+
+            float asteroidSize = UnityEngine.Random.Range(0.1f, 1.0f);
+
+            //Set scale
+            entityManager.SetComponentData(asteroidEntity, new Scale
+            {
+                Value = asteroidSize
+            });
+            asteroidBelt.Add(asteroidEntity);
+        }
+
+
+        return asteroidBelt;
     }
 
+    //Function to generate a planet entity when given all relevant data
     public Entity GeneratePlanetEntity(float3 planetPosition, float distanceFromStar, float temperature, float albedo, float greenhouseEffect)
     {
         //Entity creation and placement
         Entity planetEntity = entityManager.CreateEntity(planetArchetype);
+        entityManager.SetName(planetEntity, "Planet");
 
         //Set position
         entityManager.SetComponentData(planetEntity, new Translation
@@ -333,32 +397,60 @@ public class GalaxyGenerator : MonoBehaviour
         return planetEntity;
     }
 
+    //Function to return the planet's surface temperature when given information about the planet
+    public float GetPlanetSurfaceTemperature(float size, float distanceFromStar, float albedo, float greenhouse)
+    {
+        float pi = math.PI;
+        float sigma = 5.6703f * math.pow(10, -5);
+        float L = 3.846f * math.pow(10, 33) * math.pow(size, 3);
+        float D = distanceFromStar * 1.496f * math.pow(10, 13);
+        float A = albedo / 100;
+        float T = greenhouse * 0.5841f;
+        float X = math.sqrt((1 - A) * L / (16 * pi * sigma));
+        float T_eff = math.sqrt(X) * (1 / math.sqrt(D));
+        float T_eq = (math.pow(T_eff, 4)) * (1 + (3 * T / 4));
+        float T_sur = T_eq / 0.9f;
+        float T_kel = math.sqrt(math.sqrt(T_sur));
+        T_kel = math.round(T_kel);
+        return T_kel + 250;
+    }
+
     //Function to remove all entities in the star entities array
     public void ClearMap()
     {
         if (Application.isPlaying)
         {
-            //For every star
-            for (int i = 0; i < starEntities.Count; i++)
+            if (starEntities != null)
             {
-                //Destroy star entity
-                entityManager.DestroyEntity(starEntities[i]);
-            }
-            //For every star/planet
-            for (int i = 0; i < planetEntities.Count; i++)
-            {
-                //For every planet
-                for (int j = 0; j < planetEntities[i].Count; j++)
+
+                //For every star
+                for (int i = 0; i < starEntities.Count; i++)
                 {
-                    //Destroy planet entity
-                    entityManager.DestroyEntity(planetEntities[i][j]);
+                    //Destroy star entity
+                    entityManager.DestroyEntity(starEntities[i]);
                 }
             }
+
+            if (celestialEntities != null)
+            {
+                //For every star/planet
+                for (int i = 0; i < celestialEntities.Count; i++)
+                {
+                    //For every planet
+                    for (int j = 0; j < celestialEntities[i].Count; j++)
+                    {
+                        //Destroy planet entity
+                        entityManager.DestroyEntity(celestialEntities[i][j]);
+                    }
+                }
+            }
+
+            
         }
 
         //Reinit lists
         starEntities = new List<Entity>();
-        planetEntities = new List<List<Entity>>();
+        celestialEntities = new List<List<Entity>>();
     }
     //Draw debug symbols for now until entity system created that handles Galaxy generation
     private void OnDrawGizmos()
