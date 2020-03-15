@@ -99,14 +99,14 @@ public class GalaxyGenerator : MonoBehaviour
 
         //Generate star positions
         starPositions = PoissonDiscSampler.GenerateSingleSample(starSpawnRadius, new Vector2(), galaxySize, true, galaxyInnerRadius, galaxyOuterRadius, galaxyRejectionSamples);
-
         Debug.Log("Generation Count: " + starPositions.Count);
 
         //If in play mode
         if (Application.isPlaying)
         {
-            //Entity initialisation
+            //Entity manager initialisation
             entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+            //Star archetype
             starArchetype = entityManager.CreateArchetype(
                 typeof(Translation),
                 typeof(RenderMesh),
@@ -115,7 +115,7 @@ public class GalaxyGenerator : MonoBehaviour
                 typeof(Scale),
                 typeof(StarData)
             );
-
+            //Planet archetype
             planetArchetype = entityManager.CreateArchetype(
                 typeof(Translation),
                 typeof(Rotation),
@@ -125,7 +125,7 @@ public class GalaxyGenerator : MonoBehaviour
                 typeof(Scale),
                 typeof(PlanetData)
             );
-
+            //Asteroid archetype
             asteroidArchetype = entityManager.CreateArchetype(
                 typeof(Translation),
                 typeof(Rotation),
@@ -135,97 +135,110 @@ public class GalaxyGenerator : MonoBehaviour
                 typeof(Scale)
             );
 
+            //List creation
             starEntities = new List<Entity>();
             celestialEntities = new List<List<Entity>>();
 
-            //Stars within each galaxy offset to fit within galaxy boundaries.
-            //For each galaxy
-            for (int i = 0; i < starPositions.Count; i++)
+            //Generate galaxy entities
+            if (Application.isPlaying)
             {
-                //Get star
-                Vector2 star = starPositions[i];
-                //Reassign star into array
-                starPositions[i] = star;
-
-                if (Application.isPlaying)
-                {
-                    Entity starEntity = GenerateStarEntity(i);
-
-                    //Add sublist to entire list.
-                    starEntities.Add(starEntity);
-                }
+                starEntities = GenerateStarEntities(starPositions);
             }
         }
     }
 
     //Function to generate star entity data
-    private Entity GenerateStarEntity(int i)
+    private List<Entity> GenerateStarEntities(List<Vector2> starPositions)
     {
-        //Entity creation and placement
-        Entity starEntity = entityManager.CreateEntity(starArchetype);
-        entityManager.SetName(starEntity, "Star");
+        //Create list of star entities
+        List<Entity> starEntities = new List<Entity>();
 
-        //Set position
-        entityManager.SetComponentData(starEntity, new Translation
+        //For every star position
+        for (int i = 0; i < starPositions.Count; i++)
         {
-            Value = new Vector3(starPositions[i].x, 0, starPositions[i].y)
-        });
+            //Entity creation and placement
+            Entity starEntity = entityManager.CreateEntity(starArchetype);
+            entityManager.SetName(starEntity, "Star");
 
-        //Set render settings
-        entityManager.SetSharedComponentData(starEntity, new RenderMesh
-        {
-            mesh = starMesh,
-            material = starMaterial,
-            castShadows = UnityEngine.Rendering.ShadowCastingMode.On
-        });
+            //Set position
+            entityManager.SetComponentData(starEntity, new Translation
+            {
+                Value = new Vector3(starPositions[i].x, 0, starPositions[i].y)
+            });
 
-        //Generate star scale
-        float starScale = UnityEngine.Random.Range(0.1f, 1.0f);
+            //Set render settings
+            entityManager.SetSharedComponentData(starEntity, new RenderMesh
+            {
+                mesh = starMesh,
+                material = starMaterial,
+                castShadows = UnityEngine.Rendering.ShadowCastingMode.On
+            });
 
-        //Set scale
-        entityManager.SetComponentData(starEntity, new Scale
-        {
-            Value = starScale
-        });
+            //Generate star scale
+            float starScale = UnityEngine.Random.Range(0.1f, 1.0f);
 
-        //Generate star data
-        StarData data = GalaxyData.CreateStarData(starScale);
+            //Set scale
+            entityManager.SetComponentData(starEntity, new Scale
+            {
+                Value = starScale
+            });
 
-        //Set stardata field
-        entityManager.SetComponentData(starEntity, new StarData
-        {
-            starSize = data.starSize,
-            starType = data.starType,
-        });
+            //Generate star data
+            StarData data = GalaxyData.CreateStarData(starScale);
 
-        List<Entity> celestials = GenerateCelestials(starEntity); //TODO: Do something with array, store for later destruction
+            //Set stardata field
+            entityManager.SetComponentData(starEntity, new StarData
+            {
+                starSize = data.starSize,
+                starType = data.starType,
+            });
 
-        celestialEntities.Add(celestials);
+            //Add star entity to list
+            starEntities.Add(starEntity);
+        }
 
+        //Create celestials and add to global array for later destruction / management
+        celestialEntities.Add(GenerateCelestials(starEntities));
         
-        return starEntity;
+        //Return entity list
+        return starEntities;
     }
 
     //Function that will be run on all stars to generate their orbiting celestial objects such as planets and asteroids
-    private List<Entity> GenerateCelestials(Entity star)
+    private List<Entity> GenerateCelestials(List<Entity> stars)
     {
-        Translation transform = entityManager.GetComponentData<Translation>(star);
-        float3 starPosition = transform.Value;
+        //List initialisation
+        List<float3> starPositions = new List<float3>();
+        List<float> starSizes = new List<float>();
+        List<int> terrestrialPlanetCounts = new List<int>();
+        List<bool> asteroidBeltStatus = new List<bool>();
+        List<int> gasGiantPlanetCounts = new List<int>();
+        List<int> iceGiantPlanetCounts = new List<int>();
 
-        StarData starData = entityManager.GetComponentData<StarData>(star);
-
-        int terrestrialPlanetCount = UnityEngine.Random.Range(0, 5);
-        int asteroidBeltGeneration = UnityEngine.Random.Range(0, 100);
-
-        bool hasAsteroidBelt = false;
-
-        if(asteroidBeltGeneration >= 50)
+        for (int i = 0; i < stars.Count; i++)
         {
-            hasAsteroidBelt = true;
-        }
+            //Get position and add to array
+            Translation transform = entityManager.GetComponentData<Translation>(stars[i]);
+            starPositions.Add(transform.Value);
 
-        int gasGiantPlanetCount = UnityEngine.Random.Range(0, 3);
-        int iceGiantPlanetCount = UnityEngine.Random.Range(0, 2);
+            StarData starData = entityManager.GetComponentData<StarData>(stars[i]);
+            starSizes.Add(starData.starSize);
+
+            //Generates terrestial planet count
+            terrestrialPlanetCounts.Add(UnityEngine.Random.Range(0, 5));
+
+            //Asteroid belt generation chooser
+            int asteroidBeltGeneration = UnityEngine.Random.Range(0, 100);
+            bool hasAsteroidBelt = false;
+            if(asteroidBeltGeneration >= 50)
+            {
+                hasAsteroidBelt = true;
+            }
+            asteroidBeltStatus.Add(hasAsteroidBelt);
+
+            gasGiantPlanetCounts.Add(UnityEngine.Random.Range(0, 3));
+            iceGiantPlanetCounts.Add(UnityEngine.Random.Range(0, 2));
+        }
 
         //Celestial generation rules:
         //  As you move away from the star:
@@ -240,26 +253,40 @@ public class GalaxyGenerator : MonoBehaviour
         //      Planets rotate anticlockwise
         //      Asteroid belts are very wide, but not very tall 
 
-        //Debug.Log("StarType = " + starData.starType + ", Size = " + starData.starSize);
-
         //Celestial Entity List Generation
         List<Entity> celestialList = new List<Entity>();
 
         //Terrestrial Planets
-        List<Entity> terrestrialPlanets = GenerateTerrestrialPlanets(terrestrialPlanetCount, starPosition, starData.starSize);
-        for (int i = 0; i < terrestrialPlanets.Count; i++)
+        for (int i = 0; i < terrestrialPlanetCounts.Count; i++)
         {
-            celestialList.Add(terrestrialPlanets[i]);
+            List<Entity> terrestrialPlanets = GenerateTerrestrialPlanets(terrestrialPlanetCounts[i], starPositions[i], starSizes[i]);
+            for (int j = 0; j < terrestrialPlanets.Count; j++)
+            {
+                celestialList.Add(terrestrialPlanets[j]);
+            }
         }
 
         //Asteroid Belt between terrestrial and ice giants
-        List<Entity> asteroidBelt = new List<Entity>();
-        if (hasAsteroidBelt)
+        List<List<Entity>> asteroidBelts = new List<List<Entity>>();
+        List<float3> beltStarPositions = new List<float3>();
+
+        for (int i = 0; i < asteroidBeltStatus.Count; i++)
         {
-            asteroidBelt = GenerateAsteroidBelt(starPosition);
-            for (int i = 0; i < asteroidBelt.Count; i++)
+            //If has an asteroid belt
+            if (asteroidBeltStatus[i] == true)
             {
-                celestialList.Add(asteroidBelt[i]);
+                beltStarPositions.Add(starPositions[i]);
+            }
+        }
+
+        asteroidBelts = GenerateAsteroidBelt(beltStarPositions);
+
+
+        for (int i = 0; i < asteroidBelts.Count; i++)
+        {
+            for (int j = 0; j < asteroidBelts[i].Count; j++)
+            {
+                celestialList.Add(asteroidBelts[i][j]);
             }
         }
 
@@ -301,55 +328,71 @@ public class GalaxyGenerator : MonoBehaviour
         return terrestrialPlanets;
     }
 
-    public List<Entity> GenerateAsteroidBelt(float3 starPosition)
+    public List<List<Entity>> GenerateAsteroidBelt(List<float3> starPositions)
     {
-        List<Entity> asteroidBelt = new List<Entity>();
+        List<List<Entity>> asteroidBelts = new List<List<Entity>>();
 
-        //Generate asteroid positions
-        //TODO: Generate proper values randomly for asteroid belt, such as width etc.
-
-        Vector2 beltSize = new Vector2(50, 50);
-
-        List<Vector2> asteroidPositions = PoissonDiscSampler.GenerateSingleSample(2.5f, new Vector2(starPosition.x, starPosition.z), beltSize, true, 20, 24, 30);
-
-        
-
-        for (int i = 0; i < asteroidPositions.Count; i++)
+        //Generate asteroid data for poisson sampler
+        Vector2[] positions = new Vector2[starPositions.Count];
+        Vector2[] beltSizes = new Vector2[starPositions.Count];
+        float[] radii = new float[starPositions.Count];
+        for (int i = 0; i < starPositions.Count; i++)
         {
-
-            float3 asteroidPosition = new float3(asteroidPositions[i].x, 0, asteroidPositions[i].y) - (new float3(beltSize.x, 0, beltSize.y) / 2);
-
-
-            //Entity creation and placement
-            Entity asteroidEntity = entityManager.CreateEntity(asteroidArchetype);
-            entityManager.SetName(asteroidEntity, "Asteroid");
-
-            //Set position
-            entityManager.SetComponentData(asteroidEntity, new Translation
-            {
-                Value = asteroidPosition,
-            });
-
-            //Set render settings
-            entityManager.SetSharedComponentData(asteroidEntity, new RenderMesh
-            {
-                mesh = asteroidMesh,
-                material = asteroidMaterial,
-                castShadows = UnityEngine.Rendering.ShadowCastingMode.On
-            });
-
-            float asteroidSize = UnityEngine.Random.Range(0.1f, 1.0f);
-
-            //Set scale
-            entityManager.SetComponentData(asteroidEntity, new Scale
-            {
-                Value = asteroidSize
-            });
-            asteroidBelt.Add(asteroidEntity);
+            //Fill arrays
+            positions[i] = new Vector2(starPositions[i].x, starPositions[i].z);
+            float beltSize = UnityEngine.Random.Range(45f, 50f);
+            beltSizes[i] = new Vector2(beltSize, beltSize);
+            radii[i] = UnityEngine.Random.Range(1.5f, 3.5f);
         }
 
+        //Poisson sampler
+        List<List<Vector2>> asteroidPositions = PoissonDiscSampler.GenerateMultiSample(radii, positions, beltSizes, true, 20, 24, 30);
+        
+        //For every star
+        for (int i = 0; i < asteroidPositions.Count; i++)
+        {
+            //Sub list creation
+            List<Entity> asteroidBeltForStar = new List<Entity>();
+            //For every asteroid in orbit of that star
+            for (int j = 0; j < asteroidPositions[i].Count; j++)
+            {
+                //Get asteroid position
+                float3 asteroidPosition = new float3(asteroidPositions[i][j].x, 0, asteroidPositions[i][j].y) - (new float3(beltSizes[i].x, 0, beltSizes[i].y) / 2);
 
-        return asteroidBelt;
+                //Entity creation and placement
+                Entity asteroidEntity = entityManager.CreateEntity(asteroidArchetype);
+                entityManager.SetName(asteroidEntity, "Asteroid");
+
+                //Set position
+                entityManager.SetComponentData(asteroidEntity, new Translation
+                {
+                    Value = asteroidPosition,
+                });
+
+                //Set render settings
+                entityManager.SetSharedComponentData(asteroidEntity, new RenderMesh
+                {
+                    mesh = asteroidMesh,
+                    material = asteroidMaterial,
+                    castShadows = UnityEngine.Rendering.ShadowCastingMode.On
+                });
+
+                float asteroidSize = UnityEngine.Random.Range(0.1f, 1.0f);
+
+                //Set scale
+                entityManager.SetComponentData(asteroidEntity, new Scale
+                {
+                    Value = asteroidSize
+                });
+
+                //Add to sublist
+                asteroidBeltForStar.Add(asteroidEntity);
+            }
+            //Add to main list
+            asteroidBelts.Add(asteroidBeltForStar);
+        }
+
+        return asteroidBelts;
     }
 
     //Function to generate a planet entity when given all relevant data
@@ -394,6 +437,7 @@ public class GalaxyGenerator : MonoBehaviour
             planetRotationSpeed = UnityEngine.Random.Range(1.0f, 250.0f),
             planetOrbitTime = distanceFromStar * 40,
         });
+        //Return the planet entity
         return planetEntity;
     }
 

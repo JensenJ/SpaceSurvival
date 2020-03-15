@@ -265,11 +265,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb587f5d5cd315141b05345d1924e71d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  starSpawnRadius: 40
+  starSpawnRadius: 50
   galaxySize: {x: 1000, y: 1000}
   galaxyRejectionSamples: 30
   starDisplayRadius: 0.5
-  galaxyInnerRadius: 200
+  galaxyInnerRadius: 100
   galaxyOuterRadius: 480
   generateEveryFrame: 0
   starMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
