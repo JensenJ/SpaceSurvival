@@ -267,7 +267,6 @@ public class GalaxyGenerator : MonoBehaviour
         }
 
         //Asteroid Belt between terrestrial and ice giants
-        List<List<Entity>> asteroidBelts = new List<List<Entity>>();
         List<float3> beltStarPositions = new List<float3>();
 
         for (int i = 0; i < asteroidBeltStatus.Count; i++)
@@ -275,13 +274,16 @@ public class GalaxyGenerator : MonoBehaviour
             //If has an asteroid belt
             if (asteroidBeltStatus[i] == true)
             {
+                //Add to belt star positions
                 beltStarPositions.Add(starPositions[i]);
             }
         }
 
-        asteroidBelts = GenerateAsteroidBelt(beltStarPositions);
+        //Generate asteroid belt entities
+        List<List<Entity>> asteroidBelts = GenerateAsteroidBelt(beltStarPositions);
 
 
+        //Add asteroid belt entities to the celestial list
         for (int i = 0; i < asteroidBelts.Count; i++)
         {
             for (int j = 0; j < asteroidBelts[i].Count; j++)
