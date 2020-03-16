@@ -3,37 +3,62 @@ using System.Collections.Generic;
 using UnityEngine;
 
 //A class to generate a mesh from cube data
-public class Marching : MonoBehaviour
+public class Chunk
 {
     //Mesh data
     List<Vector3> vertices = new List<Vector3>();
     List<int> triangles = new List<int>();
+
+    public GameObject chunkObject;
     MeshFilter meshFilter;
     MeshCollider meshCollider;
+    MeshRenderer meshRenderer;
 
     //Terrain variables
     float terrainSurface = 0.5f;
-    int height = 8;
-    int width = 16;
+
+    int width { get { return MarchingData.ChunkWidth;}}
+    int height {get {return MarchingData.ChunkHeight;}}
+    float terrainHeight {get {return MarchingData.terrainSurface;}}
+    
     float[,,] terrainMap;
+
     public float frequency;
-    public bool smoothTerrain = false;
-    public bool flatShading = false;
+
+    bool smoothTerrain = false;
+    bool flatShading = true;
+
+    public Vector3Int chunkPosition;
 
     //Start function
     private void Start()
     {
-        //Create arrays and get components
-        meshFilter = GetComponent<MeshFilter>();
-        meshCollider = GetComponent<MeshCollider>();
-        transform.tag = "Terrain";
+    
+    }
 
-        float time = Time.time;
+    public Chunk(Vector3Int position, float _frequency, bool _smoothTerrain)
+    {
+        chunkObject = new GameObject();
+        chunkPosition = position;
+        chunkObject.transform.position = chunkPosition;
+        chunkObject.name = string.Format("Chunk {0}, {1}", position.x, position.z);
+
+        frequency = _frequency;
+        smoothTerrain = _smoothTerrain;
+        flatShading = !_smoothTerrain;
+
+        //Create arrays and get components
+        meshFilter = chunkObject.AddComponent<MeshFilter>();
+        meshCollider = chunkObject.AddComponent<MeshCollider>();
+        meshRenderer = chunkObject.AddComponent<MeshRenderer>();
+        meshRenderer.material = Resources.Load<Material>("Materials/Terrain");
+        chunkObject.transform.tag = "Terrain";
+
         terrainMap = new float[width + 1, height + 1, width + 1];
         PopulateTerrainMap();
         CreateMeshData();
         BuildMesh();
-        Debug.Log("Generation:" + (Time.time - time) * 1000 + "ms");
+        
     }
 
     //Function to populate the terrain map array
@@ -48,14 +73,9 @@ public class Marching : MonoBehaviour
                 //For every point on z axis
                 for (int z = 0; z < width + 1; z++)
                 {
+
                     //Height generation using a noise function
-                    float thisHeight = (float)height * Mathf.PerlinNoise((float)x * (frequency / 1000f), (float)z * (frequency / 1000f));
-
-                    if(x > 5 && x < 15 && z > 5 && z < 15)
-                    {
-                        thisHeight = 1f;
-                    }
-
+                    float thisHeight = MarchingData.GetTerrainHeight(x + chunkPosition.x, z + chunkPosition.z);
 
                     //Assign height into array
                     terrainMap[x, y, z] = (float)y - thisHeight;

@@ -23,7 +23,7 @@ public class TerrainManipulator : MonoBehaviour
                 if(hit.transform.tag == "Terrain")
                 {
                     Debug.Log("Terrain place: " + hit.point);
-                    hit.transform.GetComponent<Marching>().PlaceTerrain(hit.point);
+                    hit.transform.GetComponent<Chunk>().PlaceTerrain(hit.point);
                 }
             }
         }
@@ -38,7 +38,7 @@ public class TerrainManipulator : MonoBehaviour
                 if (hit.transform.tag == "Terrain")
                 {
                     Debug.Log("Terrain remove: " + hit.point);
-                    hit.transform.GetComponent<Marching>().RemoveTerrain(hit.point);
+                    hit.transform.GetComponent<Chunk>().RemoveTerrain(hit.point);
                 }
             }
         }

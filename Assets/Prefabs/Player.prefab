@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 1141354017866550298}
   - component: {fileID: 393158083066463405}
   - component: {fileID: 8194469761053062123}
-  - component: {fileID: 3844144383165091063}
   m_Layer: 9
   m_Name: Player
   m_TagString: Player
@@ -83,23 +82,11 @@ MonoBehaviour:
   speed: 5
   sprintSpeed: 7
   sensitivity: 3
-  jumpForce: 2
+  jumpForce: 5
   baseSpeed: 5
   baseSprintSpeed: 7
   staminaDrainSpeed: 2.5
   staminaRegenSpeed: 1.25
---- !u!114 &3844144383165091063
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1141354017866550279}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2dc8a85a547fa8f41b10f72d484d4924, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1141354019429747489
 GameObject:
   m_ObjectHideFlags: 0
