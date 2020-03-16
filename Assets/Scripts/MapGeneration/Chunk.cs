@@ -8,6 +8,7 @@ public class Chunk
     //Mesh data
     List<Vector3> vertices = new List<Vector3>();
     List<int> triangles = new List<int>();
+    List<Vector2> uvs = new List<Vector2>();
 
     public GameObject chunkObject;
     MeshFilter meshFilter;
@@ -30,12 +31,6 @@ public class Chunk
 
     public Vector3Int chunkPosition;
 
-    //Start function
-    private void Start()
-    {
-    
-    }
-
     public Chunk(Vector3Int position, float _frequency, bool _smoothTerrain)
     {
         chunkObject = new GameObject();
@@ -55,10 +50,7 @@ public class Chunk
         chunkObject.transform.tag = "Terrain";
 
         terrainMap = new float[width + 1, height + 1, width + 1];
-        PopulateTerrainMap();
         CreateMeshData();
-        BuildMesh();
-        
     }
 
     //Function to populate the terrain map array
@@ -74,9 +66,14 @@ public class Chunk
                 for (int z = 0; z < width + 1; z++)
                 {
 
-                    //Height generation using a noise function
-                    float thisHeight = MarchingData.GetTerrainHeight(x + chunkPosition.x, z + chunkPosition.z);
 
+                    //Height generation using a noise function
+                    float thisHeight = MarchingData.GetTerrainHeight(x + chunkPosition.x, z + chunkPosition.z, frequency);
+
+                    if(x > 5 && x < 11 && z > 5 && z < 11)
+                    {
+                        thisHeight = MarchingData.BaseTerrainHeight;
+                    }
                     //Assign height into array
                     terrainMap[x, y, z] = (float)y - thisHeight;
                 }
@@ -87,6 +84,8 @@ public class Chunk
     //Function to create the mesh data from returned perlin noise
     void CreateMeshData()
     {
+        PopulateTerrainMap();
+        ClearMeshData();
         //For every point on x axis
         for (int x = 0; x < width; x++)
         {
@@ -101,6 +100,7 @@ public class Chunk
                 }
             }
         }
+        BuildMesh();
     }
 
 
@@ -205,6 +205,15 @@ public class Chunk
                 edgeIndex++;
             }
         }
+
+        //UVs
+        for (int z = 0; z < width; z++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                uvs.Add(new Vector2((float)x / width, (float)z / width));
+            }
+        }
     }
 
     public void PlaceTerrain(Vector3 pos)
@@ -262,6 +271,7 @@ public class Chunk
         Mesh mesh = new Mesh();
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
+        mesh.uv = uvs.ToArray();
         mesh.RecalculateNormals();
         mesh.name = "Terrain";
         meshFilter.mesh = mesh;

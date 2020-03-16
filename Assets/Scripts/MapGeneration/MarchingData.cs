@@ -9,12 +9,11 @@ public static class MarchingData
     public static float terrainSurface = 0.5f;
     public static int ChunkWidth = 16;
     public static int ChunkHeight = 256;
-    public static float frequency = 85;
 
     public static float BaseTerrainHeight = 60.0f; //Minimum height of terrain, sea level.
     public static float TerrainHeightRange = 10.0f; // The max height, above baseterrainheight.
 
-    public static float GetTerrainHeight(int x, int z)
+    public static float GetTerrainHeight(int x, int z, float frequency)
     {
         return (float)TerrainHeightRange * Mathf.PerlinNoise((float)x * (frequency / 1000f), (float)z * (frequency / 1000f)) + BaseTerrainHeight;
     }

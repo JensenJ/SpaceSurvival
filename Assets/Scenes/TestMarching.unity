@@ -243,8 +243,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   worldSizeInChunks: 5
-  frequency: 85
-  smoothTerrain: 1
+  frequency: 30
+  smoothTerrain: 0
 --- !u!4 &702832552
 Transform:
   m_ObjectHideFlags: 0
