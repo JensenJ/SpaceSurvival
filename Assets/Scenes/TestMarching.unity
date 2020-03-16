@@ -362,8 +362,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   frequency: 85
-  smoothTerrain: 1
-  flatShading: 0
+  smoothTerrain: 0
+  flatShading: 1
 --- !u!4 &1606278911
 Transform:
   m_ObjectHideFlags: 0

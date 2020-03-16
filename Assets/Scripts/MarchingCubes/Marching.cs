@@ -14,7 +14,7 @@ public class Marching : MonoBehaviour
     //Terrain variables
     float terrainSurface = 0.5f;
     int height = 8;
-    int width = 32;
+    int width = 16;
     float[,,] terrainMap;
     public float frequency;
     public bool smoothTerrain = false;
@@ -27,11 +27,13 @@ public class Marching : MonoBehaviour
         meshFilter = GetComponent<MeshFilter>();
         meshCollider = GetComponent<MeshCollider>();
         transform.tag = "Terrain";
+
+        float time = Time.time;
         terrainMap = new float[width + 1, height + 1, width + 1];
         PopulateTerrainMap();
         CreateMeshData();
         BuildMesh();
-        
+        Debug.Log("Generation:" + (Time.time - time) * 1000 + "ms");
     }
 
     //Function to populate the terrain map array
@@ -48,6 +50,12 @@ public class Marching : MonoBehaviour
                 {
                     //Height generation using a noise function
                     float thisHeight = (float)height * Mathf.PerlinNoise((float)x * (frequency / 1000f), (float)z * (frequency / 1000f));
+
+                    if(x > 5 && x < 15 && z > 5 && z < 15)
+                    {
+                        thisHeight = 1f;
+                    }
+
 
                     //Assign height into array
                     terrainMap[x, y, z] = (float)y - thisHeight;
