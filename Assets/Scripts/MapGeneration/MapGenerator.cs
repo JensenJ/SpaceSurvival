@@ -11,8 +11,6 @@ public class MapGenerator : MonoBehaviour
     [SerializeField] float frequency = 85;
 
     Dictionary<Vector3Int, Chunk> chunks = new Dictionary<Vector3Int, Chunk>();
-    List<Vector3Int> chunkPositions = new List<Vector3Int>();
-    bool hasGenerated = false;
 
     // Start is called before the first frame update
     void Start()
@@ -22,10 +20,7 @@ public class MapGenerator : MonoBehaviour
 
     private void Update()
     {
-        if(hasGenerated == false)
-        {
-            GenerateChunkHeights();
-        }
+        GenerateChunkHeights();
     }
 
     void Generate()
@@ -37,29 +32,22 @@ public class MapGenerator : MonoBehaviour
             {
                 //Array creation
                 Vector3Int chunkPos = new Vector3Int(x * MarchingData.ChunkWidth, 0, z * MarchingData.ChunkWidth);
-                chunkPositions.Add(chunkPos);
                 chunks.Add(chunkPos, new Chunk(chunkPos, frequency));
                 chunks[chunkPos].chunkObject.transform.SetParent(transform);
             }
         }
 
-        //GenerateChunkHeights();
+        GenerateChunkHeights();
     }
 
     void GenerateChunkHeights()
     {
         //Create list for height gen jobs
-        NativeList<JobHandle> heightGenJobs = new NativeList<JobHandle>(Allocator.Persistent);
-        NativeArray<float> allHeights;
-        NativeList<float2> chunkOffsets = new NativeList<float2>(Allocator.Persistent);
+        NativeList<JobHandle> heightGenJobs = new NativeList<JobHandle>(Allocator.Temp);
+        List<NativeList<float>> allHeights = new List<NativeList<float>>();
 
-        for (int i = 0; i < chunkPositions.Count; i++)
-        {
-            chunkOffsets.Add(new float2(chunkPositions[i].x, chunkPositions[i].z));
-        }
-
-        List<JobHandle> tempHandles = chunks[new Vector3Int(0, 0, 0)].ScheduleChunkHeightDataGeneration(MarchingData.ChunkWidth, MarchingData.ChunkHeight, chunkOffsets, frequency, MarchingData.BaseTerrainHeight,
-            MarchingData.TerrainHeightRange, out allHeights, chunks.Count, 1);
+        List<JobHandle> tempHandles = chunks[new Vector3Int(0, 0, 0)].ScheduleChunkHeightDataGeneration(MarchingData.ChunkWidth, MarchingData.ChunkHeight, frequency, MarchingData.BaseTerrainHeight,
+            MarchingData.TerrainHeightRange, out allHeights);
 
         for (int i = 0; i < tempHandles.Count; i++)
         {
@@ -69,10 +57,9 @@ public class MapGenerator : MonoBehaviour
         JobHandle.CompleteAll(heightGenJobs);
         heightGenJobs.Dispose();
 
-        allHeights.Dispose();
-        chunkOffsets.Dispose();
-
-
-        hasGenerated = true;
+        for (int i = 0; i < allHeights.Count; i++)
+        {
+            allHeights[i].Dispose();
+        }
     }
 }

@@ -93,28 +93,39 @@ public class Chunk
     }
 
     //Function to return a scheduled job and the heights array for the mesh data generation.
-    public List<JobHandle> ScheduleChunkHeightDataGeneration(int chunkSize, int chunkHeight, NativeList<float2> offset, float frequency, float baseTerrainHeight, float terrainHeightRange, out NativeArray<float> heights,
-        int count, int batchCount)
+    public List<JobHandle> ScheduleChunkHeightDataGeneration(int chunkSize, int chunkHeight, float frequency, float baseTerrainHeight, float terrainHeightRange, out List<NativeList<float>> heights)
     {
         //Heights list initialiser
-        heights = new NativeArray<float>((chunkSize + 1) * (chunkSize + 1) * (chunkHeight + 1), Allocator.Persistent);
+        heights = new List<NativeList<float>>();
+
+        //height sub-list initialisation
+        for (int i = 0; i < chunkHeight + 1; i++)
+        {
+            heights.Add(new NativeList<float>(Allocator.TempJob));
+        }
+
         //List for the jobhandles
         List<JobHandle> chunkNoiseGenerationHandles = new List<JobHandle>();
 
-        //Job creation
-        ChunkNoiseGenerationJob chunkNoiseGenerationJob = new ChunkNoiseGenerationJob()
+        //For every layer
+        for (int i = 0; i < chunkHeight + 1; i++)
         {
-            chunkHeight = chunkHeight,
-            chunkSize = chunkSize,
-            frequency = frequency,
-            offset = offset,
-            baseTerrainHeight = baseTerrainHeight,
-            terrainHeightRange = terrainHeightRange,
-            result = heights,
-        };
+            //Job creation
+            ChunkNoiseGenerationJob chunkNoiseGenerationJob = new ChunkNoiseGenerationJob()
+            {
+                chunkHeight = chunkHeight,
+                chunkSize = chunkSize,
+                y = i,
+                frequency = frequency,
+                baseTerrainHeight = baseTerrainHeight,
+                terrainHeightRange = terrainHeightRange,
+                result = heights[i],
+            };
 
-        //Add scheduled job to handle array
-        chunkNoiseGenerationHandles.Add(chunkNoiseGenerationJob.Schedule(count, batchCount));
+            //Add scheduled job to handle array
+            chunkNoiseGenerationHandles.Add(chunkNoiseGenerationJob.Schedule());
+
+        }
         //Return scheduled job array, ready for completion
         return chunkNoiseGenerationHandles;
     }
@@ -320,26 +331,24 @@ public class Chunk
 
 //A job to generate simplex / perlin noise efficiently
 [BurstCompile]
-public struct ChunkNoiseGenerationJob : IJobParallelFor
+public struct ChunkNoiseGenerationJob : IJob
 {
     public float chunkSize;
     public float chunkHeight;
+    public float y;
     public float frequency;
     public float baseTerrainHeight;
     public float terrainHeightRange;
-    [ReadOnly] public NativeArray<float2> offset;
-    public NativeArray<float> result;
+    public NativeList<float> result;
 
-    public void Execute(int index)
+    public void Execute()
     {
         for (int x = 0; x < chunkSize + 1; x++)
         {
-            for (int y = 0; y < chunkHeight + 1; y++)
+            for (int i = 0, z = 0; z < chunkSize; z++)
             {
-                for (int z = 0; z < chunkSize + 1; z++)
-                {
-                    result[index] = y - terrainHeightRange * noise.snoise(new float2((x + offset[index].x) * frequency / 1000, (z + offset[index].y) * frequency / 1000)) + baseTerrainHeight;
-                }
+                result.Add(y - terrainHeightRange * noise.snoise(new float2(x * frequency / 1000, z * frequency / 1000)) + baseTerrainHeight);
+                i++;
             }
         }
     }
