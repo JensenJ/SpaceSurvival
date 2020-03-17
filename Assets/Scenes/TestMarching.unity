@@ -242,9 +242,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4fdde12c9ae5c9042abc1481a6d6716f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  worldSizeInChunks: 1
+  worldSizeInChunks: 5
   frequency: 30
-  smoothTerrain: 0
 --- !u!4 &702832552
 Transform:
   m_ObjectHideFlags: 0
