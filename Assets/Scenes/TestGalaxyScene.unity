@@ -265,7 +265,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb587f5d5cd315141b05345d1924e71d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  starSpawnRadius: 50
+  starSpawnRadius: 70
   galaxySize: {x: 1000, y: 1000}
   galaxyRejectionSamples: 30
   starDisplayRadius: 0.5
@@ -274,8 +274,10 @@ MonoBehaviour:
   generateEveryFrame: 0
   starMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   starMaterial: {fileID: 2100000, guid: d47ae0396110840289d47476d8289fbf, type: 3}
-  planetMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  planetMaterial: {fileID: 2100000, guid: d47ae0396110840289d47476d8289fbf, type: 3}
+  terrestrialMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  terrestrialMaterial: {fileID: 2100000, guid: 35e3df527da40314eaeebb6df6adaeb9, type: 2}
+  gasMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  gasMaterial: {fileID: 2100000, guid: b950230411884464790834e229895101, type: 2}
   asteroidMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   asteroidMaterial: {fileID: -1863016178924271969, guid: 86da14ce8aa0efb45a86452aeabb0ad1,
     type: 3}

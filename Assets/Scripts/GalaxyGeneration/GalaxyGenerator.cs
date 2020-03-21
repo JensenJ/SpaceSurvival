@@ -47,8 +47,11 @@ public class GalaxyGenerator : MonoBehaviour
     public Mesh starMesh;
     public Material starMaterial;
 
-    public Mesh planetMesh;
-    public Material planetMaterial;
+    public Mesh terrestrialMesh;
+    public Material terrestrialMaterial;
+
+    public Mesh gasMesh;
+    public Material gasMaterial;
 
     public Mesh asteroidMesh;
     public Material asteroidMaterial;
@@ -69,7 +72,7 @@ public class GalaxyGenerator : MonoBehaviour
     //When editor refreshes
     private void OnValidate()
     {
-        Generate();
+        //Generate();
     }
 
     private void Start()
@@ -98,7 +101,7 @@ public class GalaxyGenerator : MonoBehaviour
         }
 
         //Generate star positions
-        starPositions = PoissonDiscSampler.GenerateSingleSample(starSpawnRadius, new Vector2(), galaxySize, true, galaxyInnerRadius, galaxyOuterRadius, galaxyRejectionSamples);
+        starPositions = PoissonDiscSampler.GenerateRingedSingleSample(starSpawnRadius, new Vector2(), galaxySize, true, galaxyInnerRadius, galaxyOuterRadius, galaxyRejectionSamples);
         Debug.Log("Generation Count: " + starPositions.Count);
 
         //If in play mode
@@ -226,6 +229,7 @@ public class GalaxyGenerator : MonoBehaviour
 
             //Generates terrestial planet count
             terrestrialPlanetCounts.Add(UnityEngine.Random.Range(0, 5));
+            //terrestrialPlanetCounts.Add(4);
 
             //Asteroid belt generation chooser
             int asteroidBeltGeneration = UnityEngine.Random.Range(0, 100);
@@ -236,8 +240,10 @@ public class GalaxyGenerator : MonoBehaviour
             }
             asteroidBeltStatus.Add(hasAsteroidBelt);
 
-            gasGiantPlanetCounts.Add(UnityEngine.Random.Range(0, 3));
-            iceGiantPlanetCounts.Add(UnityEngine.Random.Range(0, 2));
+            gasGiantPlanetCounts.Add(UnityEngine.Random.Range(0, 4));
+            //gasGiantPlanetCounts.Add(3);
+            iceGiantPlanetCounts.Add(UnityEngine.Random.Range(0, 3));
+            //iceGiantPlanetCounts.Add(3);
         }
 
         //Celestial generation rules:
@@ -246,10 +252,10 @@ public class GalaxyGenerator : MonoBehaviour
         //      Planet size tends to increase
         //      Time to orbit increases as orbital speed decreases
         //      Terrestrial planets -> Gas Giants -> Ice Giants
-        //      Between significant layers (for example between terrestrial planets and gas giants) there can be asteroid belts.
         //      Planets tend to have more moons
         //  Other Celestial Rules:
         //      Only gas/ice giants can have rings
+        //      Between significant layers (for example between terrestrial planets and gas giants) there can be asteroid belts.
         //      Planets rotate anticlockwise
         //      Asteroid belts are very wide, but not very tall 
 
@@ -279,8 +285,18 @@ public class GalaxyGenerator : MonoBehaviour
             }
         }
 
+        //Gas Giant Planets
+        for (int i = 0; i < gasGiantPlanetCounts.Count; i++)
+        {
+            List<Entity> gasPlanets = GenerateGasPlanets(gasGiantPlanetCounts[i], starPositions[i], starSizes[i], terrestrialPlanetCounts[i]);
+            for (int j = 0; j < gasPlanets.Count; j++)
+            {
+                celestialList.Add(gasPlanets[j]);
+            }
+        }
+
         //Generate asteroid belt entities
-        List<List<Entity>> asteroidBelts = GenerateAsteroidBelt(beltStarPositions);
+        List<List<Entity>> asteroidBelts = GenerateAsteroidBelt(beltStarPositions, terrestrialPlanetCounts);
 
 
         //Add asteroid belt entities to the celestial list
@@ -316,39 +332,71 @@ public class GalaxyGenerator : MonoBehaviour
             float greenhouseEffect = UnityEngine.Random.Range(1.0f, 30.0f); //Higher this is, the higher the temperature
             float albedo = UnityEngine.Random.Range(0.0f, 40.0f); //Lower this is, the higher the temperature
 
-            //Get temperature
-            float temperature = GetPlanetSurfaceTemperature(starSize, distanceFromStar, albedo, greenhouseEffect);
-            if (temperature < 0)
-            {
-                temperature = 0;
-            }
-
-            Entity planetEntity = GeneratePlanetEntity(planetPosition, distanceFromStar, temperature, albedo, greenhouseEffect);
+            Entity planetEntity = GeneratePlanetEntity(planetPosition, distanceFromStar, starSize, albedo, greenhouseEffect, 0.1f, 0.3f, terrestrialMesh, terrestrialMaterial);
 
             terrestrialPlanets.Add(planetEntity);
         }
         return terrestrialPlanets;
     }
 
-    public List<List<Entity>> GenerateAsteroidBelt(List<float3> starPositions)
+    //Function to generate the gas planets within a solar system.
+    public List<Entity> GenerateGasPlanets(int gasPlanetCount, float3 starPosition, float starSize, float terrestrialCount)
+    {
+        List<Entity> gasPlanets = new List<Entity>();
+
+        float gasBaseDistanceMultiplier = 1.83f;
+        float gasDistanceUncertainty = 0.1f;
+
+        float distance = UnityEngine.Random.Range(9.5203f, 9.65f) - (0.75f * gasBaseDistanceMultiplier) + (terrestrialCount * 1.77f);
+
+        for (int i = 0; i < gasPlanetCount; i++)
+        {
+            //Distance Calculation
+            distance *= (gasBaseDistanceMultiplier + UnityEngine.Random.Range(-gasDistanceUncertainty / 2, gasDistanceUncertainty));
+            float3 planetPosition = new float3(starPosition.x + distance, starPosition.y, starPosition.z);
+            float distanceFromStar = math.distance(starPosition, planetPosition);
+
+            //Temperature variable generation
+            float greenhouseEffect = UnityEngine.Random.Range(1.0f, 30.0f); //Higher this is, the higher the temperature
+            float albedo = UnityEngine.Random.Range(0.0f, 40.0f); //Lower this is, the higher the temperature
+
+            Entity planetEntity = GeneratePlanetEntity(planetPosition, distanceFromStar, starSize, albedo, greenhouseEffect, 0.5f, 0.9f, gasMesh, gasMaterial);
+
+            gasPlanets.Add(planetEntity);
+        }
+        return gasPlanets;
+    }
+
+    public List<List<Entity>> GenerateAsteroidBelt(List<float3> starPositions, List<int> terrestrialPlanetCount)
     {
         List<List<Entity>> asteroidBelts = new List<List<Entity>>();
 
         //Generate asteroid data for poisson sampler
         Vector2[] positions = new Vector2[starPositions.Count];
         Vector2[] beltSizes = new Vector2[starPositions.Count];
+
+        float[] ringInnerRadii = new float[starPositions.Count];
+        float[] ringOuterRadii = new float[starPositions.Count];
+
         float[] radii = new float[starPositions.Count];
+
         for (int i = 0; i < starPositions.Count; i++)
         {
             //Fill arrays
             positions[i] = new Vector2(starPositions[i].x, starPositions[i].z);
-            float beltSize = UnityEngine.Random.Range(45f, 50f);
+            float beltSize = UnityEngine.Random.Range((terrestrialPlanetCount[i] * 10f) + 2f, (terrestrialPlanetCount[i] * 10f) + (terrestrialPlanetCount[i])) + 5f;
             beltSizes[i] = new Vector2(beltSize, beltSize);
-            radii[i] = UnityEngine.Random.Range(1.5f, 3.5f);
+            //ringInnerRadii[i] = beltSize / 2 - (beltSize * 0.15f) + 5.5f;
+            //ringOuterRadii[i] = beltSize / 2 - (beltSize * 0.1f) + 6.5f;
+
+            //TODO: Tweak values to make planets not collide with asteroid field
+            ringInnerRadii[i] = terrestrialPlanetCount[i] * 0.17f * (beltSize / 2) + 2.1f;
+            ringOuterRadii[i] = terrestrialPlanetCount[i] * 0.21f * (beltSize / 2) + 4.3f; 
+            radii[i] = UnityEngine.Random.Range(0.5f, 2.5f);
         }
 
         //Poisson sampler
-        List<List<Vector2>> asteroidPositions = PoissonDiscSampler.GenerateMultiSample(radii, positions, beltSizes, true, 20, 24, 30);
+        List<List<Vector2>> asteroidPositions = PoissonDiscSampler.GenerateRingedMultiSample(radii, positions, beltSizes, true, ringInnerRadii, ringOuterRadii, 30);
         
         //For every star
         for (int i = 0; i < asteroidPositions.Count; i++)
@@ -379,7 +427,7 @@ public class GalaxyGenerator : MonoBehaviour
                     castShadows = UnityEngine.Rendering.ShadowCastingMode.On
                 });
 
-                float asteroidSize = UnityEngine.Random.Range(0.1f, 1.0f);
+                float asteroidSize = UnityEngine.Random.Range(0.1f, 0.2f);
 
                 //Set scale
                 entityManager.SetComponentData(asteroidEntity, new Scale
@@ -398,11 +446,17 @@ public class GalaxyGenerator : MonoBehaviour
     }
 
     //Function to generate a planet entity when given all relevant data
-    public Entity GeneratePlanetEntity(float3 planetPosition, float distanceFromStar, float temperature, float albedo, float greenhouseEffect)
+    public Entity GeneratePlanetEntity(float3 planetPosition, float distanceFromStar, float starSize, float albedo, float greenhouseEffect, float minPlanetSize, float maxPlanetSize, Mesh planetMesh, Material planetMaterial)
     {
         //Entity creation and placement
         Entity planetEntity = entityManager.CreateEntity(planetArchetype);
         entityManager.SetName(planetEntity, "Planet");
+
+        float temperature = GetPlanetSurfaceTemperature(starSize, distanceFromStar, albedo, greenhouseEffect);
+        if (temperature < 0)
+        {
+            temperature = 0;
+        }
 
         //Set position
         entityManager.SetComponentData(planetEntity, new Translation
@@ -418,7 +472,7 @@ public class GalaxyGenerator : MonoBehaviour
             castShadows = UnityEngine.Rendering.ShadowCastingMode.On
         });
 
-        float planetSize = UnityEngine.Random.Range(0.1f, 1.0f);
+        float planetSize = UnityEngine.Random.Range(minPlanetSize, maxPlanetSize);
 
         //Set scale
         entityManager.SetComponentData(planetEntity, new Scale
@@ -490,8 +544,6 @@ public class GalaxyGenerator : MonoBehaviour
                     }
                 }
             }
-
-            
         }
 
         //Reinit lists
