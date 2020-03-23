@@ -10,7 +10,7 @@ using System.Collections.Generic;
 public class PoissonDiscSampler : MonoBehaviour
 {
     //Function to generate a simgle sample of vectors from given data
-    public static List<Vector2> GenerateSingleSample(float radius, Vector2 generationOffset, Vector2 sampleRegionSize,
+    public static List<Vector2> GenerateRingedSingleSample(float radius, Vector2 generationOffset, Vector2 sampleRegionSize,
         bool useRingPattern = false, float ringInnerRadius = 10, float ringOuterRadius = 50, int numSamplesBeforeRejection = 30)
     {
         //Debug time
@@ -56,8 +56,8 @@ public class PoissonDiscSampler : MonoBehaviour
 
     //Function to generate a multi-dimensional list of vectors for multi-sampling when given arrays of data to process. 
     //This function is more efficient for multisampling than just iterating over the single sample as it uses multi-threading.
-    public static List<List<Vector2>> GenerateMultiSample(float[] radii, Vector2[] generationOffsets, Vector2[] sampleRegionSizes, 
-        bool useRingPattern = false, float ringInnerRadius = 10, float ringOuterRadius = 50, int numSamplesBeforeRejection = 30)
+    public static List<List<Vector2>> GenerateRingedMultiSample(float[] radii, Vector2[] generationOffsets, Vector2[] sampleRegionSizes,
+        bool useRingPattern, float[] ringInnerRadius, float[] ringOuterRadius, int numSamplesBeforeRejection = 30)
     {
         //Debug time
         float time = Time.realtimeSinceStartup;
@@ -92,8 +92,8 @@ public class PoissonDiscSampler : MonoBehaviour
                 sampleRegionSize = new float2(sampleRegionSizes[i]),
                 positionOffset = new float2(generationOffsets[i]),
                 useRingPattern = useRingPattern,
-                ringInnerRadius = ringInnerRadius,
-                ringOuterRadius = ringOuterRadius,
+                ringInnerRadius = ringInnerRadius[i],
+                ringOuterRadius = ringOuterRadius[i],
             };
             //Add scheduled job to handle list, ready for mass completion
             handles.Add(job.Schedule());
