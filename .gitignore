@@ -9,7 +9,7 @@
 /[Bb]uilds/
 /[Ll]ogs/
 /[Mm]emoryCaptures/
-/Assets/Models/Substance Files/
+/Assets/Substance Files/
 
 # Never ignore Asset meta data
 !/[Aa]ssets/**/*.meta
