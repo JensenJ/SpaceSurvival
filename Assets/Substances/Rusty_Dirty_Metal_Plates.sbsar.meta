@@ -15,17 +15,21 @@ ScriptedImporter:
     graphDescIndex: 0
     generateAllOutputs: 0
     generateMipMaps: 1
-    preset: " <sbspreset pkgurl=\"pkg://Rusty_Dirty_Metal\" label=\"\" >\n  <presetinput
-      identifier=\"$outputsize\" uid=\"3086906105\" type=\"8\" value=\"11,11\" />\n 
-      <presetinput identifier=\"plate_base_colour\" uid=\"3744763662\" type=\"3\"
-      value=\"0.773585,0.773585,0.773585,1\" />\n  <presetinput identifier=\"rust_amount\"
-      uid=\"3744481717\" type=\"0\" value=\"0.239\" />\n  <presetinput identifier=\"grunge_amount\"
-      uid=\"3744790098\" type=\"0\" value=\"0.066\" />\n  <presetinput identifier=\"paint_damage\"
-      uid=\"3744494889\" type=\"0\" value=\"0.111\" />\n </sbspreset>\n"
+    preset: " <sbspreset pkgurl=\"pkg://Rusty_Dirty_Metal_Plates\" label=\"\" >\n 
+      <presetinput identifier=\"$outputsize\" uid=\"282043397\" type=\"8\" value=\"11,11\"
+      />\n  <presetinput identifier=\"plate_base_colour\" uid=\"2013616626\" type=\"3\"
+      value=\"0.773585,0.773585,0.773585,1\" />\n  <presetinput identifier=\"plate_paint_colour\"
+      uid=\"2013445413\" type=\"3\" value=\"0.113208,0.689728,1,1\" />\n  <presetinput
+      identifier=\"rust_amount\" uid=\"2013370185\" type=\"0\" value=\"0.239\" />\n 
+      <presetinput identifier=\"grunge_amount\" uid=\"2013601966\" type=\"0\" value=\"0.066\"
+      />\n  <presetinput identifier=\"paint_damage\" uid=\"2013373397\" type=\"0\"
+      value=\"0.111\" />\n </sbspreset>\n"
     shaderName: HDRP/LitTessellation
     materialProperties:
       shader: {fileID: 4800000, guid: 756bac9090102564582875f4c7e30202, type: 3}
-      shaderKeywords: _BASECOLORMAP _HEIGHTMAP _MASKMAP _NORMALMAP _NORMALMAP_TANGENT_SPACE
+      shaderKeywords: _BASECOLORMAP _DISPLACEMENT_LOCK_TILING_SCALE _HEIGHTMAP _METALLICGLOSSMAP
+        _NORMALMAP _NORMALMAP_TANGENT_SPACE _OCCLUSIONMAP _ROUGHNESSMAP _TESSELLATION_DISPLACEMENT
+        _VERTEX_DISPLACEMENT_LOCK_OBJECT_SCALE
       lightmapFlags: 4
       texEnvs:
       - name: _AnisotropyMap
@@ -80,8 +84,7 @@ ScriptedImporter:
         scale: {x: 1, y: 1}
         offset: {x: 0, y: 0}
       - name: _MaskMap
-        texture: {fileID: -8309281720623347289, guid: 7b0f5e7f219b17c468cc94315187807d,
-          type: 3}
+        texture: {instanceID: 0}
         scale: {x: 1, y: 1}
         offset: {x: 0, y: 0}
       - name: _NormalMap
@@ -177,7 +180,7 @@ ScriptedImporter:
       - name: _DistortionBlurBlendMode
         float: 0
       - name: _DistortionBlurDstBlend
-        float: 0
+        float: 1
       - name: _DistortionBlurRemapMax
         float: 1
       - name: _DistortionBlurRemapMin
@@ -185,17 +188,17 @@ ScriptedImporter:
       - name: _DistortionBlurScale
         float: 1
       - name: _DistortionBlurSrcBlend
-        float: 0
+        float: 1
       - name: _DistortionDepthTest
         float: 1
       - name: _DistortionDstBlend
-        float: 0
+        float: 1
       - name: _DistortionEnable
         float: 0
       - name: _DistortionScale
         float: 1
       - name: _DistortionSrcBlend
-        float: 0
+        float: 1
       - name: _DistortionVectorBias
         float: -1
       - name: _DistortionVectorScale
@@ -303,13 +306,13 @@ ScriptedImporter:
       - name: _StencilWriteMask
         float: 3
       - name: _StencilWriteMaskDepth
-        float: 32
+        float: 48
       - name: _StencilWriteMaskDistortionVec
         float: 64
       - name: _StencilWriteMaskGBuffer
-        float: 3
+        float: 51
       - name: _StencilWriteMaskMV
-        float: 128
+        float: 176
       - name: _SubsurfaceMask
         float: 1
       - name: _SupportDecals
@@ -363,11 +366,11 @@ ScriptedImporter:
       - name: _UseShadowThreshold
         float: 0
       - name: _ZTestDepthEqualForOpaque
-        float: 4
+        float: 3
       - name: _ZTestGBuffer
         float: 4
       - name: _ZTestModeDistortion
-        float: 8
+        float: 4
       - name: _ZTestTransparent
         float: 4
       - name: _ZWrite
@@ -487,7 +490,7 @@ ScriptedImporter:
         to: 3
     - targetName: metallic
       components:
-      - sourceName: smoothness
+      - sourceName: metallic
         from: 0
         to: 3
     - targetName: height
@@ -560,4 +563,3 @@ ScriptedImporter:
     - {fileID: 9145799508100115620, guid: 7b0f5e7f219b17c468cc94315187807d, type: 3}
     - {fileID: -2562100372517298435, guid: 7b0f5e7f219b17c468cc94315187807d, type: 3}
     - {fileID: -4858500813137359141, guid: 7b0f5e7f219b17c468cc94315187807d, type: 3}
-    - {fileID: -8309281720623347289, guid: 7b0f5e7f219b17c468cc94315187807d, type: 3}
