@@ -17,10 +17,11 @@ ScriptedImporter:
     generateMipMaps: 1
     preset: " <sbspreset pkgurl=\"pkg://Rusty_Dirty_Metal\" label=\"\" >\n  <presetinput
       identifier=\"$outputsize\" uid=\"3086906105\" type=\"8\" value=\"11,11\" />\n 
-      <presetinput identifier=\"rust_amount\" uid=\"3744481717\" type=\"0\" value=\"0\"
-      />\n  <presetinput identifier=\"grunge_amount\" uid=\"3744790098\" type=\"0\"
-      value=\"0.458\" />\n  <presetinput identifier=\"plate_base_colour\" uid=\"3744763662\"
-      type=\"3\" value=\"1,0.386792,0.386792,1\" />\n </sbspreset>\n"
+      <presetinput identifier=\"plate_base_colour\" uid=\"3744763662\" type=\"3\"
+      value=\"0.773585,0.773585,0.773585,1\" />\n  <presetinput identifier=\"rust_amount\"
+      uid=\"3744481717\" type=\"0\" value=\"0.239\" />\n  <presetinput identifier=\"grunge_amount\"
+      uid=\"3744790098\" type=\"0\" value=\"0.066\" />\n  <presetinput identifier=\"paint_damage\"
+      uid=\"3744494889\" type=\"0\" value=\"0.111\" />\n </sbspreset>\n"
     shaderName: HDRP/LitTessellation
     materialProperties:
       shader: {fileID: 4800000, guid: 756bac9090102564582875f4c7e30202, type: 3}
