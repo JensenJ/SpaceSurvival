@@ -16,8 +16,9 @@ ScriptedImporter:
     generateAllOutputs: 0
     generateMipMaps: 1
     preset: " <sbspreset pkgurl=\"pkg://Rusty_Grunge_Metal\" label=\"\" >\n  <presetinput
-      identifier=\"$outputsize\" uid=\"944675327\" type=\"8\" value=\"11,11\" />\n
-      </sbspreset>\n"
+      identifier=\"$outputsize\" uid=\"944675327\" type=\"8\" value=\"11,11\" />\n 
+      <presetinput identifier=\"metal_basecolour\" uid=\"1354362200\" type=\"3\"
+      value=\"1,1,1,1\" />\n </sbspreset>\n"
     shaderName: HDRP/LitTessellation
     materialProperties:
       shader: {fileID: 4800000, guid: 756bac9090102564582875f4c7e30202, type: 3}
