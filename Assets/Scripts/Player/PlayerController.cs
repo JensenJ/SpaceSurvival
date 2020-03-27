@@ -1,11 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
 //The player controller is a unit controlled by a player
 
 [RequireComponent(typeof(PlayerMotor))]
-public class PlayerController : MonoBehaviour
+[RequireComponent(typeof(PlayerSetup))]
+[RequireComponent(typeof(PlayerFlashLight))]
+[RequireComponent(typeof(PlayerAttributes))]
+[RequireComponent(typeof(PlayerSkills))]
+public class PlayerController : NetworkBehaviour
 {
     public bool isCursorEnabled = false;
     public bool canMove = true;
@@ -21,21 +26,34 @@ public class PlayerController : MonoBehaviour
     [SerializeField] [Range(0.0f, 10.0f)] public float staminaDrainSpeed = 2.5f;
     [SerializeField] [Range(0.0f, 7.0f)] public float staminaRegenSpeed = 1.25f;
 
+    NetworkUtils netUtils = null;
     GameObject gameManager = null;
     PlayerMotor motor = null;
+    PlayerFlashLight flashLight = null;
+    PlayerAttributes attributes = null;
+    PlayerSkills skills = null;
 
     // Start is called before the first frame update
     void Start()
     {
         //Start settings
         motor = GetComponent<PlayerMotor>();
+        flashLight = GetComponent<PlayerFlashLight>();
+        attributes = GetComponent<PlayerAttributes>();
+        skills = GetComponent<PlayerSkills>();
         gameManager = GameObject.FindGameObjectWithTag("GameController");
+        netUtils = gameManager.GetComponent<NetworkUtils>();
         DisableCursor();
     }
 
     // Update is called once per frame
     void Update()
     {
+        //Check that this is owned by player
+        if (hasAuthority == false)
+        {
+            return;
+        }
 
         //Toggle cursor activation
         if (Input.GetKeyDown(KeyCode.LeftAlt))
@@ -52,6 +70,40 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            flashLight.flashLightStatus = !flashLight.flashLightStatus;
+            flashLight.UpdateFlashLightStatus();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            skills.IncreaseSkillLevel(PlayerSkill.IncreasedHealth);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            skills.IncreaseSkillLevel(PlayerSkill.IncreasedStamina);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            skills.IncreaseSkillLevel(PlayerSkill.FasterMovement);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            skills.IncreaseSkillLevel(PlayerSkill.FlashlightEfficiency);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            skills.LevelUp();
+        }
+
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            skills.ResetSkills();
+        }
         //Movement
         Move();
         Rotate();
@@ -83,7 +135,18 @@ public class PlayerController : MonoBehaviour
             //If sprinting and stamina is above 10%
             if (Input.GetButton("Sprint"))
             {
-                moveSpeed = sprintSpeed;
+                attributes.DamageStamina(staminaDrainSpeed * Time.deltaTime);
+                if (attributes.GetStamina() / attributes.GetMaxStamina() >= 0.1f)
+                {
+                    moveSpeed = sprintSpeed;
+                }
+            }
+            else
+            {
+                if (attributes.GetStamina() < attributes.GetMaxStamina())
+                {
+                    attributes.HealStamina(staminaRegenSpeed * Time.deltaTime);
+                }
             }
 
             float xMove = Input.GetAxisRaw("Horizontal");

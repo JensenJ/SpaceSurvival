@@ -1,9 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerMotor : MonoBehaviour
+public class PlayerMotor : NetworkBehaviour
 {
     //Local variables
     private Rigidbody rb;
@@ -23,6 +24,10 @@ public class PlayerMotor : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         cam = transform.GetChild(0).GetComponent<Camera>();
+        if (!hasAuthority)
+        {
+            return;
+        }
         rb.useGravity = true;
         
     }
