@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.14242111, g: 0.18938436, b: 0.26810235, a: 1}
+  m_IndirectSpecularColor: {r: 0.58351284, g: 0.3921676, b: 0.27681038, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -345,7 +345,7 @@ MonoBehaviour:
   OnServerDisconnected:
     m_PersistentCalls:
       m_Calls: []
-  port: 25565
+  port: 27015
   NoDelay: 1
   serverMaxMessageSize: 16384
   clientMaxMessageSize: 16384
@@ -562,7 +562,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 6.91e-43, y: 9.01e-43, z: 0, w: 5.9733534e-25}
+  m_BoundingSphereOverride: {x: 6.78e-43, y: -1.8449529e-38, z: 6.77e-43, w: 4.1272477e+30}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -698,7 +698,6 @@ GameObject:
   - component: {fileID: 1335988980}
   - component: {fileID: 1335988979}
   - component: {fileID: 1335988978}
-  - component: {fileID: 1335988977}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: GameController
@@ -706,21 +705,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1335988977
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1335988976}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d61dac2baf7a3b349a7909db80f5e508, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  syncMode: 0
-  syncInterval: 0.1
-  playerSkills: []
 --- !u!114 &1335988978
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -9,7 +9,6 @@ using Mirror;
 [RequireComponent(typeof(PlayerSetup))]
 [RequireComponent(typeof(PlayerFlashLight))]
 [RequireComponent(typeof(PlayerAttributes))]
-[RequireComponent(typeof(PlayerSkills))]
 public class PlayerController : NetworkBehaviour
 {
     public bool isCursorEnabled = false;
@@ -31,7 +30,6 @@ public class PlayerController : NetworkBehaviour
     PlayerMotor motor = null;
     PlayerFlashLight flashLight = null;
     PlayerAttributes attributes = null;
-    PlayerSkills skills = null;
 
     // Start is called before the first frame update
     void Start()
@@ -40,7 +38,6 @@ public class PlayerController : NetworkBehaviour
         motor = GetComponent<PlayerMotor>();
         flashLight = GetComponent<PlayerFlashLight>();
         attributes = GetComponent<PlayerAttributes>();
-        skills = GetComponent<PlayerSkills>();
         gameManager = GameObject.FindGameObjectWithTag("GameController");
         netUtils = gameManager.GetComponent<NetworkUtils>();
         DisableCursor();
@@ -76,34 +73,6 @@ public class PlayerController : NetworkBehaviour
             flashLight.UpdateFlashLightStatus();
         }
 
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            skills.IncreaseSkillLevel(PlayerSkill.IncreasedHealth);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            skills.IncreaseSkillLevel(PlayerSkill.IncreasedStamina);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            skills.IncreaseSkillLevel(PlayerSkill.FasterMovement);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha4))
-        {
-            skills.IncreaseSkillLevel(PlayerSkill.FlashlightEfficiency);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Z))
-        {
-            skills.LevelUp();
-        }
-
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            skills.ResetSkills();
-        }
         //Movement
         Move();
         Rotate();
@@ -221,5 +190,4 @@ public class PlayerController : NetworkBehaviour
     {
         return baseSprintSpeed;
     }
-
 }

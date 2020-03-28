@@ -63,7 +63,6 @@ public class PlayerConnectionObject : NetworkBehaviour
     {
         CmdUpdateEnvironment();
         CmdChangePlayerName("Player" + Random.Range(1, 100));
-        CmdUpdatePlayerSkillPoints();
 
         PlayerFlashLight flashlight = playerGameObject.GetComponent<PlayerFlashLight>();
         if(flashlight != null)
@@ -166,21 +165,6 @@ public class PlayerConnectionObject : NetworkBehaviour
             attributes.SetMaxHealth(maxHealth);
             attributes.SetStamina(stamina);
             attributes.SetMaxStamina(maxStamina);
-        }
-    }
-    
-    //Command to update player skills points
-    [Command]
-    public void CmdUpdatePlayerSkillPoints()
-    {
-        Debug.Log("CMD: Update Player Skillpoints");
-        PlayerSkills playerSkills = playerGameObject.GetComponent<PlayerSkills>();
-        if(playerSkills != null)
-        {
-            int[] playerSkillPoints = playerSkills.GetPlayerSkills();
-            int newSkillPointCount = playerSkills.GetCurrentSkillPoint();
-
-            RpcUpdatePlayerSkillPoints(newSkillPointCount, playerSkillPoints);
         }
     }
 
@@ -286,17 +270,6 @@ public class PlayerConnectionObject : NetworkBehaviour
             attributes.SetMaxHealth(maxHealth);
             attributes.SetStamina(stamina);
             attributes.SetMaxStamina(maxStamina);
-        }
-    }
-
-    //RPC to update player skill points
-    [ClientRpc]
-    public void RpcUpdatePlayerSkillPoints(int newSkillPointCount, int[] playerSkillPoints)
-    {
-        PlayerSkills playerSkills = playerGameObject.GetComponent<PlayerSkills>();
-        if (playerSkills != null)
-        {
-            playerSkills.SetPlayerSkillPoints(playerSkillPoints, newSkillPointCount);
         }
     }
 }
