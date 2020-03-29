@@ -28,6 +28,7 @@ public class PlayerConnectionObject : NetworkBehaviour
         Debug.Log("PlayerObject::Start - Spawning player game object");
 
         CmdSpawnPlayerGameObject();
+        CmdChangePlayerName("Player" + Random.Range(1, 100));
     }
 
     // Update is called once per frame
@@ -62,7 +63,7 @@ public class PlayerConnectionObject : NetworkBehaviour
     void Resync()
     {
         CmdUpdateEnvironment();
-        CmdChangePlayerName("Player" + Random.Range(1, 100));
+        CmdChangePlayerName(playerName);
 
         PlayerFlashLight flashlight = playerGameObject.GetComponent<PlayerFlashLight>();
         if(flashlight != null)
