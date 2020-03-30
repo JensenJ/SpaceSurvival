@@ -19,7 +19,7 @@ ScriptedImporter:
       identifier=\"$outputsize\" uid=\"944675327\" type=\"8\" value=\"11,11\" />\n 
       <presetinput identifier=\"paint_colour\" uid=\"1350904141\" type=\"3\" value=\"0.113725,0.690196,1,1\"
       />\n  <presetinput identifier=\"rust_amount\" uid=\"1354362182\" type=\"0\"
-      value=\"0.296\" />\n  <presetinput identifier=\"scratch_amount\" uid=\"1354245389\"
+      value=\"0.247\" />\n  <presetinput identifier=\"scratch_amount\" uid=\"1354245389\"
       type=\"0\" value=\"1\" />\n  <presetinput identifier=\"paint_damage\" uid=\"1350718497\"
       type=\"0\" value=\"0.226\" />\n  <presetinput identifier=\"rust_contrast\"
       uid=\"1350904109\" type=\"0\" value=\"0.7\" />\n </sbspreset>\n"
