@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea5cda4008d99604998424ac37b86bd2, type: 3}
+  m_Name: Mining Ship 1
+  m_EditorClassIdentifier: 
+  shipPrefab: {fileID: 3869328853114951240, guid: ee25e10a8821d6440bc284b1403e08c8,
+    type: 3}
+  durability: 1000
+  maxDurability: 1000
+  smallComponentCount: 2
+  mediumComponentCount: 2
+  largeComponentCount: 4
+  expansionComponentCount: 2
+  upgradeComponentCount: 2
