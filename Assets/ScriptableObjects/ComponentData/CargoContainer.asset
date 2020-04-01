@@ -16,7 +16,7 @@ MonoBehaviour:
   componentDescription: Stores stuff
   durability: 100
   maxDurability: 100
-  componentMesh: {fileID: -1988615974651715806, guid: 36385c7abefdfac4b84409354e2191c5,
+  componentPrefab: {fileID: 6197455396194379252, guid: 8244129a4a3208e4186e847290fe4d67,
     type: 3}
   componentType: 3
   powerContribution: -10

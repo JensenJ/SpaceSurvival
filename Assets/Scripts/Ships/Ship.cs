@@ -49,12 +49,6 @@ public class Ship : MonoBehaviour
             bool success = AddComponentToShip(testCargoContainerComponent, 1);
             Debug.Log("Added component: " + success);
         }
-        //Add using "specific" method at out of range index
-        if (Input.GetKeyDown(KeyCode.Alpha4))
-        {
-            bool success = AddComponentToShip(testCargoContainerComponent, 3);
-            Debug.Log("Added component: " + success);
-        }
     }
 
     // Start is called before the first frame update
@@ -106,6 +100,12 @@ public class Ship : MonoBehaviour
     //Function to add a component to a ship by filling the array linearly
     public bool AddComponentToShip(ShipComponentAsset componentToAdd)
     {
+        //Null check
+        if (componentToAdd == null)
+        {
+            return false;
+        }
+
         //Get relevant aray from type
         ShipComponentAsset[] componentArray = GetComponentArrayFromComponentType(componentToAdd.componentType);
 
@@ -114,6 +114,9 @@ public class Ship : MonoBehaviour
         {
             //Add to relevant array
             componentArray[componentIndex] = componentToAdd;
+
+            InstantiateComponent(componentToAdd, componentIndex);
+
             //Was sucessfully added to array
             return true;
         }
@@ -125,6 +128,12 @@ public class Ship : MonoBehaviour
     //Function to add a component to a ship at a specific index
     public bool AddComponentToShip(ShipComponentAsset componentToAdd, int index)
     {
+        //Null check
+        if (componentToAdd == null)
+        {
+            return false;
+        }
+
         //Get relevant aray from type
         ShipComponentAsset[] componentArray = GetComponentArrayFromComponentType(componentToAdd.componentType);
 
@@ -132,10 +141,44 @@ public class Ship : MonoBehaviour
         if (HasAvailableSpaceAtComponentIndex(componentArray, index))
         {
             componentArray[index] = componentToAdd;
+
+            InstantiateComponent(componentToAdd, index);
+
             return true;
         }
 
         return false;
+    }
+
+    //Function to instantiate a component gameobject in the world. 
+    public void InstantiateComponent(ShipComponentAsset componentToInstantiate, int additionIndex)
+    {
+        //Null check
+        if (componentToInstantiate == null)
+        {
+            return;
+        }
+
+        GameObject componentPrefab = componentToInstantiate.componentPrefab;
+
+        //Null check
+        if(componentPrefab == null)
+        {
+            return;
+        }
+
+        //Get slots for this type of component
+        GameObject[] slots = GetSlotArrayFromComponentType(componentToInstantiate.componentType);
+        //Check if slots is null, if not expansion or large component basically
+        if(slots == null)
+        {
+            return;
+        }
+
+        //Get the slot from addition index
+        GameObject slot = slots[additionIndex];
+        //Spawn game object at correct position, rotation and set the parent as relative slot.
+        Instantiate(componentPrefab, slot.transform.position, slot.transform.rotation, slot.transform);
     }
 
     //Function to check for a space in the ship component list.
@@ -202,6 +245,23 @@ public class Ship : MonoBehaviour
         else if(type == ShipComponentType.Upgrade)
         {
             return upgradeComponents;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    //Function to get the gameobject slot array from the component type
+    public GameObject[] GetSlotArrayFromComponentType(ShipComponentType type)
+    {
+        if(type == ShipComponentType.Large)
+        {
+            return largeComponentSlots;
+        }
+        else if(type == ShipComponentType.Expansion)
+        {
+            return expansionComponentSlots;
         }
         else
         {
