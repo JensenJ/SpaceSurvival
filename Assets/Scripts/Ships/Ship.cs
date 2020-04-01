@@ -31,9 +31,28 @@ public class Ship : MonoBehaviour
 
     public void Update()
     {
+        //Add using "fill" method
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             bool success = AddComponentToShip(testCargoContainerComponent);
+            Debug.Log("Added component: " + success);
+        }
+        //Add using "specific" method at first index
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            bool success = AddComponentToShip(testCargoContainerComponent, 0);
+            Debug.Log("Added component: " + success);
+        }
+        //Add using "specific" method at second index
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            bool success = AddComponentToShip(testCargoContainerComponent, 1);
+            Debug.Log("Added component: " + success);
+        }
+        //Add using "specific" method at out of range index
+        if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            bool success = AddComponentToShip(testCargoContainerComponent, 3);
             Debug.Log("Added component: " + success);
         }
     }
@@ -84,67 +103,43 @@ public class Ship : MonoBehaviour
         }
     }
 
-    //TODO: Refactor function and make it so that actual components are spawned in world for large and expansion components
-    //Function to add a component to a ship
+    //Function to add a component to a ship by filling the array linearly
     public bool AddComponentToShip(ShipComponentAsset componentToAdd)
     {
-        ShipComponentType type = componentToAdd.componentType;
-        //If type is small
-        if(type == ShipComponentType.Small)
+        //Get relevant aray from type
+        ShipComponentAsset[] componentArray = GetComponentArrayFromComponentType(componentToAdd.componentType);
+
+        //Check if there is available space in this array
+        if(HasAvailableSpaceInComponentArray(componentArray, out int componentIndex) == true)
         {
-            //If space available, add to array
-            if (CheckComponentArrayAvailability(smallComponents, out int componentIndex) == true)
-            {
-                //Add to component array and return true
-                smallComponents[componentIndex] = componentToAdd;
-                return true;
-            }
+            //Add to relevant array
+            componentArray[componentIndex] = componentToAdd;
+            //Was sucessfully added to array
+            return true;
         }
-        else if(type == ShipComponentType.Medium)
+
+        //Was not successful, no space in array
+        return false;
+    }
+
+    //Function to add a component to a ship at a specific index
+    public bool AddComponentToShip(ShipComponentAsset componentToAdd, int index)
+    {
+        //Get relevant aray from type
+        ShipComponentAsset[] componentArray = GetComponentArrayFromComponentType(componentToAdd.componentType);
+
+        //Check if there is available space in this array at the specified index
+        if (HasAvailableSpaceAtComponentIndex(componentArray, index))
         {
-            //If space available, add to array
-            if (CheckComponentArrayAvailability(mediumComponents, out int componentIndex) == true)
-            {
-                //Add to component array and return true
-                mediumComponents[componentIndex] = componentToAdd;
-                return true;
-            }
-        }
-        else if (type == ShipComponentType.Large)
-        {
-            //If space available, add to array
-            if (CheckComponentArrayAvailability(largeComponents, out int componentIndex) == true)
-            {
-                //Add to component array and return true
-                largeComponents[componentIndex] = componentToAdd;
-                return true;
-            }
-        }
-        else if (type == ShipComponentType.Expansion)
-        {
-            //If space available, add to array
-            if (CheckComponentArrayAvailability(expansionComponents, out int componentIndex) == true)
-            {
-                //Add to component array and return true
-                expansionComponents[componentIndex] = componentToAdd;
-                return true;
-            }
-        }
-        else if (type == ShipComponentType.Upgrade) {
-            //If space available, add to array
-            if (CheckComponentArrayAvailability(upgradeComponents, out int componentIndex) == true)
-            {
-                //Add to component array and return true
-                upgradeComponents[componentIndex] = componentToAdd;
-                return true;
-            }
+            componentArray[index] = componentToAdd;
+            return true;
         }
 
         return false;
     }
 
     //Function to check for a space in the ship component list.
-    public bool CheckComponentArrayAvailability(ShipComponentAsset[] componentArrayToCheck, out int index)
+    public bool HasAvailableSpaceInComponentArray(ShipComponentAsset[] componentArrayToCheck, out int index)
     {
         //For every item in component list
         for (int i = 0; i < componentArrayToCheck.Length; i++)
@@ -161,5 +156,56 @@ public class Ship : MonoBehaviour
         //Return after setting index to 0
         index = 0;
         return false;
+    }
+
+    //Function to check an array at a specific index for whether it has a component or not.
+    public bool HasAvailableSpaceAtComponentIndex(ShipComponentAsset[] componentArrayToCheck, int indexToCheck)
+    {
+        //Check for out of bounds exception
+        if(indexToCheck > componentArrayToCheck.Length - 1 || indexToCheck < 0)
+        {
+            return false;
+        }
+
+        //Check if component in array at the index is null, not assigned
+        if(componentArrayToCheck[indexToCheck] == null)
+        {
+            //Has space at this index in the array
+            return true;
+        }
+        else
+        {
+            //Does not have space at this index in the array
+            return false;
+        }
+    }
+
+    //Function to get the component array relevant to the component type passed in to the function.
+    public ShipComponentAsset[] GetComponentArrayFromComponentType(ShipComponentType type)
+    {
+        if(type == ShipComponentType.Small)
+        {
+            return smallComponents;
+        }
+        else if(type == ShipComponentType.Medium)
+        {
+            return mediumComponents;
+        }
+        else if (type == ShipComponentType.Large)
+        {
+            return largeComponents;
+        }
+        else if(type == ShipComponentType.Expansion)
+        {
+            return expansionComponents;
+        }
+        else if(type == ShipComponentType.Upgrade)
+        {
+            return upgradeComponents;
+        }
+        else
+        {
+            return null;
+        }
     }
 }
