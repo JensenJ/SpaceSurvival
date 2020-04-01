@@ -22,9 +22,20 @@ public class Ship : MonoBehaviour
     public GameObject[] largeComponentSlots;
     public GameObject[] expansionComponentSlots;
 
+    public ShipComponentAsset testCargoContainerComponent;
+
     private void Awake()
     {
         InitialiseComponents();
+    }
+
+    public void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            bool success = AddComponentToShip(testCargoContainerComponent);
+            Debug.Log("Added component: " + success);
+        }
     }
 
     // Start is called before the first frame update
@@ -71,5 +82,84 @@ public class Ship : MonoBehaviour
             GameObject slot = shipAsset.shipPrefab.transform.GetChild(index).gameObject;
             largeComponentSlots[i] = Instantiate(slot, slot.transform.position + transform.position, slot.transform.rotation, transform);
         }
+    }
+
+    //TODO: Refactor function and make it so that actual components are spawned in world for large and expansion components
+    //Function to add a component to a ship
+    public bool AddComponentToShip(ShipComponentAsset componentToAdd)
+    {
+        ShipComponentType type = componentToAdd.componentType;
+        //If type is small
+        if(type == ShipComponentType.Small)
+        {
+            //If space available, add to array
+            if (CheckComponentArrayAvailability(smallComponents, out int componentIndex) == true)
+            {
+                //Add to component array and return true
+                smallComponents[componentIndex] = componentToAdd;
+                return true;
+            }
+        }
+        else if(type == ShipComponentType.Medium)
+        {
+            //If space available, add to array
+            if (CheckComponentArrayAvailability(mediumComponents, out int componentIndex) == true)
+            {
+                //Add to component array and return true
+                mediumComponents[componentIndex] = componentToAdd;
+                return true;
+            }
+        }
+        else if (type == ShipComponentType.Large)
+        {
+            //If space available, add to array
+            if (CheckComponentArrayAvailability(largeComponents, out int componentIndex) == true)
+            {
+                //Add to component array and return true
+                largeComponents[componentIndex] = componentToAdd;
+                return true;
+            }
+        }
+        else if (type == ShipComponentType.Expansion)
+        {
+            //If space available, add to array
+            if (CheckComponentArrayAvailability(expansionComponents, out int componentIndex) == true)
+            {
+                //Add to component array and return true
+                expansionComponents[componentIndex] = componentToAdd;
+                return true;
+            }
+        }
+        else if (type == ShipComponentType.Upgrade) {
+            //If space available, add to array
+            if (CheckComponentArrayAvailability(upgradeComponents, out int componentIndex) == true)
+            {
+                //Add to component array and return true
+                upgradeComponents[componentIndex] = componentToAdd;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //Function to check for a space in the ship component list.
+    public bool CheckComponentArrayAvailability(ShipComponentAsset[] componentArrayToCheck, out int index)
+    {
+        //For every item in component list
+        for (int i = 0; i < componentArrayToCheck.Length; i++)
+        {
+            //Check if there is space, aka is not assigned
+            if(componentArrayToCheck[i] == null)
+            {
+                //Set out parameter to current index
+                index = i;
+                //Return
+                return true;
+            }
+        }
+        //Return after setting index to 0
+        index = 0;
+        return false;
     }
 }

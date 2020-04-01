@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.5825762, g: 0.39155176, b: 0.27649948, a: 1}
+  m_IndirectSpecularColor: {r: 0.58260494, g: 0.39183286, b: 0.27718803, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -208,6 +208,8 @@ MonoBehaviour:
   upgradeComponents: []
   largeComponentSlots: []
   expansionComponentSlots: []
+  testCargoContainerComponent: {fileID: 11400000, guid: 8bb76bf1f7ff02944b2318f5930cf7ac,
+    type: 2}
 --- !u!64 &109267460
 MeshCollider:
   m_ObjectHideFlags: 0
