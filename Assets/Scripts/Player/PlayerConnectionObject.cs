@@ -10,6 +10,9 @@ public class PlayerConnectionObject : NetworkBehaviour
     public string playerName = "Player";
     public GameObject playerGameObject = null;
 
+
+    public GameObject shipObjectPrefab = null;
+
     NetworkUtils netUtils = null;
 
     // Start is called before the first frame update
@@ -29,6 +32,8 @@ public class PlayerConnectionObject : NetworkBehaviour
 
         CmdSpawnPlayerGameObject();
         CmdChangePlayerName("Player" + Random.Range(1, 100));
+
+        CmdSpawnShip();
     }
 
     // Update is called once per frame
@@ -83,6 +88,7 @@ public class PlayerConnectionObject : NetworkBehaviour
     //Commands are only executed on the host client / server
     //Commands guarantee that the function is running on the server
 
+    #region PlayerCommands
     //Command to spawn player on server
     [Command]
     void CmdSpawnPlayerGameObject()
@@ -168,10 +174,23 @@ public class PlayerConnectionObject : NetworkBehaviour
             attributes.SetMaxStamina(maxStamina);
         }
     }
+    #endregion
+
+    #region ShipCommands
+
+    [Command]
+    void CmdSpawnShip()
+    {
+        GameObject shipObject = Instantiate(shipObjectPrefab);
+
+        NetworkServer.Spawn(shipObject, connectionToClient);
+    }
+    #endregion
 
     /////////////////////////////// RPC ///////////////////////////////
     //RPCs (remote procedure calls) are functions that are only executed on clients
 
+    #region PlayerRPCs
     //RPC to setup player connections and get the correct game object for that connection object
     [ClientRpc]
     void RpcResetPlayerConnection()
@@ -273,4 +292,5 @@ public class PlayerConnectionObject : NetworkBehaviour
             attributes.SetMaxStamina(maxStamina);
         }
     }
+    #endregion
 }

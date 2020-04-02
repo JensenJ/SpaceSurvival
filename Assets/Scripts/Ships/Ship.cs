@@ -2,9 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
-[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
-public class Ship : MonoBehaviour
+public class Ship : NetworkBehaviour
 {
     //Object variables
     MeshFilter meshFilter;
@@ -24,103 +24,78 @@ public class Ship : MonoBehaviour
 
     public ShipComponentAsset testCargoContainerComponent;
 
-    private void Awake()
+    public GameObject largeSlotPrefab;
+    public GameObject expansionSlotPrefab;
+
+    public GameObject shipObject;
+
+    private void Start()
     {
-        InitialiseComponents();
+        //if (hasAuthority == false)
+        //{
+        //    return;
+        //}
+
+        //CmdSpawnPlayerShip();
     }
 
     public void Update()
     {
-        //Add using "fill" method
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            bool success = AddComponentToShip(testCargoContainerComponent);
-            Debug.Log("Added component: " + success);
-        }
-        //Add using "specific" method at first index
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            bool success = AddComponentToShip(testCargoContainerComponent, 0);
-            Debug.Log("Added component: " + success);
-        }
-        //Add using "specific" method at second index
-        if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            bool success = AddComponentToShip(testCargoContainerComponent, 1);
-            Debug.Log("Added component: " + success);
-        }
 
-
-        //Remove at first index
-        if (Input.GetKeyDown(KeyCode.Alpha4))
-        {
-            if(RemoveComponentFromShip(ShipComponentType.Expansion, 0, out ShipComponentAsset removedComponent))
-            {
-                Debug.Log("Removed component " + removedComponent.componentName);
-            }
-            else
-            {
-                Debug.Log("Could not remove component");
-            }
-        }
-        //Remove at second index
-        if (Input.GetKeyDown(KeyCode.Alpha5))
-        {
-            if (RemoveComponentFromShip(ShipComponentType.Expansion, 1, out ShipComponentAsset removedComponent))
-            {
-                Debug.Log("Removed component " + removedComponent.componentName);
-            }
-            else
-            {
-                Debug.Log("Could not remove component");
-            }
-        }
-    }
-
-    // Start is called before the first frame update
-    void InitialiseComponents()
-    {
-        //Cancel if ship asset is null
-        if (shipAsset == null)
+        if(hasAuthority == false)
         {
             return;
         }
-        //Initialise Component Arrays
-        smallComponents = new ShipComponentAsset[shipAsset.smallComponentCount];
-        mediumComponents = new ShipComponentAsset[shipAsset.mediumComponentCount];
-        largeComponents = new ShipComponentAsset[shipAsset.largeComponentCount];
-        expansionComponents = new ShipComponentAsset[shipAsset.expansionComponentCount];
-        upgradeComponents = new ShipComponentAsset[shipAsset.upgradeComponentCount];
 
-        //Gameobject arrays for physical slots on ship
-        largeComponentSlots = new GameObject[shipAsset.largeComponentCount];
-        expansionComponentSlots = new GameObject[shipAsset.expansionComponentCount];
-
-        //Get Mesh Components
-        meshFilter = GetComponent<MeshFilter>();
-        meshRenderer = GetComponent<MeshRenderer>();
-        meshCollider = GetComponent<MeshCollider>();
-
-        //Load mesh data from prefab
-        meshFilter.mesh = shipAsset.shipPrefab.transform.GetChild(0).GetComponent<MeshFilter>().sharedMesh;
-        meshRenderer.materials = shipAsset.shipPrefab.transform.GetChild(0).GetComponent<MeshRenderer>().sharedMaterials;
-        meshCollider.sharedMesh = shipAsset.shipPrefab.transform.GetChild(0).GetComponent<MeshCollider>().sharedMesh;
-
-        //Expansion Slot Instantiation
-        for (int i = 0; i < shipAsset.expansionComponentCount; i++)
+        if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            int index = i + 1;
-            GameObject slot = shipAsset.shipPrefab.transform.GetChild(index).gameObject;
-            expansionComponentSlots[i] = Instantiate(slot, slot.transform.position + transform.position, slot.transform.rotation, transform);
+            CmdSpawnPlayerShip();
         }
 
-        //Large Slot Instantiation
-        for (int i = 0; i < shipAsset.largeComponentCount; i++)
-        {
-            int index = i + shipAsset.expansionComponentCount + 1;
-            GameObject slot = shipAsset.shipPrefab.transform.GetChild(index).gameObject;
-            largeComponentSlots[i] = Instantiate(slot, slot.transform.position + transform.position, slot.transform.rotation, transform);
-        }
+        //Add using "fill" method
+        //if (Input.GetKeyDown(KeyCode.Alpha1))
+        //{
+        //    bool success = AddComponentToShip(testCargoContainerComponent);
+        //    Debug.Log("Added component: " + success);
+        //}
+        ////Add using "specific" method at first index
+        //if (Input.GetKeyDown(KeyCode.Alpha2))
+        //{
+        //    bool success = AddComponentToShip(testCargoContainerComponent, 0);
+        //    Debug.Log("Added component: " + success);
+        //}
+        ////Add using "specific" method at second index
+        //if (Input.GetKeyDown(KeyCode.Alpha3))
+        //{
+        //    bool success = AddComponentToShip(testCargoContainerComponent, 1);
+        //    Debug.Log("Added component: " + success);
+        //}
+
+
+        ////Remove at first index
+        //if (Input.GetKeyDown(KeyCode.Alpha4))
+        //{
+        //    if(RemoveComponentFromShip(ShipComponentType.Expansion, 0, out ShipComponentAsset removedComponent))
+        //    {
+        //        Debug.Log("Removed component " + removedComponent.componentName);
+        //    }
+        //    else
+        //    {
+        //        Debug.Log("Could not remove component");
+        //    }
+        //}
+        ////Remove at second index
+        //if (Input.GetKeyDown(KeyCode.Alpha5))
+        //{
+        //    if (RemoveComponentFromShip(ShipComponentType.Expansion, 1, out ShipComponentAsset removedComponent))
+        //    {
+        //        Debug.Log("Removed component " + removedComponent.componentName);
+        //    }
+        //    else
+        //    {
+        //        Debug.Log("Could not remove component");
+        //    }
+        //}
     }
 
     //Function to add a component to a ship by filling the array linearly
@@ -345,5 +320,71 @@ public class Ship : MonoBehaviour
         {
             return null;
         }
+    }
+
+    /////////////////////////////// COMMANDS ///////////////////////////////
+    //Commands are only executed on the host client / server
+    //Commands guarantee that the function is running on the server
+
+    //Command to spawn a player ship correctly and all its components
+    [Command]
+    void CmdSpawnPlayerShip()
+    {
+        //Cancel if ship asset is null
+        if (shipAsset == null)
+        {
+            return;
+        }
+        //Initialise Component Arrays
+        smallComponents = new ShipComponentAsset[shipAsset.smallComponentCount];
+        mediumComponents = new ShipComponentAsset[shipAsset.mediumComponentCount];
+        largeComponents = new ShipComponentAsset[shipAsset.largeComponentCount];
+        expansionComponents = new ShipComponentAsset[shipAsset.expansionComponentCount];
+        upgradeComponents = new ShipComponentAsset[shipAsset.upgradeComponentCount];
+
+        //Gameobject arrays for physical slots on ship
+        largeComponentSlots = new GameObject[shipAsset.largeComponentCount];
+        expansionComponentSlots = new GameObject[shipAsset.expansionComponentCount];
+
+        //Instantiate object for network spawning
+        shipObject = Instantiate(shipAsset.shipPrefab, transform.position, transform.rotation, transform);
+
+        //Spawn ship on all clients / server
+        NetworkServer.Spawn(shipObject, connectionToClient);
+
+        //Expansion Slot Instantiation
+        for (int i = 0; i < shipAsset.expansionComponentCount; i++)
+        {
+            int index = i;
+            GameObject slot = shipAsset.shipPrefab.transform.GetChild(index).gameObject;
+            //expansionComponentSlots[i] = Instantiate(expansionSlotPrefab, slot.transform.position + transform.position, slot.transform.rotation, shipObject.transform);
+            //NetworkServer.Spawn(expansionComponentSlots[i], connectionToClient);
+            expansionComponentSlots[i] = slot;
+        }
+
+        //Large Slot Instantiation
+        for (int i = 0; i < shipAsset.largeComponentCount; i++)
+        {
+            int index = i + shipAsset.expansionComponentCount;
+            GameObject slot = shipAsset.shipPrefab.transform.GetChild(index).gameObject;
+            //largeComponentSlots[i] = Instantiate(largeSlotPrefab, slot.transform.position + transform.position, slot.transform.rotation, shipObject.transform);
+            //NetworkServer.Spawn(largeComponentSlots[i], connectionToClient);
+            largeComponentSlots[i] = slot;
+        }
+
+        RpcSetShipSpawnData(shipObject);
+    }
+
+    /////////////////////////////// RPC ///////////////////////////////
+    //RPCs (remote procedure calls) are functions that are only executed on clients
+
+
+    //RPC to set data for a new ship spawn on clients
+    [ClientRpc]
+    void RpcSetShipSpawnData(GameObject ship)
+    {
+        ship.transform.parent = transform;
+        ship.transform.position = transform.position;
+        ship.transform.rotation = transform.rotation;
     }
 }
