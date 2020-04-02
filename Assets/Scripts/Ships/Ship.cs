@@ -49,6 +49,32 @@ public class Ship : MonoBehaviour
             bool success = AddComponentToShip(testCargoContainerComponent, 1);
             Debug.Log("Added component: " + success);
         }
+
+
+        //Remove at first index
+        if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            if(RemoveComponentFromShip(ShipComponentType.Expansion, 0, out ShipComponentAsset removedComponent))
+            {
+                Debug.Log("Removed component " + removedComponent.componentName);
+            }
+            else
+            {
+                Debug.Log("Could not remove component");
+            }
+        }
+        //Remove at second index
+        if (Input.GetKeyDown(KeyCode.Alpha5))
+        {
+            if (RemoveComponentFromShip(ShipComponentType.Expansion, 1, out ShipComponentAsset removedComponent))
+            {
+                Debug.Log("Removed component " + removedComponent.componentName);
+            }
+            else
+            {
+                Debug.Log("Could not remove component");
+            }
+        }
     }
 
     // Start is called before the first frame update
@@ -150,6 +176,37 @@ public class Ship : MonoBehaviour
         return false;
     }
 
+    //Function to remove a component from a specific index of a component type from the ship
+    public bool RemoveComponentFromShip(ShipComponentType componentType, int indexToRemove, out ShipComponentAsset removedComponent)
+    {
+        //Get the component array from the component type
+        ShipComponentAsset[] componentArray = GetComponentArrayFromComponentType(componentType);
+
+        //Check if index is not out of bounds
+        if(indexToRemove > componentArray.Length - 1 || indexToRemove < 0)
+        {
+            //Removal was not successful as it was outside the bounds of the array and would cause an error.
+            removedComponent = null;
+            return false;
+        }
+
+        //Get old component before it is removed from array
+        removedComponent = componentArray[indexToRemove];
+        //If nothing was at the index
+        if(removedComponent == null)
+        {
+            //Removal was not successful as there was nothing to remove
+            return false;
+        }
+
+        //Set the new index to nothing / null
+        componentArray[indexToRemove] = null;
+
+        //Attempt to destroy component in world
+        DestroyComponent(removedComponent, indexToRemove);
+        return true;
+    }
+
     //Function to instantiate a component gameobject in the world. 
     public void InstantiateComponent(ShipComponentAsset componentToInstantiate, int additionIndex)
     {
@@ -179,6 +236,27 @@ public class Ship : MonoBehaviour
         GameObject slot = slots[additionIndex];
         //Spawn game object at correct position, rotation and set the parent as relative slot.
         Instantiate(componentPrefab, slot.transform.position, slot.transform.rotation, slot.transform);
+    }
+
+    //Function to destroy a component in the world physically attached to the ship
+    public void DestroyComponent(ShipComponentAsset componentToDestroy, int removalIndex)
+    {
+        //Null check
+        if(componentToDestroy == null)
+        {
+            return;
+        }
+
+        //Get slots for this type of component
+        GameObject[] slots = GetSlotArrayFromComponentType(componentToDestroy.componentType);
+        //Check if slots is null, if not expansion or large component basically
+        if (slots == null)
+        {
+            return;
+        }
+
+        GameObject slot = slots[removalIndex];
+        Destroy(slot.transform.GetChild(0).gameObject);
     }
 
     //Function to check for a space in the ship component list.
