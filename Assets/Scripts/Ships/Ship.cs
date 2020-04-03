@@ -43,49 +43,49 @@ public class Ship : NetworkBehaviour
         }
 
         //Add using "fill" method
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            bool success = AddComponentToShip(testCargoContainerComponent);
-            Debug.Log("Added component: " + success);
-        }
-        //Add using "specific" method at first index
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            bool success = AddComponentToShip(testCargoContainerComponent, 0);
-            Debug.Log("Added component: " + success);
-        }
-        //Add using "specific" method at second index
-        if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            bool success = AddComponentToShip(testCargoContainerComponent, 1);
-            Debug.Log("Added component: " + success);
-        }
+        //if (Input.GetKeyDown(KeyCode.Alpha1))
+        //{
+        //    bool success = AddComponentToShip(testCargoContainerComponent);
+        //    Debug.Log("Added component: " + success);
+        //}
+        ////Add using "specific" method at first index
+        //if (Input.GetKeyDown(KeyCode.Alpha2))
+        //{
+        //    bool success = AddComponentToShip(testCargoContainerComponent, 0);
+        //    Debug.Log("Added component: " + success);
+        //}
+        ////Add using "specific" method at second index
+        //if (Input.GetKeyDown(KeyCode.Alpha3))
+        //{
+        //    bool success = AddComponentToShip(testCargoContainerComponent, 1);
+        //    Debug.Log("Added component: " + success);
+        //}
 
 
-        //Remove at first index
-        if (Input.GetKeyDown(KeyCode.Alpha4))
-        {
-            if (RemoveComponentFromShip(ShipComponentType.Expansion, 0, out ShipComponentAsset removedComponent))
-            {
-                Debug.Log("Removed component " + removedComponent.componentName);
-            }
-            else
-            {
-                Debug.Log("Could not remove component");
-            }
-        }
-        //Remove at second index
-        if (Input.GetKeyDown(KeyCode.Alpha5))
-        {
-            if (RemoveComponentFromShip(ShipComponentType.Expansion, 1, out ShipComponentAsset removedComponent))
-            {
-                Debug.Log("Removed component " + removedComponent.componentName);
-            }
-            else
-            {
-                Debug.Log("Could not remove component");
-            }
-        }
+        ////Remove at first index
+        //if (Input.GetKeyDown(KeyCode.Alpha4))
+        //{
+        //    if (RemoveComponentFromShip(ShipComponentType.Expansion, 0, out ShipComponentAsset removedComponent))
+        //    {
+        //        Debug.Log("Removed component " + removedComponent.componentName);
+        //    }
+        //    else
+        //    {
+        //        Debug.Log("Could not remove component");
+        //    }
+        //}
+        ////Remove at second index
+        //if (Input.GetKeyDown(KeyCode.Alpha5))
+        //{
+        //    if (RemoveComponentFromShip(ShipComponentType.Expansion, 1, out ShipComponentAsset removedComponent))
+        //    {
+        //        Debug.Log("Removed component " + removedComponent.componentName);
+        //    }
+        //    else
+        //    {
+        //        Debug.Log("Could not remove component");
+        //    }
+        //}
     }
 
     //Function to add a component to a ship by filling the array linearly
@@ -221,7 +221,7 @@ public class Ship : NetworkBehaviour
         }
 
         GameObject slot = slots[removalIndex];
-        Destroy(slot.transform.GetChild(1).gameObject);
+        Destroy(slot.transform.GetChild(0).gameObject);
     }
 
     //Function to check for a space in the ship component list.
@@ -337,25 +337,14 @@ public class Ship : NetworkBehaviour
         expansionComponentSlots = new GameObject[shipAsset.expansionComponentCount];
 
         //Instantiate object for network spawning
-        //shipObject = Instantiate(shipAsset.shipPrefab, transform.position, transform.rotation, transform);
+        shipObject = Instantiate(shipAsset.shipPrefab, transform.position, transform.rotation, transform);
 
-        shipObject = new GameObject("Ship");
-        shipObject.transform.position = transform.position;
-        shipObject.transform.rotation = transform.rotation;
-        shipObject.transform.SetParent(transform);
+        //Set the ship controller's parent id
+        ShipController shipController = shipObject.GetComponent<ShipController>();
+        shipController.parentNetID = GetComponent<NetworkIdentity>().netId;
 
-        GameObject ship = new GameObject("Ship Graphics");
-        ship.transform.position = shipObject.transform.position;
-        ship.transform.rotation = shipObject.transform.rotation;
-        ship.transform.SetParent(shipObject.transform);
-
-        meshFilter = ship.AddComponent<MeshFilter>();
-        meshRenderer = ship.AddComponent<MeshRenderer>();
-        meshCollider = ship.AddComponent<MeshCollider>();
-
-        meshFilter.mesh = shipAsset.shipPrefab.transform.GetChild(0).GetComponent<MeshFilter>().sharedMesh;
-        meshRenderer.materials = shipAsset.shipPrefab.transform.GetChild(0).GetComponent<MeshRenderer>().sharedMaterials;
-        meshCollider.sharedMesh = shipAsset.shipPrefab.transform.GetChild(0).GetComponent<MeshCollider>().sharedMesh;
+        //Spawn ship on all clients / server
+        NetworkServer.Spawn(shipObject, connectionToClient);
 
         //Expansion Slot Instantiation
         for (int i = 0; i < shipAsset.expansionComponentCount; i++)
@@ -364,13 +353,8 @@ public class Ship : NetworkBehaviour
             int index = i + 1;
             //Get slot from shipAsset
             GameObject slot = shipAsset.shipPrefab.transform.GetChild(index).gameObject;
-
-            //Instantiate and spawn slot across the network
-            expansionComponentSlots[i] = Instantiate(expansionSlotPrefab, slot.transform.position + transform.position, slot.transform.rotation, shipObject.transform);
-            //NetworkServer.Spawn(expansionComponentSlots[i], connectionToClient);
-
             //Assign slot
-            //expansionComponentSlots[i] = slot;
+            expansionComponentSlots[i] = slot;
         }
 
         //Large Slot Instantiation
@@ -380,24 +364,9 @@ public class Ship : NetworkBehaviour
             int index = i + shipAsset.expansionComponentCount + 1;
             //Get slot from shipAsset
             GameObject slot = shipAsset.shipPrefab.transform.GetChild(index).gameObject;
-
-            //Instantiate and spawn slot across the network
-            largeComponentSlots[i] = Instantiate(largeSlotPrefab, slot.transform.position + transform.position, slot.transform.rotation, shipObject.transform);
-            //NetworkServer.Spawn(largeComponentSlots[i], connectionToClient);
-
             //Assign slot
-            //largeComponentSlots[i] = slot;
+            largeComponentSlots[i] = slot;
         }
-
-        //Add a network identity
-        NetworkIdentity identity = shipObject.AddComponent<NetworkIdentity>();
-
-        //Spawn ship on all clients / server
-        NetworkServer.Spawn(shipObject, connectionToClient);
-
-        //Set the ship controller's parent id
-        ShipController shipController = shipObject.AddComponent<ShipController>();
-        shipController.parentNetID = identity.netId;
 
         //Set the ship spawn data on all clients
         RpcSetShipSpawnData(shipObject);
