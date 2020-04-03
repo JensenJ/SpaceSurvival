@@ -95,4 +95,6 @@ MonoBehaviour:
     type: 3}
   expansionSlotPrefab: {fileID: 2039311215709952332, guid: c54adc8bba22443458dbf7e8548c9e91,
     type: 3}
+  shipPrefab: {fileID: 2296617061906334779, guid: 6a3601578e0b7be4eacbf23af9d1d584,
+    type: 3}
   shipObject: {fileID: 0}
