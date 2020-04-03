@@ -138,7 +138,7 @@ namespace Mirror
         /// <summary>
         /// NetworkManager singleton
         /// </summary>
-        public static NetworkManager singleton;
+        public static NetworkManager singleton { get; private set; }
 
         /// <summary>
         /// Number of active player objects across all connections on the server.
@@ -162,28 +162,6 @@ namespace Mirror
         [NonSerialized]
         public bool clientLoadedScene;
 
-        // Deprecated 03/27/2019
-        /// <summary>
-        /// Obsolete: Use <see cref="NetworkClient.isConnected"/> instead
-        /// </summary>
-        /// <returns>Returns True if NetworkClient.isConnected</returns>
-        [EditorBrowsable(EditorBrowsableState.Never), Obsolete("Use NetworkClient.isConnected instead")]
-        public bool IsClientConnected()
-        {
-            return NetworkClient.isConnected;
-        }
-
-        // Deprecated 04/09/2019
-        /// <summary>
-        /// Obsolete: Use <see cref="isHeadless"/> instead.
-        /// <para>This is a static property now. This method will be removed by summer 2019.</para>
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never), Obsolete("Use isHeadless instead of IsHeadless()")]
-        public static bool IsHeadless()
-        {
-            return isHeadless;
-        }
-
         /// <summary>
         /// headless mode detection
         /// </summary>
@@ -196,14 +174,6 @@ namespace Mirror
         //    in other words, we need this to know which mode we are running in
         //    during FinishLoadScene.
         public NetworkManagerMode mode { get; private set; }
-
-        // Deprecated 03/25/2019
-        /// <summary>
-        /// Obsolete: Use <see cref="NetworkClient"/> directly
-        /// <para>For example, use <c>NetworkClient.Send(message)</c> instead of <c>NetworkManager.client.Send(message)</c></para>
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never), Obsolete("Use NetworkClient directly, it will be made static soon. For example, use NetworkClient.Send(message) instead of NetworkManager.client.Send(message)")]
-        public NetworkClient client => NetworkClient.singleton;
 
         #region Unity Callbacks
 
@@ -227,7 +197,8 @@ namespace Mirror
 #endif
             }
 
-            maxConnections = Mathf.Max(maxConnections, 0); // always >= 0
+            // always >= 0
+            maxConnections = Mathf.Max(maxConnections, 0);
 
             if (playerPrefab != null && playerPrefab.GetComponent<NetworkIdentity>() == null)
             {
@@ -241,13 +212,14 @@ namespace Mirror
         /// </summary>
         public virtual void Awake()
         {
+            // Don't allow collision-destroyed second instance to continue.
+            if (!InitializeSingleton()) return;
+
             Debug.Log("Thank you for using Mirror! https://mirror-networking.com");
 
             // Set the networkSceneName to prevent a scene reload
             // if client connection to server fails.
             networkSceneName = offlineScene;
-
-            InitializeSingleton();
 
             // setup OnSceneLoaded callback
             SceneManager.sceneLoaded += OnSceneLoaded;
@@ -292,8 +264,13 @@ namespace Mirror
         bool IsServerOnlineSceneChangeNeeded()
         {
             // Only change scene if the requested online scene is not blank, and is not already loaded
-            string loadedSceneName = SceneManager.GetActiveScene().name;
-            return !string.IsNullOrEmpty(onlineScene) && onlineScene != loadedSceneName && onlineScene != offlineScene;
+            return !string.IsNullOrEmpty(onlineScene) && !IsSceneActive(onlineScene) && onlineScene != offlineScene;
+        }
+
+        public static bool IsSceneActive(string scene)
+        {
+            Scene activeScene = SceneManager.GetActiveScene();
+            return activeScene.path == scene || activeScene.name == scene;
         }
 
         // full server setup code, without spawning objects yet
@@ -433,7 +410,7 @@ namespace Mirror
             RegisterClientMessages();
 
             if (LogFilter.Debug) Debug.Log("NetworkManager StartClient address:" + uri);
-            this.networkAddress = uri.Host;
+            networkAddress = uri.Host;
 
             NetworkClient.Connect(uri);
 
@@ -540,7 +517,7 @@ namespace Mirror
             // loaded and all objects were spawned.
             // DO NOT do this earlier. it would cause race conditions where a
             // client will do things before the server is even fully started.
-            Debug.Log("StartHostClient called");
+            if (LogFilter.Debug) Debug.Log("StartHostClient called");
             StartHostClient();
         }
 
@@ -571,8 +548,17 @@ namespace Mirror
         public void StopHost()
         {
             OnStopHost();
-            StopServer();
+
+            // TODO try to move DisconnectLocalServer into StopClient(), and
+            // then call StopClient() before StopServer(). needs testing!.
+
+            // DisconnectLocalServer needs to be called so that the host client
+            // receives a DisconnectMessage too.
+            // fixes: https://github.com/vis2k/Mirror/issues/1515
+            NetworkClient.DisconnectLocalServer();
+
             StopClient();
+            StopServer();
         }
 
         /// <summary>
@@ -628,7 +614,7 @@ namespace Mirror
 
             // If this is the host player, StopServer will already be changing scenes.
             // Check loadingSceneAsync to ensure we don't double-invoke the scene change.
-            if (!string.IsNullOrEmpty(offlineScene) && SceneManager.GetActiveScene().name != offlineScene && loadingSceneAsync == null)
+            if (!string.IsNullOrEmpty(offlineScene) && !IsSceneActive(offlineScene) && loadingSceneAsync == null)
             {
                 ClientChangeScene(offlineScene, SceneOperation.Normal);
             }
@@ -677,12 +663,9 @@ namespace Mirror
 #endif
         }
 
-        void InitializeSingleton()
+        bool InitializeSingleton()
         {
-            if (singleton != null && singleton == this)
-            {
-                return;
-            }
+            if (singleton != null && singleton == this) return true;
 
             // do this early
             LogFilter.Debug = showDebugMessages;
@@ -693,7 +676,9 @@ namespace Mirror
                 {
                     Debug.LogWarning("Multiple NetworkManagers detected in the scene. Only one NetworkManager can exist at a time. The duplicate NetworkManager will be destroyed.");
                     Destroy(gameObject);
-                    return;
+
+                    // Return false to not allow collision-destroyed second instance to continue.
+                    return false;
                 }
                 if (LogFilter.Debug) Debug.Log("NetworkManager created singleton (DontDestroyOnLoad)");
                 singleton = this;
@@ -708,6 +693,8 @@ namespace Mirror
             // set active transport AFTER setting singleton.
             // so only if we didn't destroy ourselves.
             Transport.activeTransport = transport;
+
+            return true;
         }
 
         void RegisterServerMessages()
@@ -901,12 +888,12 @@ namespace Mirror
                 {
                     // TODO only respawn the server objects from that scene later!
                     NetworkServer.SpawnObjects();
-                    Debug.Log("Respawned Server objects after additive scene load: " + scene.name);
+                    if (LogFilter.Debug) Debug.Log("Respawned Server objects after additive scene load: " + scene.name);
                 }
                 if (NetworkClient.active)
                 {
                     ClientScene.PrepareToSpawnSceneObjects();
-                    Debug.Log("Rebuild Client spawnableObjects after additive scene load: " + scene.name);
+                    if (LogFilter.Debug) Debug.Log("Rebuild Client spawnableObjects after additive scene load: " + scene.name);
                 }
             }
         }
@@ -956,7 +943,7 @@ namespace Mirror
         {
             // debug message is very important. if we ever break anything then
             // it's very obvious to notice.
-            Debug.Log("Finished loading scene in host mode.");
+            if (LogFilter.Debug) Debug.Log("Finished loading scene in host mode.");
 
             if (clientReadyConnection != null)
             {
@@ -1014,7 +1001,7 @@ namespace Mirror
         {
             // debug message is very important. if we ever break anything then
             // it's very obvious to notice.
-            Debug.Log("Finished loading scene in client-only mode.");
+            if (LogFilter.Debug) Debug.Log("Finished loading scene in client-only mode.");
 
             if (clientReadyConnection != null)
             {
@@ -1036,7 +1023,7 @@ namespace Mirror
         {
             // debug message is very important. if we ever break anything then
             // it's very obvious to notice.
-            Debug.Log("Finished loading scene in server-only mode.");
+            if (LogFilter.Debug) Debug.Log("Finished loading scene in server-only mode.");
 
             NetworkServer.SpawnObjects();
             OnServerSceneChanged(networkSceneName);
@@ -1131,7 +1118,7 @@ namespace Mirror
             OnServerReady(conn);
         }
 
-        void OnServerAddPlayerInternal(NetworkConnection conn, AddPlayerMessage extraMessage)
+        void OnServerAddPlayerInternal(NetworkConnection conn, AddPlayerMessage msg)
         {
             if (LogFilter.Debug) Debug.Log("NetworkManager.OnServerAddPlayer");
 
@@ -1153,9 +1140,7 @@ namespace Mirror
                 return;
             }
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            OnServerAddPlayer(conn, extraMessage);
-#pragma warning restore CS0618 // Type or member is obsolete
+            OnServerAddPlayer(conn);
         }
 
         void OnServerRemovePlayerMessageInternal(NetworkConnection conn, RemovePlayerMessage msg)
@@ -1204,8 +1189,7 @@ namespace Mirror
             conn.isAuthenticated = true;
 
             // proceed with the login handshake by calling OnClientConnect
-            string loadedSceneName = SceneManager.GetActiveScene().name;
-            if (string.IsNullOrEmpty(onlineScene) || onlineScene == offlineScene || loadedSceneName == onlineScene)
+            if (string.IsNullOrEmpty(onlineScene) || onlineScene == offlineScene || IsSceneActive(onlineScene))
             {
                 clientLoadedScene = false;
                 OnClientConnect(conn);
@@ -1285,17 +1269,6 @@ namespace Mirror
                 if (LogFilter.Debug) Debug.Log("Ready with no player object");
             }
             NetworkServer.SetClientReady(conn);
-        }
-
-        // Deprecated 10/02/2019
-        /// <summary>
-        /// Obsolete: Override <see cref="OnServerAddPlayer(NetworkConnection)"/> instead.
-        /// <para>See <a href="../Guides/GameObjects/SpawnPlayerCustom.md">Custom Players</a> for details.</para>
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never), Obsolete("Override OnServerAddPlayer(NetworkConnection conn) instead. See https://mirror-networking.com/docs/Guides/GameObjects/SpawnPlayerCustom.html for details.")]
-        public virtual void OnServerAddPlayer(NetworkConnection conn, AddPlayerMessage extraMessage)
-        {
-            OnServerAddPlayer(conn);
         }
 
         /// <summary>
@@ -1421,16 +1394,6 @@ namespace Mirror
         /// <param name="conn">Connection to the server.</param>
         public virtual void OnClientNotReady(NetworkConnection conn) { }
 
-        // Deprecated 09/17/2019
-        /// <summary>
-        /// Obsolete: Use <see cref="OnClientChangeScene(string, SceneOperation, bool)"/> instead.).
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never), Obsolete("Override OnClientChangeScene(string newSceneName, SceneOperation sceneOperation, bool customHandling) instead")]
-        public virtual void OnClientChangeScene(string newSceneName)
-        {
-            OnClientChangeScene(newSceneName, SceneOperation.Normal, false);
-        }
-
         // Deprecated 12/22/2019
         /// <summary>
         /// Obsolete: Use <see cref="OnClientChangeScene(string, SceneOperation, bool)"/> instead.).
@@ -1488,24 +1451,10 @@ namespace Mirror
         /// </summary>
         public virtual void OnStartServer() { }
 
-        // Deprecated 03/25/2019
-        /// <summary>
-        /// Obsolete: Use <see cref="OnStartClient()"/> instead of OnStartClient(NetworkClient client).
-        /// <para>All NetworkClient functions are static now, so you can use NetworkClient.Send(message) instead of client.Send(message) directly now.</para>
-        /// </summary>
-        /// <param name="client">The NetworkClient object that was started.</param>
-        [EditorBrowsable(EditorBrowsableState.Never), Obsolete("Use OnStartClient() instead of OnStartClient(NetworkClient client). All NetworkClient functions are static now, so you can use NetworkClient.Send(message) instead of client.Send(message) directly now.")]
-        public virtual void OnStartClient(NetworkClient client) { }
-
         /// <summary>
         /// This is invoked when the client is started.
         /// </summary>
-        public virtual void OnStartClient()
-        {
-#pragma warning disable CS0618 // Type or member is obsolete
-            OnStartClient(NetworkClient.singleton);
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
+        public virtual void OnStartClient() { }
 
         /// <summary>
         /// This is called when a server is stopped - including when a host is stopped.
