@@ -29,16 +29,6 @@ public class Ship : NetworkBehaviour
 
     public GameObject shipObject;
 
-    private void Start()
-    {
-        //if (hasAuthority == false)
-        //{
-        //    return;
-        //}
-
-        //CmdSpawnPlayerShip();
-    }
-
     public void Update()
     {
 
@@ -47,7 +37,7 @@ public class Ship : NetworkBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        if (Input.GetKeyDown(KeyCode.Alpha0))
         {
             CmdSpawnPlayerShip();
         }
@@ -75,7 +65,7 @@ public class Ship : NetworkBehaviour
         ////Remove at first index
         //if (Input.GetKeyDown(KeyCode.Alpha4))
         //{
-        //    if(RemoveComponentFromShip(ShipComponentType.Expansion, 0, out ShipComponentAsset removedComponent))
+        //    if (RemoveComponentFromShip(ShipComponentType.Expansion, 0, out ShipComponentAsset removedComponent))
         //    {
         //        Debug.Log("Removed component " + removedComponent.componentName);
         //    }
@@ -348,6 +338,10 @@ public class Ship : NetworkBehaviour
 
         //Instantiate object for network spawning
         shipObject = Instantiate(shipAsset.shipPrefab, transform.position, transform.rotation, transform);
+
+        //Set the ship controller's parent id
+        ShipController shipController = shipObject.GetComponent<ShipController>();
+        shipController.parentNetID = GetComponent<NetworkIdentity>().netId;
 
         //Spawn ship on all clients / server
         NetworkServer.Spawn(shipObject, connectionToClient);
