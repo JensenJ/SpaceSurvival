@@ -349,23 +349,26 @@ public class Ship : NetworkBehaviour
         //Expansion Slot Instantiation
         for (int i = 0; i < shipAsset.expansionComponentCount; i++)
         {
-            int index = i;
+            //Calculate index
+            int index = i + 1;
+            //Get slot from shipAsset
             GameObject slot = shipAsset.shipPrefab.transform.GetChild(index).gameObject;
-            //expansionComponentSlots[i] = Instantiate(expansionSlotPrefab, slot.transform.position + transform.position, slot.transform.rotation, shipObject.transform);
-            //NetworkServer.Spawn(expansionComponentSlots[i], connectionToClient);
+            //Assign slot
             expansionComponentSlots[i] = slot;
         }
 
         //Large Slot Instantiation
         for (int i = 0; i < shipAsset.largeComponentCount; i++)
         {
-            int index = i + shipAsset.expansionComponentCount;
+            //Calculate index
+            int index = i + shipAsset.expansionComponentCount + 1;
+            //Get slot from shipAsset
             GameObject slot = shipAsset.shipPrefab.transform.GetChild(index).gameObject;
-            //largeComponentSlots[i] = Instantiate(largeSlotPrefab, slot.transform.position + transform.position, slot.transform.rotation, shipObject.transform);
-            //NetworkServer.Spawn(largeComponentSlots[i], connectionToClient);
+            //Assign slot
             largeComponentSlots[i] = slot;
         }
 
+        //Set the ship spawn data on all clients
         RpcSetShipSpawnData(shipObject);
     }
 
