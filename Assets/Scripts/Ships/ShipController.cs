@@ -10,6 +10,9 @@ public class ShipController : NetworkBehaviour
     [SyncVar]
     public uint parentNetID;
 
+    //Parent ship class
+    Ship ship;
+
     //When the client starts
     public override void OnStartClient()
     {
@@ -22,5 +25,9 @@ public class ShipController : NetworkBehaviour
         transform.position = parentObject.transform.position;
         transform.rotation = parentObject.transform.rotation;
         transform.localScale = parentObject.transform.localScale;
+
+        //InitialiseComponents
+        ship = parentObject.GetComponent<Ship>();
+        ship.InitialiseComponents(gameObject);
     }
 }

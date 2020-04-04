@@ -317,19 +317,8 @@ public class Ship : NetworkBehaviour
         }
     }
 
-    /////////////////////////////// COMMANDS ///////////////////////////////
-    //Commands are only executed on the host client / server
-    //Commands guarantee that the function is running on the server
-
-    //Command to spawn a player ship correctly and all its components
-    [Command]
-    void CmdSpawnPlayerShip()
+    public void InitialiseComponents(GameObject shipObject)
     {
-        //Cancel if ship asset is null
-        if (shipAsset == null)
-        {
-            return;
-        }
         //Initialise Component Arrays
         smallComponents = new ShipComponentAsset[shipAsset.smallComponentCount];
         mediumComponents = new ShipComponentAsset[shipAsset.mediumComponentCount];
@@ -340,10 +329,6 @@ public class Ship : NetworkBehaviour
         //Gameobject arrays for physical slots on ship
         largeComponentSlots = new GameObject[shipAsset.largeComponentCount];
         expansionComponentSlots = new GameObject[shipAsset.expansionComponentCount];
-
-        //Instantiate object for network spawning
-        shipObject = Instantiate(shipAsset.shipPrefab, transform.position, transform.rotation, transform);
-
 
         //Expansion Slot Instantiation
         for (int i = 0; i < shipAsset.expansionComponentCount; i++)
@@ -366,6 +351,26 @@ public class Ship : NetworkBehaviour
             //Assign slot
             largeComponentSlots[i] = slot;
         }
+    }
+
+    /////////////////////////////// COMMANDS ///////////////////////////////
+    //Commands are only executed on the host client / server
+    //Commands guarantee that the function is running on the server
+
+    //Command to spawn a player ship correctly and all its components
+    [Command]
+    void CmdSpawnPlayerShip()
+    {
+        //Cancel if ship asset is null
+        if (shipAsset == null)
+        {
+            return;
+        }
+
+        //Instantiate object for network spawning
+        shipObject = Instantiate(shipAsset.shipPrefab, transform.position, transform.rotation, transform);
+
+        InitialiseComponents(shipObject);
 
         //Set the ship controller's parent id
         ShipController shipController = shipObject.GetComponent<ShipController>();
@@ -373,7 +378,6 @@ public class Ship : NetworkBehaviour
 
         //Spawn ship on all clients / server
         NetworkServer.Spawn(shipObject, connectionToClient);
-
 
         //Set the ship spawn data on all clients
         RpcSetShipSpawnData(shipObject);
@@ -387,6 +391,8 @@ public class Ship : NetworkBehaviour
     [ClientRpc]
     void RpcSetShipSpawnData(GameObject ship)
     {
+        InitialiseComponents(ship);
+
         ship.transform.parent = transform;
         ship.transform.position = transform.position;
         ship.transform.rotation = transform.rotation;
