@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea5cda4008d99604998424ac37b86bd2, type: 3}
   m_Name: Mining Ship 1
   m_EditorClassIdentifier: 
-  shipPrefab: {fileID: 6321486248310999553, guid: 7a09185cc8b2d7848aed2705dc852cc9,
+  shipPrefab: {fileID: 4897605000807291106, guid: 7a09185cc8b2d7848aed2705dc852cc9,
     type: 3}
   durability: 1000
   maxDurability: 1000
