@@ -350,10 +350,10 @@ public class Ship : NetworkBehaviour
         {
             //Calculate index
             int index = i + 1;
-            //Get slot from shipAsset
-            GameObject slot = shipAsset.shipPrefab.transform.GetChild(index).gameObject;
+            //Get slot from shipObject
+            GameObject slot = shipObject.transform.GetChild(index).gameObject;
             //Assign slot
-            expansionComponentSlots[i] = Instantiate(slot, slot.transform.position + transform.position, slot.transform.rotation, shipObject.transform);
+            expansionComponentSlots[i] = slot;
         }
 
         //Large Slot Instantiation
@@ -361,11 +361,10 @@ public class Ship : NetworkBehaviour
         {
             //Calculate index
             int index = i + shipAsset.expansionComponentCount + 1;
-            //Get slot from shipAsset
-            GameObject slot = shipAsset.shipPrefab.transform.GetChild(index).gameObject;
-
-            //Assign slot by instantiation
-            largeComponentSlots[i] = Instantiate(slot, slot.transform.position + transform.position, slot.transform.rotation, shipObject.transform);
+            //Get slot from shipObject
+            GameObject slot = shipObject.transform.GetChild(index).gameObject;
+            //Assign slot
+            largeComponentSlots[i] = slot;
         }
 
         //Set the ship controller's parent id
