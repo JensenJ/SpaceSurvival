@@ -66,84 +66,11 @@ public class Ship : NetworkBehaviour
         {
             CmdAddShipComponent(0, 0);
         }
-
-
-        //Remove at first index
-        if (Input.GetKeyDown(KeyCode.Alpha4))
+        //Remove component at position 0 in array
+        if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            if (RemoveComponentFromShip(ShipComponentType.Expansion, 0, out ShipComponentAsset removedComponent))
-            {
-                Debug.Log("Removed component " + removedComponent.componentName);
-            }
-            else
-            {
-                Debug.Log("Could not remove component");
-            }
+            CmdRemoveComponent(0, ShipComponentType.Expansion);
         }
-        //Remove at second index
-        if (Input.GetKeyDown(KeyCode.Alpha5))
-        {
-            if (RemoveComponentFromShip(ShipComponentType.Expansion, 1, out ShipComponentAsset removedComponent))
-            {
-                Debug.Log("Removed component " + removedComponent.componentName);
-            }
-            else
-            {
-                Debug.Log("Could not remove component");
-            }
-        }
-    }
-
-    //Function to remove a component from a specific index of a component type from the ship
-    public bool RemoveComponentFromShip(ShipComponentType componentType, int indexToRemove, out ShipComponentAsset removedComponent)
-    {
-        //Get the component array from the component type
-        ShipComponentAsset[] componentArray = GetComponentArrayFromComponentType(componentType);
-
-        //Check if index is not out of bounds
-        if(indexToRemove > componentArray.Length - 1 || indexToRemove < 0)
-        {
-            //Removal was not successful as it was outside the bounds of the array and would cause an error.
-            removedComponent = null;
-            return false;
-        }
-
-        //Get old component before it is removed from array
-        removedComponent = componentArray[indexToRemove];
-        //If nothing was at the index
-        if(removedComponent == null)
-        {
-            //Removal was not successful as there was nothing to remove
-            return false;
-        }
-
-        //Set the new index to nothing / null
-        componentArray[indexToRemove] = null;
-
-        //Attempt to destroy component in world
-        DestroyComponent(removedComponent, indexToRemove);
-        return true;
-    }
-
-    //Function to destroy a component in the world physically attached to the ship
-    public void DestroyComponent(ShipComponentAsset componentToDestroy, int removalIndex)
-    {
-        //Null check
-        if(componentToDestroy == null)
-        {
-            return;
-        }
-
-        //Get slots for this type of component
-        GameObject[] slots = GetSlotArrayFromComponentType(componentToDestroy.componentType);
-        //Check if slots is null, if not expansion or large component basically
-        if (slots == null)
-        {
-            return;
-        }
-
-        GameObject slot = slots[removalIndex];
-        Destroy(slot.transform.GetChild(0).gameObject);
     }
 
     //Function to check for a space in the ship component list.
@@ -390,6 +317,41 @@ public class Ship : NetworkBehaviour
             //Add component on clients
             RpcAddComponent(componentSlotIndex, componentSpawnIndex, component);
         }
+    }
+
+    //A command to remove a component from a ship at the specified index within the specified slot array
+    [Command]
+    void CmdRemoveComponent(int componentSlotIndex, ShipComponentType shipComponentType)
+    {
+        //Remove from array
+        ShipComponentAsset[] componentArray = GetComponentArrayFromComponentType(shipComponentType);
+        componentArray[componentSlotIndex] = null;
+
+        //Try to get physical slots
+        GameObject[] slots = GetSlotArrayFromComponentType(shipComponentType);
+        //Null check
+        if(slots == null)
+        {
+            return;
+        }
+
+        //Get the slot
+        GameObject slot = slots[componentSlotIndex];
+        //Null check
+        if (slot == null)
+        {
+            return;
+        }
+
+        //Check whether the slot has any children (components) attached
+        if(slot.transform.childCount == 0)
+        {
+            return;
+        }
+
+        //Get component and destroy it
+        GameObject component = slot.transform.GetChild(0).gameObject;
+        NetworkServer.Destroy(component);
     }
 
     #endregion
