@@ -22,6 +22,7 @@ public class Ship : NetworkBehaviour
     public GameObject shipObject;
 
     public List<ShipAsset> shipAssets;
+    public List<ShipComponentAsset> componentAssets;
 
     public bool hasSpawnedShip = false;
 
@@ -60,23 +61,10 @@ public class Ship : NetworkBehaviour
             }
         }
 
-        //Add using "fill" method
+        //Add component command test
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            bool success = AddComponentToShip(testCargoContainerComponent);
-            Debug.Log("Added component: " + success);
-        }
-        //Add using "specific" method at first index
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            bool success = AddComponentToShip(testCargoContainerComponent, 0);
-            Debug.Log("Added component: " + success);
-        }
-        //Add using "specific" method at second index
-        if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            bool success = AddComponentToShip(testCargoContainerComponent, 1);
-            Debug.Log("Added component: " + success);
+            CmdAddShipComponent(0, 0);
         }
 
 
@@ -105,60 +93,6 @@ public class Ship : NetworkBehaviour
             }
         }
     }
-
-    //Function to add a component to a ship by filling the array linearly
-    public bool AddComponentToShip(ShipComponentAsset componentToAdd)
-    {
-        //Null check
-        if (componentToAdd == null)
-        {
-            return false;
-        }
-
-        //Get relevant aray from type
-        ShipComponentAsset[] componentArray = GetComponentArrayFromComponentType(componentToAdd.componentType);
-
-        //Check if there is available space in this array
-        if(HasAvailableSpaceInComponentArray(componentArray, out int componentIndex) == true)
-        {
-            //Add to relevant array
-            componentArray[componentIndex] = componentToAdd;
-
-            InstantiateComponent(componentToAdd, componentIndex);
-
-            //Was sucessfully added to array
-            return true;
-        }
-
-        //Was not successful, no space in array
-        return false;
-    }
-
-    //Function to add a component to a ship at a specific index
-    public bool AddComponentToShip(ShipComponentAsset componentToAdd, int index)
-    {
-        //Null check
-        if (componentToAdd == null)
-        {
-            return false;
-        }
-
-        //Get relevant aray from type
-        ShipComponentAsset[] componentArray = GetComponentArrayFromComponentType(componentToAdd.componentType);
-
-        //Check if there is available space in this array at the specified index
-        if (HasAvailableSpaceAtComponentIndex(componentArray, index))
-        {
-            componentArray[index] = componentToAdd;
-
-            InstantiateComponent(componentToAdd, index);
-
-            return true;
-        }
-
-        return false;
-    }
-
 
     //Function to remove a component from a specific index of a component type from the ship
     public bool RemoveComponentFromShip(ShipComponentType componentType, int indexToRemove, out ShipComponentAsset removedComponent)
@@ -189,38 +123,6 @@ public class Ship : NetworkBehaviour
         //Attempt to destroy component in world
         DestroyComponent(removedComponent, indexToRemove);
         return true;
-    }
-
-    //Function to instantiate a component gameobject in the world. 
-    public void InstantiateComponent(ShipComponentAsset componentToInstantiate, int additionIndex)
-    {
-        //Null check
-        if (componentToInstantiate == null)
-        {
-            return;
-        }
-
-        GameObject componentPrefab = componentToInstantiate.componentPrefab;
-
-        //Null check
-        if(componentPrefab == null)
-        {
-            return;
-        }
-
-        //Get slots for this type of component
-        GameObject[] slots = GetSlotArrayFromComponentType(componentToInstantiate.componentType);
-        //Check if slots is null, if not expansion or large component basically
-        if(slots == null)
-        {
-            return;
-        }
-
-        //Get the slot from addition index
-        GameObject slot = slots[additionIndex];
-        //Spawn game object at correct position, rotation and set the parent as relative slot.
-        GameObject component = Instantiate(componentPrefab, slot.transform.position, slot.transform.rotation);
-        component.transform.SetParent(slot.transform);
     }
 
     //Function to destroy a component in the world physically attached to the ship
@@ -332,6 +234,7 @@ public class Ship : NetworkBehaviour
         }
     }
 
+    //Function to initialise components
     public void InitialiseComponents(GameObject shipObject)
     {
         //Initialise Component Arrays
@@ -372,11 +275,13 @@ public class Ship : NetworkBehaviour
     //Commands are only executed on the host client / server
     //Commands guarantee that the function is running on the server
 
+    #region Commands
+
     //Command to spawn a player ship correctly and all its components
     [Command]
-    void CmdSpawnPlayerShip(int spawnIndex)
+    void CmdSpawnPlayerShip(int shipSpawnIndex)
     {
-        shipAsset = shipAssets[spawnIndex];
+        shipAsset = shipAssets[shipSpawnIndex];
 
         //Cancel if ship asset is null
         if (shipAsset == null)
@@ -393,13 +298,13 @@ public class Ship : NetworkBehaviour
         //Set the ship controller's parent id and spawn index for newly connecting clients
         ShipController shipController = shipObject.GetComponent<ShipController>();
         shipController.parentNetID = GetComponent<NetworkIdentity>().netId;
-        shipController.shipSpawnIndex = spawnIndex;
+        shipController.shipSpawnIndex = shipSpawnIndex;
 
         //Spawn ship on all clients / server
         NetworkServer.Spawn(shipObject, connectionToClient);
 
         //Set the ship spawn data on all clients
-        RpcSetShipSpawnData(shipObject, spawnIndex);
+        RpcSetShipSpawnData(shipObject, shipSpawnIndex);
     }
 
     //Command to destroy a player ship
@@ -416,16 +321,88 @@ public class Ship : NetworkBehaviour
         NetworkServer.Destroy(shipObject);
     }
 
+    //Command to add a component to a ship
+    [Command]
+    void CmdAddShipComponent(int componentSpawnIndex, int componentSlotIndex)
+    {
+        ShipComponentAsset componentToAdd = componentAssets[componentSpawnIndex];
+
+        //Null check
+        if (componentToAdd == null)
+        {
+            return;
+        }
+
+        //Get relevant aray from type
+        ShipComponentAsset[] componentArray = GetComponentArrayFromComponentType(componentToAdd.componentType);
+
+        //Check if there is available space in this array at the specified index
+        if (HasAvailableSpaceAtComponentIndex(componentArray, componentSlotIndex))
+        {
+            //Assign in component array
+            componentArray[componentSlotIndex] = componentToAdd;
+
+            GameObject component = null;
+
+            if (componentToAdd.componentType == ShipComponentType.Expansion || componentToAdd.componentType == ShipComponentType.Large) {
+                GameObject componentPrefab = componentToAdd.componentPrefab;
+
+                //Null check
+                if (componentPrefab == null)
+                {
+                    return;
+                }
+
+                //Get slots for this type of component
+                GameObject[] slots = GetSlotArrayFromComponentType(componentToAdd.componentType);
+                //Check if slots is null, if not expansion or large component basically
+                if (slots == null)
+                {
+                    return;
+                }
+
+                //Get the slot from addition index
+                GameObject slot = slots[componentSlotIndex];
+                //Spawn game object at correct position, rotation and set the parent as relative slot.
+                component = Instantiate(componentPrefab, slot.transform.position, slot.transform.rotation);
+                component.transform.SetParent(slot.transform);
+
+                //Set the components's parent object (the slot)
+                ShipComponent shipComponent = component.GetComponent<ShipComponent>();
+                shipComponent.parentNetID = GetComponent<NetworkIdentity>().netId;
+
+                //Setting index for large components
+                if (componentToAdd.componentType == ShipComponentType.Large)
+                {
+                    shipComponent.componentSlotIndex = 1 + componentSlotIndex + expansionComponentSlots.Length;
+                }
+
+                //Setting index for expansion components
+                if (componentToAdd.componentType == ShipComponentType.Expansion)
+                {
+                    shipComponent.componentSlotIndex = 1 + componentSlotIndex;
+                }
+
+                //Spawn on server
+                NetworkServer.Spawn(component, connectionToClient);
+
+            }
+            //Add component on clients
+            RpcAddComponent(componentSlotIndex, componentSpawnIndex, component);
+        }
+    }
+
+    #endregion
+
     /////////////////////////////// RPC ///////////////////////////////
     //RPCs (remote procedure calls) are functions that are only executed on clients
 
-
     //RPC to set data for a new ship spawn on clients
     [ClientRpc]
-    void RpcSetShipSpawnData(GameObject ship, int spawnIndex)
+    void RpcSetShipSpawnData(GameObject ship, int shipSpawnIndex)
     {
         //Assign ship spawn index
-        shipAsset = shipAssets[spawnIndex];
+        shipAsset = shipAssets[shipSpawnIndex];
 
         //Init componenents
         InitialiseComponents(ship);
@@ -434,5 +411,45 @@ public class Ship : NetworkBehaviour
         ship.transform.parent = transform;
         ship.transform.position = transform.position;
         ship.transform.rotation = transform.rotation;
+    }
+
+    //RPC to set data for newly spawned components on ships
+    [ClientRpc]
+    void RpcAddComponent(int componentSlotIndex, int componentSpawnIndex, GameObject component)
+    {
+        //Get component
+        ShipComponentAsset componentToAdd = componentAssets[componentSpawnIndex];
+
+        //Get componentArray type from component type
+        ShipComponentAsset[] componentArray = GetComponentArrayFromComponentType(componentToAdd.componentType);
+
+        //Assign in component array
+        componentArray[componentSlotIndex] = componentAssets[componentSpawnIndex];
+
+        //If component type is large or expansion, has a presence in the world as an object
+        if (componentToAdd.componentType == ShipComponentType.Expansion || componentToAdd.componentType == ShipComponentType.Large)
+        {
+            //Null check for component
+            if(component == null)
+            {
+                return;
+            }
+
+            //Get slots for this type of component
+            GameObject[] slots = GetSlotArrayFromComponentType(componentToAdd.componentType);
+            //Check if slots is null, if not expansion or large component basically
+            if (slots == null)
+            {
+                return;
+            }
+
+            //Get the slot from addition index
+            GameObject slot = slots[componentSlotIndex];
+
+            //Set transform
+            component.transform.parent = slot.transform;
+            component.transform.position = slot.transform.position;
+            component.transform.rotation = slot.transform.rotation;
+        }
     }
 }

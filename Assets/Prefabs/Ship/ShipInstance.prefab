@@ -94,4 +94,6 @@ MonoBehaviour:
   shipAssets:
   - {fileID: 11400000, guid: 6c60dba513a5e1642a3431a78c0a39e1, type: 2}
   - {fileID: 11400000, guid: de4fc0abdd885e64fba95c36c76b8c4c, type: 2}
+  componentAssets:
+  - {fileID: 11400000, guid: 8bb76bf1f7ff02944b2318f5930cf7ac, type: 2}
   hasSpawnedShip: 0
