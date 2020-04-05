@@ -10,7 +10,6 @@ public class PlayerConnectionObject : NetworkBehaviour
     public string playerName = "Player";
     public GameObject playerGameObject = null;
 
-
     public GameObject shipObjectPrefab = null;
 
     NetworkUtils netUtils = null;

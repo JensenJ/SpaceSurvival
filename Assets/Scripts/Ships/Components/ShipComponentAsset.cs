@@ -8,7 +8,6 @@ public class ShipComponentAsset : ScriptableObject
 {
     public string componentName = "DEFAULT COMPONENT NAME";
     public string componentDescription = "DEFAULT COMPONENT DESCRIPTION";
-    public float durability = 100;
     public float maxDurability = 100;
     public GameObject componentPrefab = null;
     public ShipComponentType componentType = ShipComponentType.Small;

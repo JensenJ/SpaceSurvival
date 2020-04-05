@@ -10,6 +10,10 @@ public class ShipController : NetworkBehaviour
     [SyncVar]
     public uint parentNetID;
 
+    //Which ship to spawn from the index
+    [SyncVar]
+    public int shipSpawnIndex;
+
     //Parent ship class
     Ship ship;
 
@@ -26,8 +30,9 @@ public class ShipController : NetworkBehaviour
         transform.rotation = parentObject.transform.rotation;
         transform.localScale = parentObject.transform.localScale;
 
-        //InitialiseComponents
+        //Initialise Components and ship spawn index
         ship = parentObject.GetComponent<Ship>();
+        ship.shipAsset = ship.shipAssets[shipSpawnIndex];
         ship.InitialiseComponents(gameObject);
     }
 }

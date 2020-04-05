@@ -6,7 +6,6 @@ using UnityEngine;
 public class ShipAsset : ScriptableObject
 {
     public GameObject shipPrefab;
-    public float durability;
     public float maxDurability;
     //Slot counts
     public int smallComponentCount;

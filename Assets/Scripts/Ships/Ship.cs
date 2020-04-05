@@ -6,11 +6,6 @@ using Mirror;
 
 public class Ship : NetworkBehaviour
 {
-    //Object variables
-    MeshFilter meshFilter;
-    MeshRenderer meshRenderer;
-    MeshCollider meshCollider;
-
     //Ship variables
     public ShipAsset shipAsset;
     public ShipComponentAsset[] smallComponents;
@@ -26,6 +21,8 @@ public class Ship : NetworkBehaviour
 
     public GameObject shipObject;
 
+    public List<ShipAsset> shipAssets;
+
     public bool hasSpawnedShip = false;
 
     public void Update()
@@ -40,7 +37,16 @@ public class Ship : NetworkBehaviour
         {
             if (!hasSpawnedShip)
             {
-                CmdSpawnPlayerShip();
+                CmdSpawnPlayerShip(0);
+                hasSpawnedShip = true;
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha9))
+        {
+            if (!hasSpawnedShip)
+            {
+                CmdSpawnPlayerShip(1);
                 hasSpawnedShip = true;
             }
         }
@@ -359,8 +365,10 @@ public class Ship : NetworkBehaviour
 
     //Command to spawn a player ship correctly and all its components
     [Command]
-    void CmdSpawnPlayerShip()
+    void CmdSpawnPlayerShip(int spawnIndex)
     {
+        shipAsset = shipAssets[spawnIndex];
+
         //Cancel if ship asset is null
         if (shipAsset == null)
         {
@@ -370,17 +378,19 @@ public class Ship : NetworkBehaviour
         //Instantiate object for network spawning
         shipObject = Instantiate(shipAsset.shipPrefab, transform.position, transform.rotation, transform);
 
+        //Init components
         InitialiseComponents(shipObject);
 
-        //Set the ship controller's parent id
+        //Set the ship controller's parent id and spawn index for newly connecting clients
         ShipController shipController = shipObject.GetComponent<ShipController>();
         shipController.parentNetID = GetComponent<NetworkIdentity>().netId;
+        shipController.shipSpawnIndex = spawnIndex;
 
         //Spawn ship on all clients / server
         NetworkServer.Spawn(shipObject, connectionToClient);
 
         //Set the ship spawn data on all clients
-        RpcSetShipSpawnData(shipObject);
+        RpcSetShipSpawnData(shipObject, spawnIndex);
     }
 
     /////////////////////////////// RPC ///////////////////////////////
@@ -389,10 +399,15 @@ public class Ship : NetworkBehaviour
 
     //RPC to set data for a new ship spawn on clients
     [ClientRpc]
-    void RpcSetShipSpawnData(GameObject ship)
+    void RpcSetShipSpawnData(GameObject ship, int spawnIndex)
     {
+        //Assign ship spawn index
+        shipAsset = shipAssets[spawnIndex];
+
+        //Init componenents
         InitialiseComponents(ship);
 
+        //Set ship position etc.
         ship.transform.parent = transform;
         ship.transform.position = transform.position;
         ship.transform.rotation = transform.rotation;
