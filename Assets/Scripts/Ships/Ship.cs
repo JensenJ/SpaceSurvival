@@ -28,12 +28,21 @@ public class Ship : NetworkBehaviour
     public void Update()
     {
 
-        if(hasAuthority == false)
+        if (hasAuthority == false)
         {
             return;
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha0))
+        {
+            if (hasSpawnedShip)
+            {
+                CmdDestroyPlayerShip();
+                hasSpawnedShip = false;
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha9))
         {
             if (!hasSpawnedShip)
             {
@@ -42,7 +51,7 @@ public class Ship : NetworkBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.Alpha9))
+        if (Input.GetKeyDown(KeyCode.Alpha8))
         {
             if (!hasSpawnedShip)
             {
@@ -391,6 +400,20 @@ public class Ship : NetworkBehaviour
 
         //Set the ship spawn data on all clients
         RpcSetShipSpawnData(shipObject, spawnIndex);
+    }
+
+    //Command to destroy a player ship
+    [Command]
+    void CmdDestroyPlayerShip()
+    {
+        //Null check
+        if (shipObject == null)
+        {
+            return;
+        }
+
+        //Destroy ship object across the network
+        NetworkServer.Destroy(shipObject);
     }
 
     /////////////////////////////// RPC ///////////////////////////////

@@ -570,6 +570,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0.1
   parentNetID: 0
+  shipSpawnIndex: 0
 --- !u!1 &1811886406620095981
 GameObject:
   m_ObjectHideFlags: 0
