@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 
-[RequireComponent(typeof(Rigidbody))]
 public class Ship : NetworkBehaviour
 {
     //Ship variables

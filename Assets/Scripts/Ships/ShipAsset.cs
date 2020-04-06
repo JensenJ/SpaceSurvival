@@ -7,12 +7,20 @@ public class ShipAsset : ScriptableObject
 {
     public GameObject shipPrefab;
     public float maxDurability;
-    public float maxSpeed;
-    public float acceleration;
-    public float deceleration;
-    public float brake;
-    public float turnRate;
+
+    [Header("Forward Movement Values:")]
+    public float forwardMaxSpeed;
+    public float forwardAcceleration;
+    public float forwardDeceleration;
+    public float forwardBrake;
+
+    [Header("Roll Movement Values:")]
+    public float rollMaxSpeed;
+    public float rollAcceleration;
+    public float rollDeceleration;
+
     //Slot counts
+    [Header("Component Slot Counts:")]
     public int smallComponentCount;
     public int mediumComponentCount;
     public int largeComponentCount;

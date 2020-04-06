@@ -17,15 +17,18 @@ public class ShipController : NetworkBehaviour
     //Parent ship class
     public Ship ship;
 
-    //Ship movement variables
-    float maxThrust;
-    float turnRate;
-    float acceleration;
-    float deceleration;
-    float brake;
+    //Ship forward movement variables
+    float forwardMaxThrust;
+    float forwardAcceleration;
+    float forwardDeceleration;
+    float forwardBrake;
     float forwardVelocity;
 
-    Rigidbody rb;
+    //Ship roll movement variables
+    float rollMaxSpeed;
+    float rollAcceleration;
+    float rollDeceleration;
+    float rollVelocity;
 
     //When the client starts
     public override void OnStartClient()
@@ -45,16 +48,18 @@ public class ShipController : NetworkBehaviour
         ship.shipAsset = ship.shipAssets[shipSpawnIndex];
         ship.InitialiseComponents(gameObject);
 
-        //Movement variable setting
-        turnRate = ship.shipAsset.turnRate;
-        maxThrust = ship.shipAsset.maxSpeed;
-        acceleration = ship.shipAsset.acceleration;
-        deceleration = ship.shipAsset.deceleration;
-        brake = ship.shipAsset.brake;
-        rb = ship.GetComponent<Rigidbody>();
-        rb.isKinematic = true;
+        //Forward Movement variable setting
+        forwardMaxThrust = ship.shipAsset.forwardMaxSpeed;
+        forwardAcceleration = ship.shipAsset.forwardAcceleration;
+        forwardDeceleration = ship.shipAsset.forwardDeceleration;
+        forwardBrake = ship.shipAsset.forwardBrake;
 
-        Debug.Log("Acceleration: " + acceleration); 
+        //Roll movement variable setting
+        rollMaxSpeed = ship.shipAsset.rollMaxSpeed;
+        rollAcceleration = ship.shipAsset.rollAcceleration;
+        rollDeceleration = ship.shipAsset.rollDeceleration;
+
+        Debug.Log("Acceleration: " + forwardAcceleration); 
     }
 
     public void Update()
@@ -73,24 +78,57 @@ public class ShipController : NetworkBehaviour
 
         //Forward backward motion
         //Forward acceleration
-        if (Input.GetKey(KeyCode.UpArrow))
+        if (Input.GetKey(KeyCode.W))
         {
-            forwardVelocity += acceleration * Time.deltaTime;
-            forwardVelocity = Mathf.Min(forwardVelocity, maxThrust);
+            forwardVelocity += forwardAcceleration * Time.deltaTime;
+            forwardVelocity = Mathf.Min(forwardVelocity, forwardMaxThrust);
         } 
         //Braking / backward deceleration
-        else if (Input.GetKey(KeyCode.DownArrow))
+        else if (Input.GetKey(KeyCode.S))
         {
-            forwardVelocity += -brake * Time.deltaTime;
+            forwardVelocity += -forwardBrake * Time.deltaTime;
             forwardVelocity = Mathf.Max(forwardVelocity, 0);
         }
         //Deceleration without braking
         else
         {
-            forwardVelocity += -deceleration * Time.deltaTime;
+            forwardVelocity += -forwardDeceleration * Time.deltaTime;
             forwardVelocity = Mathf.Max(forwardVelocity, 0);
         }
 
+        //Apply forward movement
         ship.transform.Translate(transform.forward * forwardVelocity * Time.deltaTime);
+
+        //Left roll
+        if (Input.GetKey(KeyCode.Q))
+        {
+            rollVelocity += rollAcceleration * Time.deltaTime;
+            rollVelocity = Mathf.Min(rollVelocity, rollMaxSpeed);
+        }
+        //Right roll
+        else if (Input.GetKey(KeyCode.E))
+        {
+            rollVelocity += -rollAcceleration * Time.deltaTime;
+            rollVelocity = Mathf.Max(rollVelocity, -rollMaxSpeed);
+        }
+        //If roll velocity is negative
+        else if(rollVelocity < 0)
+        {
+            rollVelocity += rollDeceleration * Time.deltaTime;
+            rollVelocity = Mathf.Min(rollVelocity, 0);
+        }
+        //If roll velocity is positive
+        else if(rollVelocity > 0)
+        {
+            rollVelocity += -rollDeceleration * Time.deltaTime;
+            rollVelocity = Mathf.Max(rollVelocity, 0);
+        }
+
+        //Don't bother rotating if rotate velocity is 0
+        if (rollVelocity != 0)
+        {
+            //Apply rotate / roll
+            ship.transform.Rotate(Time.deltaTime * rollVelocity * transform.forward);
+        }
     }
 }

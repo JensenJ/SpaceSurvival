@@ -15,11 +15,13 @@ MonoBehaviour:
   shipPrefab: {fileID: 1684543459984156801, guid: cd0051752b558a546b66667612711cf5,
     type: 3}
   maxDurability: 2500
-  maxSpeed: 50
-  acceleration: 2
-  deceleration: 1
-  brake: 4
-  turnRate: 2
+  forwardMaxSpeed: 30
+  forwardAcceleration: 3
+  forwardDeceleration: 2
+  forwardBrake: 6
+  rollMaxSpeed: 8
+  rollAcceleration: 2
+  rollDeceleration: 2
   smallComponentCount: 8
   mediumComponentCount: 6
   largeComponentCount: 17
