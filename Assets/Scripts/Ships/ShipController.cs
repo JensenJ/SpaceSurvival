@@ -58,8 +58,6 @@ public class ShipController : NetworkBehaviour
         rollMaxSpeed = ship.shipAsset.rollMaxSpeed;
         rollAcceleration = ship.shipAsset.rollAcceleration;
         rollDeceleration = ship.shipAsset.rollDeceleration;
-
-        Debug.Log("Acceleration: " + forwardAcceleration); 
     }
 
     public void Update()
