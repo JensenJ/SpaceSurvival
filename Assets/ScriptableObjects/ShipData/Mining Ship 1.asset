@@ -14,8 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shipPrefab: {fileID: 4897605000807291106, guid: 7a09185cc8b2d7848aed2705dc852cc9,
     type: 3}
-  durability: 1000
   maxDurability: 1000
+  maxSpeed: 80
+  acceleration: 5
+  deceleration: 3
+  brake: 8
+  turnRate: 5
   smallComponentCount: 2
   mediumComponentCount: 2
   largeComponentCount: 4

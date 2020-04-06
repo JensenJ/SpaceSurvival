@@ -15,7 +15,17 @@ public class ShipController : NetworkBehaviour
     public int shipSpawnIndex;
 
     //Parent ship class
-    Ship ship;
+    public Ship ship;
+
+    //Ship movement variables
+    float maxThrust;
+    float turnRate;
+    float acceleration;
+    float deceleration;
+    float brake;
+    float forwardVelocity;
+
+    Rigidbody rb;
 
     //When the client starts
     public override void OnStartClient()
@@ -34,5 +44,53 @@ public class ShipController : NetworkBehaviour
         ship = parentObject.GetComponent<Ship>();
         ship.shipAsset = ship.shipAssets[shipSpawnIndex];
         ship.InitialiseComponents(gameObject);
+
+        //Movement variable setting
+        turnRate = ship.shipAsset.turnRate;
+        maxThrust = ship.shipAsset.maxSpeed;
+        acceleration = ship.shipAsset.acceleration;
+        deceleration = ship.shipAsset.deceleration;
+        brake = ship.shipAsset.brake;
+        rb = ship.GetComponent<Rigidbody>();
+        rb.isKinematic = true;
+
+        Debug.Log("Acceleration: " + acceleration); 
+    }
+
+    public void Update()
+    {
+        //Is this ship owned by the player
+        if (!hasAuthority)
+        {
+            return;
+        }
+
+        //Ship null check
+        if (ship == null)
+        {
+            return;
+        }
+
+        //Forward backward motion
+        //Forward acceleration
+        if (Input.GetKey(KeyCode.UpArrow))
+        {
+            forwardVelocity += acceleration * Time.deltaTime;
+            forwardVelocity = Mathf.Min(forwardVelocity, maxThrust);
+        } 
+        //Braking / backward deceleration
+        else if (Input.GetKey(KeyCode.DownArrow))
+        {
+            forwardVelocity += -brake * Time.deltaTime;
+            forwardVelocity = Mathf.Max(forwardVelocity, 0);
+        }
+        //Deceleration without braking
+        else
+        {
+            forwardVelocity += -deceleration * Time.deltaTime;
+            forwardVelocity = Mathf.Max(forwardVelocity, 0);
+        }
+
+        ship.transform.Translate(transform.forward * forwardVelocity * Time.deltaTime);
     }
 }
