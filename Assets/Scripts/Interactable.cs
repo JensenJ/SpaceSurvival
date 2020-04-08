@@ -20,8 +20,7 @@ public abstract class Interactable : MonoBehaviour
         }
     }
 
-    //Function to set the interaction status. 
-    //TODO: Network this function using commands / RPCs
+    //Function to set the interaction status.
     public void SetInteractStatus(bool interactStatus)
     {
         canInteract = interactStatus;

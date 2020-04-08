@@ -43,9 +43,10 @@ public class ShipController : NetworkBehaviour
         transform.rotation = parentObject.transform.rotation;
         transform.localScale = parentObject.transform.localScale;
 
-        //Initialise Components and ship spawn index
+        //Initialise Components, camera and ship spawn index
         ship = parentObject.GetComponent<Ship>();
         ship.shipAsset = ship.shipAssets[shipSpawnIndex];
+        ship.InitialiseShipCamera();
         ship.InitialiseComponents(gameObject);
 
         //Forward Movement variable setting

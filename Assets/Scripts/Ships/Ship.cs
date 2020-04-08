@@ -199,6 +199,24 @@ public class Ship : NetworkBehaviour
         }
     }
 
+    //Function to set the position and rotation of the ship camera correctly
+    public void InitialiseShipCamera()
+    {
+        //Get camera
+        shipCamera = transform.GetChild(0).gameObject;
+        //Rotate camera
+        shipCamera.transform.eulerAngles = new Vector3(10, 180, 0) + transform.eulerAngles;
+        //Check camera distance is not negative or zero, which would cause a division by zero error.
+        if (shipAsset.cameraDistance <= 0)
+        {
+            shipCamera.transform.position = new Vector3(0, 0, 0) + transform.position;
+        }
+        else
+        {
+            shipCamera.transform.position = new Vector3(0, shipAsset.cameraDistance / 3, -shipAsset.cameraDistance) + transform.position;
+        }
+    }
+
     /////////////////////////////// COMMANDS ///////////////////////////////
     //Commands are only executed on the host client / server
     //Commands guarantee that the function is running on the server
@@ -220,19 +238,8 @@ public class Ship : NetworkBehaviour
         //Instantiate object for network spawning
         shipObject = Instantiate(shipAsset.shipPrefab, transform.position, transform.rotation, transform);
 
-        //Get camera
-        shipCamera = transform.GetChild(0).gameObject;
-        //Rotate camera
-        shipCamera.transform.Rotate(new Vector3(10, 180, 0));
-        //Check camera distance is not negative or zero, which would cause a division by zero error.
-        if(shipAsset.cameraDistance <= 0)
-        {
-            shipCamera.transform.position = new Vector3(0, 0, 0) + transform.position;
-        }
-        else
-        {
-            shipCamera.transform.position = new Vector3(0, shipAsset.cameraDistance / 3, -shipAsset.cameraDistance) + transform.position;
-        }
+        //Init ship camera
+        InitialiseShipCamera();
 
         //Init components
         InitialiseComponents(shipObject);
@@ -380,6 +387,9 @@ public class Ship : NetworkBehaviour
     {
         //Assign ship spawn index
         shipAsset = shipAssets[shipSpawnIndex];
+
+        //Init ship camera
+        InitialiseShipCamera();
 
         //Init componenents
         InitialiseComponents(ship);

@@ -12,7 +12,6 @@ public class InteractableShip : Interactable
         interactingObject.SetActive(false);
         Debug.Log("Ship interacted");
 
-        //TODO: add ship interact functionality
         transform.GetChild(0).gameObject.SetActive(true);
     }
 }
