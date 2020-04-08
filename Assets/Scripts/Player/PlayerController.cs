@@ -25,7 +25,6 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] [Range(0.0f, 10.0f)] public float staminaDrainSpeed = 2.5f;
     [SerializeField] [Range(0.0f, 7.0f)] public float staminaRegenSpeed = 1.25f;
 
-    NetworkUtils netUtils = null;
     GameObject gameManager = null;
     PlayerMotor motor = null;
     PlayerFlashLight flashLight = null;
@@ -39,7 +38,6 @@ public class PlayerController : NetworkBehaviour
         flashLight = GetComponent<PlayerFlashLight>();
         attributes = GetComponent<PlayerAttributes>();
         gameManager = GameObject.FindGameObjectWithTag("GameController");
-        netUtils = gameManager.GetComponent<NetworkUtils>();
         DisableCursor();
     }
 

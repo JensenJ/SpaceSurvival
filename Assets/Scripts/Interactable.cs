@@ -7,16 +7,16 @@ public abstract class Interactable : MonoBehaviour
 {
     //Bool for interaction permission
     public bool canInteract = true;
-    protected abstract void OnInteract();
+    protected abstract void OnInteract(GameObject interactingObject);
     
     //Public function for interaction with interaction check
-    public void Interact()
+    public void Interact(GameObject interactingObject)
     {
         //Check for interaction permission
-        if (canInteract)
+        if (canInteract && interactingObject != null)
         {
             //Then interact if permission present
-            OnInteract();
+            OnInteract(interactingObject);
         }
     }
 

@@ -7,6 +7,7 @@ public class ShipAsset : ScriptableObject
 {
     public GameObject shipPrefab;
     public float maxDurability;
+    public float cameraDistance;
 
     [Header("Forward Movement Values:")]
     public float forwardMaxSpeed;

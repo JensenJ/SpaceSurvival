@@ -20,6 +20,7 @@ public class Ship : NetworkBehaviour
     public ShipComponentAsset testCargoContainerComponent;
 
     public GameObject shipObject;
+    public GameObject shipCamera;
 
     public List<ShipAsset> shipAssets;
     public List<ShipComponentAsset> componentAssets;
@@ -203,7 +204,7 @@ public class Ship : NetworkBehaviour
     //Commands guarantee that the function is running on the server
 
     #region Commands
-
+        
     //Command to spawn a player ship correctly and all its components
     [Command]
     void CmdSpawnPlayerShip(int shipSpawnIndex)
@@ -218,6 +219,20 @@ public class Ship : NetworkBehaviour
 
         //Instantiate object for network spawning
         shipObject = Instantiate(shipAsset.shipPrefab, transform.position, transform.rotation, transform);
+
+        //Get camera
+        shipCamera = transform.GetChild(0).gameObject;
+        //Rotate camera
+        shipCamera.transform.Rotate(new Vector3(10, 180, 0));
+        //Check camera distance is not negative or zero, which would cause a division by zero error.
+        if(shipAsset.cameraDistance <= 0)
+        {
+            shipCamera.transform.position = new Vector3(0, 0, 0) + transform.position;
+        }
+        else
+        {
+            shipCamera.transform.position = new Vector3(0, shipAsset.cameraDistance / 3, -shipAsset.cameraDistance) + transform.position;
+        }
 
         //Init components
         InitialiseComponents(shipObject);

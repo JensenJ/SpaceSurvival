@@ -15,6 +15,7 @@ MonoBehaviour:
   shipPrefab: {fileID: 4897605000807291106, guid: 7a09185cc8b2d7848aed2705dc852cc9,
     type: 3}
   maxDurability: 1000
+  cameraDistance: 18
   forwardMaxSpeed: 50
   forwardAcceleration: 4
   forwardDeceleration: 3

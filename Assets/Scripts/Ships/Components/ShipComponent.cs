@@ -23,7 +23,7 @@ public class ShipComponent : NetworkBehaviour
         //Setting the correct transform for newly joined players.
         NetworkIdentity shipObject = NetworkIdentity.spawned[parentNetID];
 
-        GameObject parentObject = shipObject.transform.GetChild(0).GetChild(componentSlotIndex).gameObject;
+        GameObject parentObject = shipObject.transform.GetChild(1).GetChild(componentSlotIndex).gameObject;
 
         transform.SetParent(parentObject.transform);
         transform.position = parentObject.transform.position;

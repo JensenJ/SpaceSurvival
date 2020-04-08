@@ -46,7 +46,7 @@ public class PlayerInteraction : NetworkBehaviour
                     Debug.Log("Interactable Name: " + interactable.gameObject.name);
 
                     //Invoke interact function on the interactable
-                    interactable.Interact();
+                    interactable.Interact(transform.GetChild(0).gameObject);
                 }
             }
         }
