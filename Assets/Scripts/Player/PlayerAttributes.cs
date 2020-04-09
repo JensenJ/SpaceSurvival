@@ -6,7 +6,6 @@ using Mirror;
 public class PlayerAttributes : NetworkBehaviour
 {
     GameObject gameManager = null;
-    NetworkUtils netUtils = null;
 
     [SerializeField] float health = 100.0f;
     [SerializeField] float stamina = 100.0f;
@@ -26,7 +25,6 @@ public class PlayerAttributes : NetworkBehaviour
     void Start()
     {
         gameManager = GameObject.FindGameObjectWithTag("GameController");
-        netUtils = gameManager.GetComponent<NetworkUtils>();
     }
 
     // Update is called once per frame
@@ -42,7 +40,6 @@ public class PlayerAttributes : NetworkBehaviour
         {
             //Clamp value
             health = Mathf.Clamp(health, 0.0f, maxHealth);
-            UpdateAttributes();
             //set last health equal to new health
             lastHealth = health;
         }
@@ -51,7 +48,6 @@ public class PlayerAttributes : NetworkBehaviour
         if(lastMaxHealth != maxHealth)
         {
             maxHealth = Mathf.Clamp(maxHealth, 0.0f, maxHealth);
-            UpdateAttributes();
             //Set last max health equal to new max health
             lastMaxHealth = maxHealth;
         }
@@ -61,7 +57,6 @@ public class PlayerAttributes : NetworkBehaviour
         {
             //Clamp value
             stamina = Mathf.Clamp(stamina, 0.0f, maxStamina);
-            UpdateAttributes();
             //set last stamina equal to new stamina
             lastStamina = stamina;
         }
@@ -70,26 +65,12 @@ public class PlayerAttributes : NetworkBehaviour
         if(lastMaxStamina != maxStamina)
         {
             maxStamina = Mathf.Clamp(maxStamina, 0.0f, maxStamina);
-            UpdateAttributes();
             //Set last max stamina equal to new max stamina
             lastMaxStamina = maxStamina;
         }
     }
 
-    //Function to apply attributes across the network
-    void UpdateAttributes()
-    {
-        //Get host
-        PlayerConnectionObject host = netUtils.GetHostPlayerConnectionObject();
-        if (host != null)
-        {
-            //run command on host
-            host.CmdUpdatePlayerAttributes(health, maxHealth, stamina, maxStamina);
-        }
-    }
-
     //Functions for changing attribute values
-
     public void DamageHealth(float amount)
     {
         health -= amount;

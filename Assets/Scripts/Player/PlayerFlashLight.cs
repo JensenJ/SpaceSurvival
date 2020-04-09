@@ -19,7 +19,6 @@ public class PlayerFlashLight : NetworkBehaviour
     [SerializeField] public float flashLightRechargeRate = 5f;
     [SerializeField] public float flashLightDrainRate = 3f;
 
-    NetworkUtils netUtils = null;
     GameObject gameManager = null;
 
     // Start is called before the first frame update
@@ -32,7 +31,6 @@ public class PlayerFlashLight : NetworkBehaviour
         ToggleFlashLight(flashLightStatus);
 
         gameManager = GameObject.FindGameObjectWithTag("GameController");
-        netUtils = gameManager.GetComponent<NetworkUtils>();
     }
 
     void Update()
@@ -47,7 +45,6 @@ public class PlayerFlashLight : NetworkBehaviour
         {
             //Clamp value
             flashLightBattery = Mathf.Clamp(flashLightBattery, 0.0f, flashLightMaxBattery);
-            UpdateFlashLightBattery();
             //set last battery equal to new battery
             lastBattery = flashLightBattery;
         }
@@ -57,7 +54,6 @@ public class PlayerFlashLight : NetworkBehaviour
         {
             //Clamp value
             flashLightMaxBattery = Mathf.Clamp(flashLightMaxBattery, 0.0f, flashLightMaxBattery);
-            UpdateFlashLightBattery();
             //set last max battery equal to new max battery
             lastMaxBattery = flashLightMaxBattery;
         }
@@ -79,26 +75,6 @@ public class PlayerFlashLight : NetworkBehaviour
             {
                 RechargeFlashLight(flashLightRechargeRate * Time.deltaTime);
             }
-        }
-    }
-
-    //Function to update flash light status across the network.
-    public void UpdateFlashLightStatus()
-    {
-        PlayerConnectionObject host = netUtils.GetHostPlayerConnectionObject();
-        if (host != null)
-        {
-            host.CmdUpdateFlashLightStatus(flashLightStatus);
-        }
-    }
-
-    //Function to update flash light battery across the network.
-    public void UpdateFlashLightBattery()
-    {
-        PlayerConnectionObject host = netUtils.GetHostPlayerConnectionObject();
-        if (host != null)
-        {
-            host.CmdUpdateFlashLightBattery(flashLightBattery, flashLightMaxBattery);
         }
     }
 
