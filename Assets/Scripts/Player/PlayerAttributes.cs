@@ -5,68 +5,21 @@ using Mirror;
 
 public class PlayerAttributes : NetworkBehaviour
 {
-    GameObject gameManager = null;
-
-    [SerializeField] float health = 100.0f;
-    [SerializeField] float stamina = 100.0f;
-
-    [SerializeField] float maxHealth = 100.0f;
-    [SerializeField] float maxStamina = 100.0f;
+    [SerializeField] [SyncVar(hook = nameof(HookSetHealth))] public float health = 100.0f;
+    [SerializeField] [SyncVar(hook = nameof(HookSetStamina))] public float stamina = 100.0f;
+    [SerializeField] [SyncVar(hook = nameof(HookSetMaxHealth))] public float maxHealth = 100.0f;
+    [SerializeField] [SyncVar(hook = nameof(HookSetMaxStamina))] public float maxStamina = 100.0f;
 
     [SerializeField] public static float baseHealth = 100.0f;
     [SerializeField] public static float baseStamina = 100.0f;
 
-    float lastHealth = 0;
-    float lastMaxHealth = 0;
-    float lastStamina = 0;
-    float lastMaxStamina = 0;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        gameManager = GameObject.FindGameObjectWithTag("GameController");
-    }
-
     // Update is called once per frame
     void Update()
     {
+        //Authority check
         if (!hasAuthority)
         {
             return;
-        }
-
-        //Checking if health value is the same as last check value
-        if (lastHealth != health)
-        {
-            //Clamp value
-            health = Mathf.Clamp(health, 0.0f, maxHealth);
-            //set last health equal to new health
-            lastHealth = health;
-        }
-
-        //Checking if max health value is the same as last check value
-        if(lastMaxHealth != maxHealth)
-        {
-            maxHealth = Mathf.Clamp(maxHealth, 0.0f, maxHealth);
-            //Set last max health equal to new max health
-            lastMaxHealth = maxHealth;
-        }
-
-        //Checking if stamina value is the same as last check value
-        if (lastStamina != stamina)
-        {
-            //Clamp value
-            stamina = Mathf.Clamp(stamina, 0.0f, maxStamina);
-            //set last stamina equal to new stamina
-            lastStamina = stamina;
-        }
-
-        //Checking if max stamina value is the same as last check value
-        if(lastMaxStamina != maxStamina)
-        {
-            maxStamina = Mathf.Clamp(maxStamina, 0.0f, maxStamina);
-            //Set last max stamina equal to new max stamina
-            lastMaxStamina = maxStamina;
         }
     }
 
@@ -74,37 +27,60 @@ public class PlayerAttributes : NetworkBehaviour
     public void DamageHealth(float amount)
     {
         health -= amount;
+        CmdUpdateHealth(health);
     }
 
     public void HealHealth(float amount)
     {
         health += amount;
+        CmdUpdateHealth(health);
     }
 
     public void DamageStamina(float amount)
     {
         stamina -= amount;
+        CmdUpdateStamina(stamina);
     }
-    
+
     public void HealStamina(float amount)
     {
         stamina += amount;
+        CmdUpdateStamina(stamina);
     }
+
 
     //SETTERS
     public void SetHealth(float newHealth)
     {
-        health = newHealth;
+        CmdUpdateHealth(newHealth);
     }
     public void SetMaxHealth(float newMaxHealth)
     {
-        maxHealth = newMaxHealth;
+        CmdUpdateMaxHealth(newMaxHealth);
     }
     public void SetStamina(float newStamina)
     {
-        stamina = newStamina;
+        CmdUpdateStamina(newStamina);
     }
     public void SetMaxStamina(float newMaxStamina)
+    {
+        CmdUpdateMaxStamina(newMaxStamina);
+    }
+
+    //SyncVar Hook SETTERS
+    void HookSetHealth(float oldHealth, float newHealth)
+    {
+        health = newHealth;
+    }
+    void HookSetMaxHealth(float oldMaxHealth, float newMaxHealth)
+    {
+        maxHealth = newMaxHealth;
+    }
+    void HookSetStamina(float oldStamina, float newStamina)
+    {
+        stamina = newStamina;
+    }
+    void HookSetMaxStamina(float oldMaxStamina, float newMaxStamina)
     {
         maxStamina = newMaxStamina;
     }
@@ -133,5 +109,33 @@ public class PlayerAttributes : NetworkBehaviour
     public float GetBaseStamina()
     {
         return baseStamina;
+    }
+
+    //Command to update health
+    [Command]
+    public void CmdUpdateHealth(float health)
+    {
+        this.health = health;
+    }
+
+    //Command to update max health
+    [Command]
+    public void CmdUpdateMaxHealth(float maxHealth)
+    {
+        this.maxHealth = maxHealth;
+    }
+
+    //Command to update stamina
+    [Command]
+    public void CmdUpdateStamina(float stamina)
+    {
+        this.stamina = stamina;
+    }
+
+    //Command to update max stamina
+    [Command]
+    public void CmdUpdateMaxStamina(float maxStamina)
+    {
+        this.maxStamina = maxStamina;
     }
 }

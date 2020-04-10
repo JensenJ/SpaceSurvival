@@ -7,7 +7,6 @@ public class PlayerConnectionObject : NetworkBehaviour
 {
     public GameObject gameManager = null;
     public GameObject playerGameObjectPrefab = null;
-    public string playerName = "Player";
     public GameObject playerGameObject = null;
 
     public GameObject shipObjectPrefab = null;
@@ -28,7 +27,6 @@ public class PlayerConnectionObject : NetworkBehaviour
         Debug.Log("PlayerObject::Start - Spawning player game object");
 
         CmdSpawnPlayerGameObject();
-        CmdChangePlayerName("Player" + Random.Range(1, 100));
 
         CmdSpawnShip();
     }
@@ -40,11 +38,6 @@ public class PlayerConnectionObject : NetworkBehaviour
         {
             return;
         }
-
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            CmdChangePlayerName("Player" + Random.Range(1, 100));
-        }
     }
 
     void OnDestroy()
@@ -54,25 +47,6 @@ public class PlayerConnectionObject : NetworkBehaviour
             playerGameObject.GetComponent<PlayerController>().EnableCursor();
         }
         Destroy(playerGameObject);
-    }
-
-    //Function to update all commands and refresh all clients, useful for when a new player joins
-    void Resync()
-    {
-        CmdChangePlayerName(playerName);
-
-        PlayerFlashLight flashlight = playerGameObject.GetComponent<PlayerFlashLight>();
-        if(flashlight != null)
-        {
-            CmdUpdateFlashLightStatus(flashlight.flashLightStatus);
-            CmdUpdateFlashLightBattery(flashlight.GetFlashLightCharge(), flashlight.GetMaxFlashLightCharge());
-        }
-
-        PlayerAttributes attributes = playerGameObject.GetComponent<PlayerAttributes>();
-        if (attributes != null)
-        {
-            CmdUpdatePlayerAttributes(attributes.GetHealth(), attributes.GetMaxHealth(), attributes.GetStamina(), attributes.GetMaxStamina());
-        }
     }
 
     /////////////////////////////// COMMANDS ///////////////////////////////
@@ -93,15 +67,6 @@ public class PlayerConnectionObject : NetworkBehaviour
 
         //Spawn object on all clients
         NetworkServer.Spawn(playerGameObject, connectionToClient);
-    }
-
-    //Command to change player name on server
-    [Command]
-    public void CmdChangePlayerName(string newName)
-    {
-        Debug.Log("CMD: Player name change requested: " + playerName + " to " + newName);
-        RpcChangePlayerName(newName);
-        playerName = newName;
     }
     
     //Command to toggle flashlight
@@ -130,23 +95,6 @@ public class PlayerConnectionObject : NetworkBehaviour
             flashlight.SetMaxFlashLightCharge(flashLightMaxBattery);
         }
     }
-
-    //Command to update player attributes
-    [Command]
-    public void CmdUpdatePlayerAttributes(float health, float maxHealth, float stamina, float maxStamina)
-    {
-        Debug.Log("CMD: Update Player Attributes");
-        PlayerAttributes attributes = playerGameObject.GetComponent<PlayerAttributes>();
-        if(attributes != null)
-        {
-            RpcUpdatePlayerAttributes(attributes.GetHealth(), attributes.GetMaxHealth(), attributes.GetStamina(), attributes.GetMaxStamina());
-
-            attributes.SetHealth(health);
-            attributes.SetMaxHealth(maxHealth);
-            attributes.SetStamina(stamina);
-            attributes.SetMaxStamina(maxStamina);
-        }
-    }
     #endregion
 
     #region ShipCommands
@@ -164,17 +112,6 @@ public class PlayerConnectionObject : NetworkBehaviour
     //RPCs (remote procedure calls) are functions that are only executed on clients
 
     #region PlayerRPCs
-
-    //RPC to set the player name
-    [ClientRpc]
-    void RpcChangePlayerName(string newName)
-    {
-        //Change game object name
-        gameObject.name = "PlayerConnectionObject(" + newName + ")";
-        //Setting manually as when a hook is used the local value does not get updated
-        playerName = newName;
-        playerGameObject.name = "Player(" + newName + ")";
-    }
 
     //RPC to set the flash light status
     [ClientRpc]
@@ -202,26 +139,6 @@ public class PlayerConnectionObject : NetworkBehaviour
 
             flashlight.SetFlashLightCharge(flashLightBattery);
             flashlight.SetMaxFlashLightCharge(flashLightMaxBattery);
-        }
-    }
-
-    //RPC to update player attributes such as health
-    [ClientRpc]
-    void RpcUpdatePlayerAttributes(float health, float maxHealth, float stamina, float maxStamina)
-    {
-        PlayerAttributes attributes = playerGameObject.GetComponent<PlayerAttributes>();
-        if(attributes != null)
-        {
-            //Only sync for local player, prevents incorrect data being synced, fixes issue #5 on GitHub
-            if (hasAuthority)
-            {
-                return;
-            }
-
-            attributes.SetHealth(health);
-            attributes.SetMaxHealth(maxHealth);
-            attributes.SetStamina(stamina);
-            attributes.SetMaxStamina(maxStamina);
         }
     }
     #endregion
