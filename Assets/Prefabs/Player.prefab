@@ -186,7 +186,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  flashLight: {fileID: 0}
+  flashLight: {fileID: 5292545273204276447}
   flashLightStatus: 0
   flashLightBattery: 100
   flashLightMaxBattery: 100

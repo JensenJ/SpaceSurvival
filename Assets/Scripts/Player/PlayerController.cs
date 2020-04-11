@@ -65,9 +65,10 @@ public class PlayerController : NetworkBehaviour
             }
         }
 
+        //Activate flash light
         if (Input.GetKeyDown(KeyCode.F))
         {
-            flashLight.flashLightStatus = !flashLight.flashLightStatus;
+            flashLight.ToggleFlashLight(!flashLight.GetFlashLightStatus());
         }
 
         //Movement

@@ -6,15 +6,12 @@ using Mirror;
 public class PlayerFlashLight : NetworkBehaviour
 {
     [SerializeField] GameObject flashLight = null;
-    [SerializeField] public bool flashLightStatus = false;
+    [SerializeField] [SyncVar(hook = nameof(HookSetStatus))] public bool flashLightStatus = false;
 
-    [SerializeField] public float flashLightBattery = 100.0f;
-    [SerializeField] public float flashLightMaxBattery = 100.0f;
+    [SerializeField] [SyncVar(hook = nameof(HookSetBattery))] public float flashLightBattery = 100.0f;
+    [SerializeField] [SyncVar(hook = nameof(HookSetMaxBattery))] public float flashLightMaxBattery = 100.0f;
 
     [SerializeField] public static float baseFlashLightBattery = 100.0f;
-
-    float lastBattery = 0.0f;
-    float lastMaxBattery = 0.0f;
 
     [SerializeField] public float flashLightRechargeRate = 5f;
     [SerializeField] public float flashLightDrainRate = 3f;
@@ -22,12 +19,20 @@ public class PlayerFlashLight : NetworkBehaviour
     GameObject gameManager = null;
 
     // Start is called before the first frame update
-    void Awake()
+    public override void OnStartClient()
     {
+        base.OnStartClient();
+
         if (flashLight == null)
         {
             flashLight = transform.GetChild(0).GetChild(0).gameObject;
         }
+
+        if (!hasAuthority)
+        {
+            return;
+        }
+
         ToggleFlashLight(flashLightStatus);
 
         gameManager = GameObject.FindGameObjectWithTag("GameController");
@@ -38,24 +43,6 @@ public class PlayerFlashLight : NetworkBehaviour
         if (!hasAuthority)
         {
             return;
-        }
-
-        //Checking if battery value is the same as last check value
-        if (lastBattery != flashLightBattery)
-        {
-            //Clamp value
-            flashLightBattery = Mathf.Clamp(flashLightBattery, 0.0f, flashLightMaxBattery);
-            //set last battery equal to new battery
-            lastBattery = flashLightBattery;
-        }
-
-        //Checking if battery value is the same as last check value
-        if (lastMaxBattery != flashLightMaxBattery)
-        {
-            //Clamp value
-            flashLightMaxBattery = Mathf.Clamp(flashLightMaxBattery, 0.0f, flashLightMaxBattery);
-            //set last max battery equal to new max battery
-            lastMaxBattery = flashLightMaxBattery;
         }
 
         //Flashlight draining logic
@@ -83,28 +70,50 @@ public class PlayerFlashLight : NetworkBehaviour
     {
         flashLightStatus = status;
         flashLight.SetActive(status);
+        CmdUpdateFlashLightStatus(status);
     }
 
     //Function to recharge flash light
     public void RechargeFlashLight(float amount)
     {
         flashLightBattery += amount;
+        CmdUpdateFlashLightBattery(flashLightBattery);
     }
 
     //Function to drain flash light
     public void DrainFlashLight(float amount)
     {
         flashLightBattery -= amount;
+        CmdUpdateFlashLightBattery(flashLightBattery);
     }
 
     //SETTERS
     public void SetFlashLightCharge(float amount)
     {
         flashLightBattery = amount;
+        CmdUpdateFlashLightBattery(flashLightBattery);
     }
     public void SetMaxFlashLightCharge(float amount)
     {
         flashLightMaxBattery = amount;
+        CmdUpdateFlashLightBattery(flashLightMaxBattery);
+    }
+
+    //HOOK SETTERS
+    void HookSetStatus(bool oldStatus, bool newStatus)
+    {
+        flashLightStatus = newStatus;
+        flashLight.SetActive(newStatus);
+    }
+
+    void HookSetBattery(float oldBattery, float newBattery)
+    {
+        flashLightBattery = newBattery;
+    }
+
+    void HookSetMaxBattery(float oldMaxBattery, float newMaxBattery)
+    {
+        flashLightMaxBattery = newMaxBattery;
     }
 
 
@@ -127,5 +136,26 @@ public class PlayerFlashLight : NetworkBehaviour
     public float GetBaseFlashLightCharge()
     {
         return baseFlashLightBattery;
+    }
+
+    //Commands to update flashlight behaviour
+
+    [Command]
+    public void CmdUpdateFlashLightStatus(bool newStatus)
+    {
+        flashLightStatus = newStatus;
+        flashLight.SetActive(newStatus);
+    }
+
+    [Command]
+    public void CmdUpdateFlashLightBattery(float battery)
+    {
+        flashLightBattery = battery;
+    }
+
+    [Command]
+    public void CmdUpdateMaxFlashLightBattery(float maxBattery)
+    {
+        flashLightMaxBattery = maxBattery;
     }
 }
