@@ -108,7 +108,7 @@ public class PlayerFlashLight : NetworkBehaviour
 
     void HookSetBattery(float oldBattery, float newBattery)
     {
-        flashLightBattery = newBattery;
+        flashLightBattery = Mathf.Clamp(newBattery, 0, flashLightMaxBattery);
     }
 
     void HookSetMaxBattery(float oldMaxBattery, float newMaxBattery)
@@ -150,7 +150,7 @@ public class PlayerFlashLight : NetworkBehaviour
     [Command]
     public void CmdUpdateFlashLightBattery(float battery)
     {
-        flashLightBattery = battery;
+        flashLightBattery = Mathf.Clamp(battery, 0, flashLightMaxBattery);
     }
 
     [Command]
