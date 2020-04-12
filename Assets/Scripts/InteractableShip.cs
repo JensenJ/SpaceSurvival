@@ -5,13 +5,19 @@ using UnityEngine;
 //Derived class for ship interaction
 public class InteractableShip : Interactable
 {
-    protected override void OnInteract(GameObject interactingObject)
+    protected override void OnInteract(GameObject interactingPlayer)
     {
 
         //Disable the interacting object
-        interactingObject.SetActive(false);
+        interactingPlayer.SetActive(false);
         Debug.Log("Ship interacted");
 
-        transform.GetChild(0).gameObject.SetActive(true);
+        GameObject shipCamera = transform.GetChild(0).gameObject;
+        GameObject shipObject = transform.GetChild(1).gameObject;
+
+        shipCamera.SetActive(true);
+        shipObject.GetComponent<ShipController>().canMove = true;
+        
+
     }
 }

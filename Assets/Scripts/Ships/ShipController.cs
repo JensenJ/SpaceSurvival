@@ -30,6 +30,8 @@ public class ShipController : NetworkBehaviour
     float rollDeceleration;
     float rollVelocity;
 
+    public bool canMove = false;
+
     //When the client starts
     public override void OnStartClient()
     {
@@ -79,12 +81,20 @@ public class ShipController : NetworkBehaviour
         //Forward acceleration
         if (Input.GetKey(KeyCode.W))
         {
+            if (!canMove)
+            {
+                return;
+            }
             forwardVelocity += forwardAcceleration * Time.deltaTime;
             forwardVelocity = Mathf.Min(forwardVelocity, forwardMaxThrust);
         } 
         //Braking / backward deceleration
         else if (Input.GetKey(KeyCode.S))
         {
+            if (!canMove)
+            {
+                return;
+            }
             forwardVelocity += -forwardBrake * Time.deltaTime;
             forwardVelocity = Mathf.Max(forwardVelocity, 0);
         }
@@ -101,12 +111,20 @@ public class ShipController : NetworkBehaviour
         //Left roll
         if (Input.GetKey(KeyCode.Q))
         {
+            if (!canMove)
+            {
+                return;
+            }
             rollVelocity += rollAcceleration * Time.deltaTime;
             rollVelocity = Mathf.Min(rollVelocity, rollMaxSpeed);
         }
         //Right roll
         else if (Input.GetKey(KeyCode.E))
         {
+            if (!canMove)
+            {
+                return;
+            }
             rollVelocity += -rollAcceleration * Time.deltaTime;
             rollVelocity = Mathf.Max(rollVelocity, -rollMaxSpeed);
         }
