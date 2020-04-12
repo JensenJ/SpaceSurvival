@@ -287,8 +287,8 @@ namespace Substance.Platform
 #endif
 
 #if IMPORT_DYNAMIC
-        public delegate void cppInitSubstanceDelegate(string applicationDataPath);
-        public static void cppInitSubstance(string applicationDataPath)
+        public delegate void cppInitSubstanceDelegate(string applicationDataPath, int pTextureClampExposant);
+        public static void cppInitSubstance(string applicationDataPath, int pTextureClampExposant)
         {
             string myName = System.Reflection.MethodBase.GetCurrentMethod().Name;
 
@@ -298,11 +298,11 @@ namespace Substance.Platform
 
             cppInitSubstanceDelegate function = DLLHelpers.GetFunction(
                 myName, typeof(cppInitSubstanceDelegate)) as cppInitSubstanceDelegate;
-            function.Invoke(applicationDataPath);
+            function.Invoke(applicationDataPath, pTextureClampExposant);
         }
 #else
         [DllImport(attributeValue)]
-        public static extern void cppInitSubstance(string applicationDataPath);
+        public static extern void cppInitSubstance(string applicationDataPath, int pTextureClampExposant);
 #endif
 
 #if IMPORT_DYNAMIC
@@ -697,24 +697,6 @@ namespace Substance.Platform
 #else
         [DllImport(attributeValue)]
         public static extern void cppSetDirtyOutputs(IntPtr graphHandle);
-#endif
-
-#if IMPORT_DYNAMIC
-        public delegate void cppHandleMaskDelegate(IntPtr graphHandle);
-        public static void cppHandleMask(IntPtr graphHandle)
-        {
-            string myName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-
-            if (DLLHelpers.DllHandle == IntPtr.Zero)
-                return;
-
-            cppHandleMaskDelegate function = DLLHelpers.GetFunction(
-                myName, typeof(cppHandleMaskDelegate)) as cppHandleMaskDelegate;
-            function.Invoke(graphHandle);
-        }
-#else
-        [DllImport(attributeValue)]
-        public static extern void cppHandleMask(IntPtr graphHandle);
 #endif
 
 #if IMPORT_DYNAMIC
