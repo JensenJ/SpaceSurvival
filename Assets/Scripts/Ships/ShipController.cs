@@ -33,6 +33,10 @@ public class ShipController : NetworkBehaviour
     public bool canMove = false;
     public GameObject playerObject = null;
 
+    float timeOfExitAttempt = float.MaxValue;
+    float exitTime = 0.5f;
+    public bool canExitShip;
+
     //When the client starts
     public override void OnStartClient()
     {
@@ -64,6 +68,50 @@ public class ShipController : NetworkBehaviour
         rollDeceleration = ship.shipAsset.rollDeceleration;
     }
 
+    //Function to check if the player tried to leave the ship
+    public void CheckForExit()
+    {
+        //Check if the ship is not safe to exit or if the ship cannot move
+        if (!canExitShip)
+        {
+            return;
+        }
+
+        //If exit key is pressed
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            //Mark start exit time
+            timeOfExitAttempt = Time.time;
+        }
+
+        if (Input.GetKey(KeyCode.F))
+        {
+            //Calculate time since exit started
+            float timeSinceExitStart = Time.time - timeOfExitAttempt;
+
+            //If player has been trying to exit long enough
+            if (timeSinceExitStart >= exitTime)
+            {
+                //Exit the ship
+                if (playerObject != null)
+                {
+                    //Disable ship functionality
+                    canMove = false;
+                    ship.shipCamera.SetActive(false);
+
+                    //Enable player functionality
+                    playerObject.transform.position = ship.transform.GetChild(1).GetChild(0).position;
+                    playerObject.SetActive(true);
+                    playerObject = null;
+
+                    //Prevent feedback loop of exiting ship
+                    canExitShip = false;
+                    timeOfExitAttempt = float.MaxValue;
+                }
+            }
+        }
+    }
+
     public void Update()
     {
         //Is this ship owned by the player
@@ -78,21 +126,8 @@ public class ShipController : NetworkBehaviour
             return;
         }
 
-        //Key to exit ship
-        if (Input.GetKeyDown(KeyCode.G))
-        {
-            if (playerObject != null)
-            {
-                //Disable ship functionality
-                canMove = false;
-                ship.shipCamera.SetActive(false);
-
-                //Enable player functionality
-                playerObject.transform.position = ship.transform.GetChild(1).GetChild(0).position;
-                playerObject.SetActive(true);
-                playerObject = null;
-            }
-        }
+        //Check if the player tried to leave the ship
+        CheckForExit();
 
         //Forward backward motion
         //Forward acceleration

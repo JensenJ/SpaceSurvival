@@ -7,7 +7,6 @@ public class InteractableShip : Interactable
 {
     protected override void OnInteract(GameObject interactingPlayer)
     {
-
         //Disable the interacting object
         interactingPlayer.SetActive(false);
         Debug.Log("Ship interacted");
@@ -18,10 +17,14 @@ public class InteractableShip : Interactable
 
         //Camera disabling
         shipCamera.SetActive(true);
-        //Ship object settings
-        shipObject.GetComponent<ShipController>().canMove = true;
-        shipObject.GetComponent<ShipController>().playerObject = interactingPlayer;
-        
 
+        //Ship controller activation
+        ShipController shipController = shipObject.GetComponent<ShipController>();
+
+        //Ship controller settings
+        shipController.canMove = true;
+        shipController.playerObject = interactingPlayer;
+
+        shipController.canExitShip = true;
     }
 }

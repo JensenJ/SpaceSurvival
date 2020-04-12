@@ -8,6 +8,9 @@ public class PlayerInteraction : NetworkBehaviour
     [SerializeField] float interactRange = 5.0f;
     [SerializeField] GameObject cam;
 
+    float timeOfLastInteraction;
+    Interactable lastInteractable;
+
     private void Start()
     {
         //Authority check
@@ -30,24 +33,41 @@ public class PlayerInteraction : NetworkBehaviour
         }
 
         //If player presses F (interact key)
-        RaycastHit hit;
         if (Input.GetKeyDown(KeyCode.F))
         {
             //If object in front of player within interact range
-            if(Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, interactRange))
+            if (Physics.Raycast(cam.transform.position, cam.transform.forward, out RaycastHit hit, interactRange))
             {
                 //Get the interactable object
                 GameObject hitObject = hit.transform.gameObject;
-                Interactable interactable = TraceInteractWithParents(hitObject);
-                
-                //Check if component has interactable script attached or if interactable was even found
-                if(interactable != null)
-                {
-                    Debug.Log("Interactable Name: " + interactable.gameObject.name);
+                lastInteractable = TraceInteractWithParents(hitObject);
+                timeOfLastInteraction = Time.time;
+            }
+        }
 
-                    //Invoke interact function on the interactable
-                    interactable.Interact(transform.gameObject);
-                }
+        //Check interactable is not null
+        if(lastInteractable == null)
+        {
+            return;
+        }
+
+        //Check the object can actually be interacted with
+        if (!lastInteractable.canInteract)
+        {
+            return;
+        }
+
+        //If F is still held down
+        if (Input.GetKey(KeyCode.F))
+        {
+            float timeSinceInteractBegan = Time.time - timeOfLastInteraction;
+            //If has been interacting for object for enough time
+            if(timeSinceInteractBegan >= lastInteractable.interactionTime)
+            {
+                //Invoke interact function on the interactable
+                lastInteractable.Interact(transform.gameObject);
+                //Prevent feedback loop of interacting
+                timeOfLastInteraction = float.MaxValue;
             }
         }
     }
@@ -66,7 +86,6 @@ public class PlayerInteraction : NetworkBehaviour
             //Check if object has interactable script
             if (interactable != null)
             {
-                hasFoundInteractable = true;
                 return interactable;
             }
 
