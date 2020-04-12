@@ -158,7 +158,7 @@ public class ShipController : NetworkBehaviour
         }
 
         //Apply forward movement
-        ship.transform.Translate(transform.forward * forwardVelocity * Time.deltaTime);
+        ship.transform.position -= transform.forward * forwardVelocity * Time.deltaTime;
 
         //Left roll
         if (Input.GetKey(KeyCode.Q))
@@ -197,7 +197,7 @@ public class ShipController : NetworkBehaviour
         if (rollVelocity != 0)
         {
             //Apply rotate / roll
-            ship.transform.Rotate(Time.deltaTime * rollVelocity * transform.forward);
+            ship.transform.eulerAngles = new Vector3(ship.transform.eulerAngles.x, ship.transform.eulerAngles.y, ship.transform.eulerAngles.z - Time.deltaTime * rollVelocity);
         }
     }
 }
