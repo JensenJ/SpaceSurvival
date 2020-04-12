@@ -180,7 +180,7 @@ public class Ship : NetworkBehaviour
         for (int i = 0; i < shipAsset.expansionComponentCount; i++)
         {
             //Calculate index
-            int index = i + 1;
+            int index = i + 2;
             //Get slot from shipObject
             GameObject slot = shipObject.transform.GetChild(index).gameObject;
             //Assign slot
@@ -191,7 +191,7 @@ public class Ship : NetworkBehaviour
         for (int i = 0; i < shipAsset.largeComponentCount; i++)
         {
             //Calculate index
-            int index = i + shipAsset.expansionComponentCount + 1;
+            int index = i + shipAsset.expansionComponentCount + 2;
             //Get slot from shipObject
             GameObject slot = shipObject.transform.GetChild(index).gameObject;
             //Assign slot
@@ -323,13 +323,13 @@ public class Ship : NetworkBehaviour
                 //Setting index for large components
                 if (componentToAdd.componentType == ShipComponentType.Large)
                 {
-                    shipComponent.componentSlotIndex = 1 + componentSlotIndex + expansionComponentSlots.Length;
+                    shipComponent.componentSlotIndex = 2 + componentSlotIndex + expansionComponentSlots.Length;
                 }
 
                 //Setting index for expansion components
                 if (componentToAdd.componentType == ShipComponentType.Expansion)
                 {
-                    shipComponent.componentSlotIndex = 1 + componentSlotIndex;
+                    shipComponent.componentSlotIndex = 2 + componentSlotIndex;
                 }
 
                 //Spawn on server

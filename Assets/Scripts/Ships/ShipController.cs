@@ -31,6 +31,7 @@ public class ShipController : NetworkBehaviour
     float rollVelocity;
 
     public bool canMove = false;
+    public GameObject playerObject = null;
 
     //When the client starts
     public override void OnStartClient()
@@ -75,6 +76,22 @@ public class ShipController : NetworkBehaviour
         if (ship == null)
         {
             return;
+        }
+
+        //Key to exit ship
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            if (playerObject != null)
+            {
+                //Disable ship functionality
+                canMove = false;
+                ship.shipCamera.SetActive(false);
+
+                //Enable player functionality
+                playerObject.transform.position = ship.transform.GetChild(1).GetChild(0).position;
+                playerObject.SetActive(true);
+                playerObject = null;
+            }
         }
 
         //Forward backward motion
