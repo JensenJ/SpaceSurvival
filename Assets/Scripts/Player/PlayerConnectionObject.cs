@@ -17,7 +17,7 @@ public class PlayerConnectionObject : NetworkBehaviour
     {
         gameManager = GameObject.FindGameObjectWithTag("GameController");
 
-        if(isLocalPlayer == false)
+        if (isLocalPlayer == false)
         {
             //This object belongs to another player
             return;
@@ -34,7 +34,7 @@ public class PlayerConnectionObject : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(isLocalPlayer == false)
+        if (isLocalPlayer == false)
         {
             return;
         }
@@ -42,7 +42,7 @@ public class PlayerConnectionObject : NetworkBehaviour
 
     void OnDestroy()
     {
-        if(playerGameObject != null)
+        if (playerGameObject != null)
         {
             playerGameObject.GetComponent<PlayerController>().EnableCursor();
         }
@@ -53,7 +53,6 @@ public class PlayerConnectionObject : NetworkBehaviour
     //Commands are only executed on the host client / server
     //Commands guarantee that the function is running on the server
 
-    #region PlayerCommands
     //Command to spawn player on server
     [Command]
     void CmdSpawnPlayerGameObject()
@@ -68,36 +67,6 @@ public class PlayerConnectionObject : NetworkBehaviour
         //Spawn object on all clients
         NetworkServer.Spawn(playerGameObject, connectionToClient);
     }
-    
-    //Command to toggle flashlight
-    [Command]
-    public void CmdUpdateFlashLightStatus(bool flashLightStatus)
-    {
-        Debug.Log("CMD: Update Flash Light Status");
-        PlayerFlashLight flashlight = playerGameObject.GetComponent<PlayerFlashLight>();
-        if (flashlight != null)
-        {
-            RpcUpdateFlashLightStatus(flashLightStatus);
-        }
-    }
-
-    //Command to update flashlight battery info
-    [Command]
-    public void CmdUpdateFlashLightBattery(float flashLightBattery, float flashLightMaxBattery)
-    {
-        Debug.Log("CMD: Update Flash Light Battery");
-        PlayerFlashLight flashlight = playerGameObject.GetComponent<PlayerFlashLight>();
-        if (flashlight != null)
-        {
-            RpcUpdateFlashLightBattery(flashLightBattery, flashLightMaxBattery);
-
-            flashlight.SetFlashLightCharge(flashLightBattery);
-            flashlight.SetMaxFlashLightCharge(flashLightMaxBattery);
-        }
-    }
-    #endregion
-
-    #region ShipCommands
 
     [Command]
     void CmdSpawnShip()
@@ -106,40 +75,4 @@ public class PlayerConnectionObject : NetworkBehaviour
 
         NetworkServer.Spawn(shipObject, connectionToClient);
     }
-    #endregion
-
-    /////////////////////////////// RPC ///////////////////////////////
-    //RPCs (remote procedure calls) are functions that are only executed on clients
-
-    #region PlayerRPCs
-
-    //RPC to set the flash light status
-    [ClientRpc]
-    void RpcUpdateFlashLightStatus(bool status)
-    {
-        PlayerFlashLight flashlight = playerGameObject.GetComponent<PlayerFlashLight>();
-        if(flashlight != null)
-        {
-            flashlight.ToggleFlashLight(status);
-        }
-    }
-
-    //RPC to update flash light battery
-    [ClientRpc]
-    void RpcUpdateFlashLightBattery(float flashLightBattery, float flashLightMaxBattery)
-    {
-        PlayerFlashLight flashlight = playerGameObject.GetComponent<PlayerFlashLight>();
-        if (flashlight != null)
-        {
-            //Only sync for local player, prevents incorrect data being synced, fixes issue #5 on GitHub
-            if (hasAuthority)
-            {
-                return;
-            }
-
-            flashlight.SetFlashLightCharge(flashLightBattery);
-            flashlight.SetMaxFlashLightCharge(flashLightMaxBattery);
-        }
-    }
-    #endregion
 }

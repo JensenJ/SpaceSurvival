@@ -31,6 +31,7 @@ public class ShipController : NetworkBehaviour
     float rollVelocity;
 
     public bool canMove = false;
+    [SyncVar(hook = nameof(HookSetPlayerObject))]
     public GameObject playerObject = null;
 
     float timeOfExitAttempt = float.MaxValue;
@@ -102,7 +103,7 @@ public class ShipController : NetworkBehaviour
                     //Enable player functionality
                     playerObject.transform.position = ship.transform.GetChild(1).GetChild(0).position;
                     playerObject.SetActive(true);
-                    playerObject = null;
+                    CmdSetPlayerObject(null);
 
                     //Prevent feedback loop of exiting ship
                     canExitShip = false;
@@ -199,5 +200,18 @@ public class ShipController : NetworkBehaviour
             //Apply rotate / roll
             ship.transform.eulerAngles = new Vector3(ship.transform.eulerAngles.x, ship.transform.eulerAngles.y, ship.transform.eulerAngles.z - Time.deltaTime * rollVelocity);
         }
+    }
+
+    //Hook function for setting the player object
+    public void HookSetPlayerObject(GameObject oldObject, GameObject newObject)
+    {
+        playerObject = newObject;
+    }
+    
+    //Command to set the new player object, this should trigger the player object hook function from the syncvar
+    [Command]
+    public void CmdSetPlayerObject(GameObject newPlayerObject)
+    {
+        playerObject = newPlayerObject;
     }
 }
