@@ -27,9 +27,16 @@ public class InteractableShip : Interactable
             return;
         }
 
-        //Disable the interacting object
-        interactingPlayer.SetActive(false);
-        Debug.Log("Ship interacted");
+        //Get player controller
+        PlayerController playerController = interactingPlayer.GetComponent<PlayerController>();
+        //Null check
+        if(playerController == null)
+        {
+            return;
+        }
+
+        //Set active state on player controller, disabling the object
+        playerController.CmdChangeActiveState(false);
 
         //Camera disabling
         shipCamera.SetActive(true);

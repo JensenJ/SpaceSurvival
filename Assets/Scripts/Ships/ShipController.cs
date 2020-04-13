@@ -102,7 +102,17 @@ public class ShipController : NetworkBehaviour
 
                     //Enable player functionality
                     playerObject.transform.position = ship.transform.GetChild(1).GetChild(0).position;
-                    playerObject.SetActive(true);
+                    
+                    //Try get player controller
+                    PlayerController playerController = playerObject.GetComponent<PlayerController>();
+                    //Null check
+                    if(playerController == null)
+                    {
+                        return;
+                    }
+                    //Enable the player object
+                    playerController.CmdChangeActiveState(true);
+
                     CmdSetPlayerObject(null);
 
                     //Prevent feedback loop of exiting ship
