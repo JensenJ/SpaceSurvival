@@ -18,11 +18,13 @@ MonoBehaviour:
   cameraDistance: 18
   forwardMaxSpeed: 50
   forwardAcceleration: 4
-  forwardDeceleration: 3
   forwardBrake: 6
   rollMaxSpeed: 12
   rollAcceleration: 6
   rollDeceleration: 6
+  pitchMaxSpeed: 16
+  pitchAcceleration: 8
+  pitchDeceleration: 8
   smallComponentCount: 2
   mediumComponentCount: 2
   largeComponentCount: 4

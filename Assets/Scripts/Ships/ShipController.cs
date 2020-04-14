@@ -29,6 +29,12 @@ public class ShipController : NetworkBehaviour
     [SerializeField] float rollDeceleration;
     [SerializeField] float rollVelocity;
 
+    //Ship pitch movement variables
+    [SerializeField] float pitchMaxSpeed;
+    [SerializeField] float pitchAcceleration;
+    [SerializeField] float pitchDeceleration;
+    [SerializeField] float pitchVelocity;
+
     public bool canMove = false;
     [SyncVar(hook = nameof(HookSetPlayerObject))]
     public GameObject playerObject = null;
@@ -65,6 +71,11 @@ public class ShipController : NetworkBehaviour
         rollMaxSpeed = ship.shipAsset.rollMaxSpeed;
         rollAcceleration = ship.shipAsset.rollAcceleration;
         rollDeceleration = ship.shipAsset.rollDeceleration;
+
+        //Putch movement variables setting
+        pitchMaxSpeed = ship.shipAsset.pitchMaxSpeed;
+        pitchAcceleration = ship.shipAsset.pitchAcceleration;
+        pitchDeceleration = ship.shipAsset.pitchDeceleration;
     }
 
     //Function to check if the player tried to leave the ship
@@ -162,7 +173,7 @@ public class ShipController : NetworkBehaviour
 
         //Apply forward movement
         ship.transform.position -= transform.forward * forwardVelocity * Time.deltaTime;
-
+        
         //Left roll
         if (Input.GetKey(KeyCode.Q))
         {
@@ -200,7 +211,47 @@ public class ShipController : NetworkBehaviour
         if (rollVelocity != 0)
         {
             //Apply rotate / roll
-            ship.transform.eulerAngles = new Vector3(ship.transform.eulerAngles.x, ship.transform.eulerAngles.y, ship.transform.eulerAngles.z - Time.deltaTime * rollVelocity);
+            ship.transform.Rotate(0f, 0f, Time.deltaTime * -rollVelocity, Space.Self);
+        }
+
+        //Pitch down
+        if (Input.GetKey(KeyCode.W))
+        {
+            if (!canMove)
+            {
+                return;
+            }
+            pitchVelocity += pitchAcceleration * Time.deltaTime;
+            pitchVelocity = Mathf.Min(pitchVelocity, pitchMaxSpeed);
+        }
+        //Pitch up
+        else if (Input.GetKey(KeyCode.S))
+        {
+            if (!canMove)
+            {
+                return;
+            }
+            pitchVelocity += -pitchAcceleration * Time.deltaTime;
+            pitchVelocity = Mathf.Max(pitchVelocity, -pitchMaxSpeed);
+        }
+        //If pitch velocity is negative
+        else if(pitchVelocity < 0)
+        {
+            pitchVelocity += pitchDeceleration * Time.deltaTime;
+            pitchVelocity = Mathf.Min(pitchVelocity, 0);
+        }
+        //If pitch velocity is positive
+        else if(pitchVelocity > 0)
+        {
+            pitchVelocity += -pitchDeceleration * Time.deltaTime;
+            pitchVelocity = Mathf.Max(pitchVelocity, 0);
+        }
+
+        //Don't bother rotating if pitch velocity is 0
+        if(pitchVelocity != 0)
+        {
+            //Apply rotate / pitch
+            ship.transform.Rotate(Time.deltaTime * -pitchVelocity, 0f, 0f, Space.Self);
         }
     }
 

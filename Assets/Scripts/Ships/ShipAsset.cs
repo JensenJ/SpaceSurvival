@@ -19,6 +19,11 @@ public class ShipAsset : ScriptableObject
     public float rollAcceleration;
     public float rollDeceleration;
 
+    [Header("Pitch Movement Values:")]
+    public float pitchMaxSpeed;
+    public float pitchAcceleration;
+    public float pitchDeceleration;
+
     //Slot counts
     [Header("Component Slot Counts:")]
     public int smallComponentCount;
