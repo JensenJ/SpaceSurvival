@@ -18,17 +18,16 @@ public class ShipController : NetworkBehaviour
     public Ship ship;
 
     //Ship forward movement variables
-    float forwardMaxThrust;
-    float forwardAcceleration;
-    float forwardDeceleration;
-    float forwardBrake;
-    float forwardVelocity;
+    [SerializeField] float forwardMaxThrust;
+    [SerializeField] float forwardAcceleration;
+    [SerializeField] float forwardBrake;
+    [SerializeField] float forwardVelocity;
 
     //Ship roll movement variables
-    float rollMaxSpeed;
-    float rollAcceleration;
-    float rollDeceleration;
-    float rollVelocity;
+    [SerializeField] float rollMaxSpeed;
+    [SerializeField] float rollAcceleration;
+    [SerializeField] float rollDeceleration;
+    [SerializeField] float rollVelocity;
 
     public bool canMove = false;
     [SyncVar(hook = nameof(HookSetPlayerObject))]
@@ -60,7 +59,6 @@ public class ShipController : NetworkBehaviour
         //Forward Movement variable setting
         forwardMaxThrust = ship.shipAsset.forwardMaxSpeed;
         forwardAcceleration = ship.shipAsset.forwardAcceleration;
-        forwardDeceleration = ship.shipAsset.forwardDeceleration;
         forwardBrake = ship.shipAsset.forwardBrake;
 
         //Roll movement variable setting
@@ -142,7 +140,7 @@ public class ShipController : NetworkBehaviour
 
         //Forward backward motion
         //Forward acceleration
-        if (Input.GetKey(KeyCode.W))
+        if (Input.GetKey(KeyCode.LeftShift))
         {
             if (!canMove)
             {
@@ -152,19 +150,13 @@ public class ShipController : NetworkBehaviour
             forwardVelocity = Mathf.Min(forwardVelocity, forwardMaxThrust);
         } 
         //Braking / backward deceleration
-        else if (Input.GetKey(KeyCode.S))
+        else if (Input.GetKey(KeyCode.LeftControl))
         {
             if (!canMove)
             {
                 return;
             }
             forwardVelocity += -forwardBrake * Time.deltaTime;
-            forwardVelocity = Mathf.Max(forwardVelocity, 0);
-        }
-        //Deceleration without braking
-        else
-        {
-            forwardVelocity += -forwardDeceleration * Time.deltaTime;
             forwardVelocity = Mathf.Max(forwardVelocity, 0);
         }
 

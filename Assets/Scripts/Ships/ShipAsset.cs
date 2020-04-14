@@ -12,7 +12,6 @@ public class ShipAsset : ScriptableObject
     [Header("Forward Movement Values:")]
     public float forwardMaxSpeed;
     public float forwardAcceleration;
-    public float forwardDeceleration;
     public float forwardBrake;
 
     [Header("Roll Movement Values:")]
