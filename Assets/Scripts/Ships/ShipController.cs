@@ -160,6 +160,18 @@ public class ShipController : NetworkBehaviour
         //Check if the player tried to leave the ship
         CheckForExit();
 
+        //Ship movement
+        ApplyForwardVelocity();
+        ApplyRollVelocity();
+        ApplyPitchVelocity();
+        ApplyYawVelocity();
+    }
+
+    #region ShipVelocityCalculations
+
+    //A function to calculate the forward velocity and apply it to the ship
+    public void ApplyForwardVelocity()
+    {
         //Forward backward motion
         //Forward acceleration
         if (Input.GetKey(KeyCode.LeftShift))
@@ -170,7 +182,7 @@ public class ShipController : NetworkBehaviour
             }
             forwardVelocity += forwardAcceleration * Time.deltaTime;
             forwardVelocity = Mathf.Min(forwardVelocity, forwardMaxThrust);
-        } 
+        }
         //Braking / backward deceleration
         else if (Input.GetKey(KeyCode.LeftControl))
         {
@@ -184,7 +196,11 @@ public class ShipController : NetworkBehaviour
 
         //Apply forward movement
         ship.transform.position -= transform.forward * forwardVelocity * Time.deltaTime;
-        
+    }
+
+    //A function to calculate and apply the roll velocity of the ship.
+    public void ApplyRollVelocity()
+    {
         //Left roll
         if (Input.GetKey(KeyCode.Q))
         {
@@ -206,13 +222,13 @@ public class ShipController : NetworkBehaviour
             rollVelocity = Mathf.Max(rollVelocity, -rollMaxSpeed);
         }
         //If roll velocity is negative
-        else if(rollVelocity < 0)
+        else if (rollVelocity < 0)
         {
             rollVelocity += rollDeceleration * Time.deltaTime;
             rollVelocity = Mathf.Min(rollVelocity, 0);
         }
         //If roll velocity is positive
-        else if(rollVelocity > 0)
+        else if (rollVelocity > 0)
         {
             rollVelocity += -rollDeceleration * Time.deltaTime;
             rollVelocity = Mathf.Max(rollVelocity, 0);
@@ -224,7 +240,11 @@ public class ShipController : NetworkBehaviour
             //Apply rotate / roll
             ship.transform.Rotate(0f, 0f, Time.deltaTime * -rollVelocity, Space.Self);
         }
+    }
 
+    //A function to calculate and apply the pitch velocity of the ship.
+    public void ApplyPitchVelocity()
+    {
         //Pitch down
         if (Input.GetKey(KeyCode.W))
         {
@@ -246,26 +266,29 @@ public class ShipController : NetworkBehaviour
             pitchVelocity = Mathf.Max(pitchVelocity, -pitchMaxSpeed);
         }
         //If pitch velocity is negative
-        else if(pitchVelocity < 0)
+        else if (pitchVelocity < 0)
         {
             pitchVelocity += pitchDeceleration * Time.deltaTime;
             pitchVelocity = Mathf.Min(pitchVelocity, 0);
         }
         //If pitch velocity is positive
-        else if(pitchVelocity > 0)
+        else if (pitchVelocity > 0)
         {
             pitchVelocity += -pitchDeceleration * Time.deltaTime;
             pitchVelocity = Mathf.Max(pitchVelocity, 0);
         }
 
         //Don't bother rotating if pitch velocity is 0
-        if(pitchVelocity != 0)
+        if (pitchVelocity != 0)
         {
             //Apply rotate / pitch
             ship.transform.Rotate(Time.deltaTime * -pitchVelocity, 0f, 0f, Space.Self);
         }
+    }
 
-
+    //A function to calculate and apply the yaw velocity of the ship.
+    public void ApplyYawVelocity()
+    {
         //Yaw / Turning
         //Turn left
         if (Input.GetKey(KeyCode.A))
@@ -307,6 +330,7 @@ public class ShipController : NetworkBehaviour
             ship.transform.Rotate(0f, Time.deltaTime * -yawVelocity, 0f, Space.Self);
         }
     }
+    #endregion
 
     //Hook function for setting the player object
     public void HookSetPlayerObject(GameObject oldObject, GameObject newObject)
