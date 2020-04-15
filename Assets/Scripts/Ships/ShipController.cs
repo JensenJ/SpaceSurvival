@@ -35,6 +35,12 @@ public class ShipController : NetworkBehaviour
     [SerializeField] float pitchDeceleration;
     [SerializeField] float pitchVelocity;
 
+    //Ship yaw (turn) movement variables
+    [SerializeField] float yawMaxSpeed;
+    [SerializeField] float yawAcceleration;
+    [SerializeField] float yawDeceleration;
+    [SerializeField] float yawVelocity;
+
     public bool canMove = false;
     [SyncVar(hook = nameof(HookSetPlayerObject))]
     public GameObject playerObject = null;
@@ -72,10 +78,15 @@ public class ShipController : NetworkBehaviour
         rollAcceleration = ship.shipAsset.rollAcceleration;
         rollDeceleration = ship.shipAsset.rollDeceleration;
 
-        //Putch movement variables setting
+        //Pitch movement variables setting
         pitchMaxSpeed = ship.shipAsset.pitchMaxSpeed;
         pitchAcceleration = ship.shipAsset.pitchAcceleration;
         pitchDeceleration = ship.shipAsset.pitchDeceleration;
+
+        //Yaw /turning movement variable setting
+        yawMaxSpeed = ship.shipAsset.yawMaxSpeed;
+        yawAcceleration = ship.shipAsset.yawAcceleration;
+        yawDeceleration = ship.shipAsset.yawDeceleration;
     }
 
     //Function to check if the player tried to leave the ship
@@ -252,6 +263,48 @@ public class ShipController : NetworkBehaviour
         {
             //Apply rotate / pitch
             ship.transform.Rotate(Time.deltaTime * -pitchVelocity, 0f, 0f, Space.Self);
+        }
+
+
+        //Yaw / Turning
+        //Turn left
+        if (Input.GetKey(KeyCode.A))
+        {
+            if (!canMove)
+            {
+                return;
+            }
+            yawVelocity += yawAcceleration * Time.deltaTime;
+            yawVelocity = Mathf.Min(yawVelocity, yawMaxSpeed);
+        }
+        //Turn right
+        else if (Input.GetKey(KeyCode.D))
+        {
+            if (!canMove)
+            {
+                return;
+            }
+            yawVelocity += -yawAcceleration * Time.deltaTime;
+            yawVelocity = Mathf.Max(yawVelocity, -yawMaxSpeed);
+        }
+        //If yaw velocity is negative
+        else if (yawVelocity < 0)
+        {
+            yawVelocity += yawDeceleration * Time.deltaTime;
+            yawVelocity = Mathf.Min(yawVelocity, 0);
+        }
+        //If yaw velocity is positive
+        else if (yawVelocity > 0)
+        {
+            yawVelocity += -yawDeceleration * Time.deltaTime;
+            yawVelocity = Mathf.Max(yawVelocity, 0);
+        }
+
+        //Don't bother rotating if yaw velocity is 0
+        if (yawVelocity != 0)
+        {
+            //Apply rotate / yaw
+            ship.transform.Rotate(0f, Time.deltaTime * -yawVelocity, 0f, Space.Self);
         }
     }
 

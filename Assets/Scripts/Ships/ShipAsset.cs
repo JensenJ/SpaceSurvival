@@ -24,6 +24,10 @@ public class ShipAsset : ScriptableObject
     public float pitchAcceleration;
     public float pitchDeceleration;
 
+    [Header("Yaw Movement Values:")]
+    public float yawMaxSpeed;
+    public float yawAcceleration;
+    public float yawDeceleration;
     //Slot counts
     [Header("Component Slot Counts:")]
     public int smallComponentCount;

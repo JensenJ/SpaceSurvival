@@ -25,6 +25,9 @@ MonoBehaviour:
   pitchMaxSpeed: 8
   pitchAcceleration: 4
   pitchDeceleration: 4
+  yawMaxSpeed: 6
+  yawAcceleration: 2
+  yawDeceleration: 2
   smallComponentCount: 8
   mediumComponentCount: 6
   largeComponentCount: 17
