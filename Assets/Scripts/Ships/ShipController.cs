@@ -113,33 +113,40 @@ public class ShipController : NetworkBehaviour
             //If player has been trying to exit long enough
             if (timeSinceExitStart >= exitTime)
             {
-                //Exit the ship
-                if (playerObject != null)
-                {
-                    //Disable ship functionality
-                    canMove = false;
-                    ship.shipCamera.SetActive(false);
-
-                    //Enable player functionality
-                    playerObject.transform.position = ship.transform.GetChild(1).GetChild(0).position;
-                    
-                    //Try get player controller
-                    PlayerController playerController = playerObject.GetComponent<PlayerController>();
-                    //Null check
-                    if(playerController == null)
-                    {
-                        return;
-                    }
-                    //Enable the player object
-                    playerController.CmdChangeActiveState(true);
-
-                    CmdSetPlayerObject(null);
-
-                    //Prevent feedback loop of exiting ship
-                    canExitShip = false;
-                    timeOfExitAttempt = float.MaxValue;
-                }
+                //Try exit the ship
+                ExitShip();
             }
+        }
+    }
+
+    //Function to exit the ship
+    public void ExitShip()
+    {
+        //Exit the ship
+        if (playerObject != null)
+        {
+            //Disable ship functionality
+            canMove = false;
+            ship.shipCamera.SetActive(false);
+
+            //Enable player functionality
+            playerObject.transform.position = ship.transform.GetChild(1).GetChild(0).position;
+
+            //Try get player controller
+            PlayerController playerController = playerObject.GetComponent<PlayerController>();
+            //Null check
+            if (playerController == null)
+            {
+                return;
+            }
+            //Enable the player object
+            playerController.CmdChangeActiveState(true);
+
+            CmdSetPlayerObject(null);
+
+            //Prevent feedback loop of exiting ship
+            canExitShip = false;
+            timeOfExitAttempt = float.MaxValue;
         }
     }
 

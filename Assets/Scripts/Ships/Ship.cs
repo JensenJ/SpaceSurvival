@@ -266,6 +266,10 @@ public class Ship : NetworkBehaviour
             return;
         }
 
+        //Ship controller
+        ShipController shipController = shipObject.GetComponent<ShipController>();
+        shipController.ExitShip();
+
         //Destroy ship object across the network
         NetworkServer.Destroy(shipObject);
     }
