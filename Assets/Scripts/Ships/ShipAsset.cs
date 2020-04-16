@@ -12,7 +12,6 @@ public class ShipAsset : ScriptableObject
     [Header("Forward Movement Values:")]
     public float forwardMaxSpeed;
     public float forwardAcceleration;
-    public float forwardDeceleration;
     public float forwardBrake;
 
     [Header("Roll Movement Values:")]
@@ -20,6 +19,15 @@ public class ShipAsset : ScriptableObject
     public float rollAcceleration;
     public float rollDeceleration;
 
+    [Header("Pitch Movement Values:")]
+    public float pitchMaxSpeed;
+    public float pitchAcceleration;
+    public float pitchDeceleration;
+
+    [Header("Yaw Movement Values:")]
+    public float yawMaxSpeed;
+    public float yawAcceleration;
+    public float yawDeceleration;
     //Slot counts
     [Header("Component Slot Counts:")]
     public int smallComponentCount;

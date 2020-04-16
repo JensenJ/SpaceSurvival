@@ -11,6 +11,7 @@ using Mirror;
 [RequireComponent(typeof(PlayerAttributes))]
 public class PlayerController : NetworkBehaviour
 {
+    [SyncVar(hook = nameof(HookSetActiveState))] public bool activeState = true;
     public bool isCursorEnabled = false;
     public bool canMove = true;
     [SerializeField] [Range(0, 10)] float speed = 5.0f;
@@ -187,5 +188,20 @@ public class PlayerController : NetworkBehaviour
     public float GetBaseSprintSpeed()
     {
         return baseSprintSpeed;
+    }
+
+    //Hook function to set the active state for syncvar
+    public void HookSetActiveState(bool oldState, bool newState)
+    {
+        activeState = newState;
+        gameObject.SetActive(newState);
+    }
+
+    //Command to set the active state
+    [Command]
+    public void CmdChangeActiveState(bool newState)
+    {
+        activeState = newState;
+        gameObject.SetActive(newState);
     }
 }
