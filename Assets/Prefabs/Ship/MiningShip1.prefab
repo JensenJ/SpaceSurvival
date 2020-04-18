@@ -497,7 +497,25 @@ MonoBehaviour:
   parentNetID: 0
   shipSpawnIndex: 0
   ship: {fileID: 0}
+  forwardMaxThrust: 0
+  forwardAcceleration: 0
+  forwardBrake: 0
+  forwardVelocity: 0
+  rollMaxSpeed: 0
+  rollAcceleration: 0
+  rollDeceleration: 0
+  rollVelocity: 0
+  pitchMaxSpeed: 0
+  pitchAcceleration: 0
+  pitchDeceleration: 0
+  pitchVelocity: 0
+  yawMaxSpeed: 0
+  yawAcceleration: 0
+  yawDeceleration: 0
+  yawVelocity: 0
   canMove: 0
+  playerObject: {fileID: 0}
+  canExitShip: 0
 --- !u!1 &6902601458070371826
 GameObject:
   m_ObjectHideFlags: 0
