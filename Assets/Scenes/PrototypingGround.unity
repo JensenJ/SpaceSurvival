@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.58283085, g: 0.3917115, b: 0.27657148, a: 1}
+  m_IndirectSpecularColor: {r: 0.5833153, g: 0.3920336, b: 0.27671406, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -813,10 +813,10 @@ VisualEffect:
       m_Array:
       - m_Value: 16
         m_Name: Velocity
-        m_Overridden: 0
+        m_Overridden: 1
       - m_Value: 0.5
         m_Name: ParticleSize
-        m_Overridden: 0
+        m_Overridden: 1
     m_Vector2f:
       m_Array: []
     m_Vector3f:
@@ -829,7 +829,7 @@ VisualEffect:
       m_Array:
       - m_Value: 13918
         m_Name: SpawnRate
-        m_Overridden: 0
+        m_Overridden: 1
     m_Matrix4x4f:
       m_Array: []
     m_AnimationCurve:
@@ -866,11 +866,14 @@ VisualEffect:
           m_NumColorKeys: 3
           m_NumAlphaKeys: 4
         m_Name: ParticleGradient
-        m_Overridden: 0
+        m_Overridden: 1
     m_NamedObject:
       m_Array:
       - m_Value: {fileID: 2800000, guid: d33d053915fc2a548a71dc2ad13a3e38, type: 3}
         m_Name: Input Map
+        m_Overridden: 1
+      - m_Value: {fileID: 2800000, guid: 91a026d6334582747a9a45b495b0a4af, type: 2}
+        m_Name: Position Map
         m_Overridden: 1
     m_Bool:
       m_Array: []

@@ -7,6 +7,7 @@ using System.IO;
 public class ParticlePositionMapWindow : EditorWindow
 {
     Object meshInput = null;
+    Vector2Int textureDimensionInput = new Vector2Int();
 
 
     [MenuItem("Window/Visual Effects/Utilities/Position Map From Mesh Tool")]
@@ -22,6 +23,12 @@ public class ParticlePositionMapWindow : EditorWindow
         EditorGUILayout.LabelField("Mesh");
         meshInput = EditorGUILayout.ObjectField(meshInput, typeof(Mesh), true);
         EditorGUILayout.EndHorizontal();
+
+        //Texture Size Input Field
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Texture Dimensions");
+        textureDimensionInput = EditorGUILayout.Vector2IntField("", textureDimensionInput);
+        EditorGUILayout.EndHorizontal();
         
         //Check if mesh is selected
         if(meshInput == null)
@@ -29,13 +36,20 @@ public class ParticlePositionMapWindow : EditorWindow
             return;
         }
 
-        //Get actual mesh object
+        //Texture dimension value validation
+        if(textureDimensionInput.x <= 0 || textureDimensionInput.y <= 0 || textureDimensionInput.x > 2048 || textureDimensionInput.y > 2048)
+        {
+            return;
+        }
+
+        //Get actual mesh from the object
         Mesh mesh = (Mesh)meshInput;
+
         //Save button
         if(GUILayout.Button("Save Texture"))
         {
             //Generate the texture
-            Texture2D generatedTexture = GeneratePositionMap(mesh);
+            Texture2D generatedTexture = GeneratePositionMap(mesh, textureDimensionInput);
 
             //Bring up save menu and get selected path
             string wholePath = EditorUtility.SaveFilePanel("Save File", "Assets/", generatedTexture.name, "asset");
@@ -57,22 +71,38 @@ public class ParticlePositionMapWindow : EditorWindow
     }
 
     //Function to generate the position map.
-    Texture2D GeneratePositionMap(Mesh mesh)
+    Texture2D GeneratePositionMap(Mesh mesh, Vector2Int textureDimensions)
     {
-        //Texture settings
-        int size = 32;
-        TextureFormat format = TextureFormat.RGBA32;
-        TextureWrapMode wrapMode = TextureWrapMode.Clamp;
+        //Texture format
+        TextureFormat format = TextureFormat.RGBAFloat;
 
         //Create texture and set wrap mode
-        Texture2D positionMap = new Texture2D(size, size, format, false);
-        positionMap.wrapMode = wrapMode;
+        Texture2D positionMap = new Texture2D(textureDimensions.x, textureDimensions.y, format, false)
+        {
+            //Set texture settings
+            wrapMode = TextureWrapMode.Clamp,
+            filterMode = FilterMode.Point,
+            name = mesh.name + " Position Map"
+        };
 
-        //Set texture settings and apply
-        positionMap.name = mesh.name + " Position Map";
+        //For every pixel on the x axis
+        for (int x = 0; x < textureDimensions.x; x++)
+        {
+            //For every pixel on the y axis
+            for (int y = 0; y < textureDimensions.y; y++)
+            {
+                //Randomly generate pixel colour
+                Color pixelColour = new Color(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), 0.0f, 1.0f);
+
+                //Set the pixel colour
+                positionMap.SetPixel(x, y, pixelColour);
+            }
+        }
+
+        //Apply texture
         positionMap.Apply();
 
-        //Return the 3D texture
+        //Return the texture
         return positionMap;
     }
 }
