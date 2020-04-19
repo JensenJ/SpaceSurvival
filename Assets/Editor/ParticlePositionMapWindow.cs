@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.IO;
+using UnityEditor.VFX;
+
 
 public class ParticlePositionMapWindow : EditorWindow
 {
     Object meshInput = null;
     Vector2Int textureDimensionInput = new Vector2Int();
+    
 
-
-    [MenuItem("Window/Visual Effects/Utilities/Position Map From Mesh Tool")]
+    [MenuItem("Window/Visual Effects/Utilities/Position Map From Mesh")]
     public static void ShowWindow()
     {
         GetWindow<ParticlePositionMapWindow>("Position Map Tool");
@@ -85,14 +87,24 @@ public class ParticlePositionMapWindow : EditorWindow
             name = mesh.name + " Position Map"
         };
 
+        //Get mesh bounds
+        float meshXSize = mesh.bounds.size.x / 2;
+        float meshYSize = mesh.bounds.size.y / 2;
+        float meshZSize = mesh.bounds.size.z / 2;
+
         //For every pixel on the x axis
         for (int x = 0; x < textureDimensions.x; x++)
         {
             //For every pixel on the y axis
             for (int y = 0; y < textureDimensions.y; y++)
             {
-                //Randomly generate pixel colour
-                Color pixelColour = new Color(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), 0.0f, 1.0f);
+                //Randomly generate new values
+                float R = Random.Range(-meshXSize, meshXSize);
+                float G = Random.Range(-meshYSize, meshYSize);
+                float B = Random.Range(-meshZSize, meshZSize);
+
+                //Create new colour from values with alpha of 1
+                Color pixelColour = new Color(R, G, B, 1.0f);
 
                 //Set the pixel colour
                 positionMap.SetPixel(x, y, pixelColour);

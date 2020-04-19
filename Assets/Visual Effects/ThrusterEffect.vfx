@@ -18,9 +18,9 @@ MonoBehaviour:
   categories: []
   uiBounds:
     serializedVersion: 2
-    x: -233
+    x: -484
     y: -1809
-    width: 630
+    width: 881
     height: 2250
 --- !u!114 &114350483966674976
 MonoBehaviour:
@@ -1072,7 +1072,7 @@ VisualEffectResource:
         - m_ExpressionIndex: 7
           m_Value: 1
         - m_ExpressionIndex: 10
-          m_Value: 2
+          m_Value: 1
         - m_ExpressionIndex: 11
           m_Value: 0
         - m_ExpressionIndex: 12
@@ -1084,9 +1084,9 @@ VisualEffectResource:
         - m_ExpressionIndex: 15
           m_Value: 0
         - m_ExpressionIndex: 16
-          m_Value: 2
+          m_Value: 1
         - m_ExpressionIndex: 17
-          m_Value: 2
+          m_Value: 1
         - m_ExpressionIndex: 19
           m_Value: 5
         - m_ExpressionIndex: 21
@@ -1189,7 +1189,7 @@ VisualEffectResource:
       m_NamedObject:
         m_Array:
         - m_ExpressionIndex: 41
-          m_Value: {fileID: 0}
+          m_Value: {fileID: 2800000, guid: 91a026d6334582747a9a45b495b0a4af, type: 2}
         - m_ExpressionIndex: 46
           m_Value: {fileID: 2800000, guid: 49cb5aa34272b034d8b754c65d9cdbfa, type: 3}
       m_Bool:
@@ -3270,7 +3270,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEngine.Vector3, UnityEngine.CoreModule, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"x":2.0,"y":2.0,"z":2.0}'
+      m_SerializableObject: '{"x":1.0,"y":1.0,"z":1.0}'
     m_Space: 2147483647
   m_Property:
     name: valueScale
@@ -3424,7 +3424,7 @@ MonoBehaviour:
     linkedSlots:
     - outputSlot: {fileID: 8926484042661615606}
       inputSlot: {fileID: 8926484042661615595}
-    position: {x: -168.58418, y: -1256.5375}
+    position: {x: -484, y: -1324}
     expandedSlots: []
     expanded: 0
 --- !u!114 &8926484042661615606
