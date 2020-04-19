@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.5828602, g: 0.39174297, b: 0.27657577, a: 1}
+  m_IndirectSpecularColor: {r: 0.58283085, g: 0.3917115, b: 0.27657148, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -813,10 +813,10 @@ VisualEffect:
       m_Array:
       - m_Value: 16
         m_Name: Velocity
-        m_Overridden: 1
+        m_Overridden: 0
       - m_Value: 0.5
         m_Name: ParticleSize
-        m_Overridden: 1
+        m_Overridden: 0
     m_Vector2f:
       m_Array: []
     m_Vector3f:
@@ -829,7 +829,7 @@ VisualEffect:
       m_Array:
       - m_Value: 13918
         m_Name: SpawnRate
-        m_Overridden: 1
+        m_Overridden: 0
     m_Matrix4x4f:
       m_Array: []
     m_AnimationCurve:
@@ -866,7 +866,7 @@ VisualEffect:
           m_NumColorKeys: 3
           m_NumAlphaKeys: 4
         m_Name: ParticleGradient
-        m_Overridden: 1
+        m_Overridden: 0
     m_NamedObject:
       m_Array:
       - m_Value: {fileID: 2800000, guid: d33d053915fc2a548a71dc2ad13a3e38, type: 3}
@@ -882,7 +882,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1560994236}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 10, z: 0}
+  m_LocalPosition: {x: 0, y: 4, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
