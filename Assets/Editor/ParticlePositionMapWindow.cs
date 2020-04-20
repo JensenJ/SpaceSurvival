@@ -4,14 +4,15 @@ using UnityEngine;
 using UnityEditor;
 using System.IO;
 using UnityEditor.VFX;
+using JUCL.Utilities;
 
 
 public class ParticlePositionMapWindow : EditorWindow
 {
     Object meshInput = null;
+    Object materialInput = null;
     Vector2Int textureDimensionInput = new Vector2Int();
     
-
     [MenuItem("Window/Visual Effects/Utilities/Position Map From Mesh")]
     public static void ShowWindow()
     {
@@ -23,7 +24,13 @@ public class ParticlePositionMapWindow : EditorWindow
         //Mesh Input Field
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("Mesh");
-        meshInput = EditorGUILayout.ObjectField(meshInput, typeof(Mesh), true);
+        meshInput = EditorGUILayout.ObjectField(meshInput, typeof(GameObject), true);
+        EditorGUILayout.EndHorizontal();
+
+        //Material Input field
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Material");
+        materialInput = EditorGUILayout.ObjectField(materialInput, typeof(Material), true);
         EditorGUILayout.EndHorizontal();
 
         //Texture Size Input Field
@@ -38,20 +45,34 @@ public class ParticlePositionMapWindow : EditorWindow
             return;
         }
 
+        //Check if material is selected
+        if(materialInput == null)
+        {
+            return;
+        }
+
         //Texture dimension value validation
         if(textureDimensionInput.x <= 0 || textureDimensionInput.y <= 0 || textureDimensionInput.x > 2048 || textureDimensionInput.y > 2048)
         {
             return;
         }
 
-        //Get actual mesh from the object
-        Mesh mesh = (Mesh)meshInput;
+        //Get actual mesh and material from the objects
+        GameObject mesh = (GameObject)meshInput;
+        Material material = (Material)materialInput;
 
         //Save button
         if(GUILayout.Button("Save Texture"))
         {
+
             //Generate the texture
-            Texture2D generatedTexture = GeneratePositionMap(mesh, textureDimensionInput);
+            Texture2D generatedTexture = GeneratePositionMap(mesh, material, textureDimensionInput);
+
+            //Texture null check
+            if(generatedTexture == null)
+            {
+                return;
+            }
 
             //Bring up save menu and get selected path
             string wholePath = EditorUtility.SaveFilePanel("Save File", "Assets/", generatedTexture.name, "asset");
@@ -73,8 +94,26 @@ public class ParticlePositionMapWindow : EditorWindow
     }
 
     //Function to generate the position map.
-    Texture2D GeneratePositionMap(Mesh mesh, Vector2Int textureDimensions)
+    Texture2D GeneratePositionMap(GameObject mesh, Material material, Vector2Int textureDimensions)
     {
+        //Find all gameobjects that have a mesh filter and mesh renderer as children of this gameobject
+        GameObject[] meshObjects = GetAllObjectsWithMeshAttached(mesh);
+
+        for (int i = 0; i < meshObjects.Length; i++)
+        {
+            //Debug.Log(meshObjects[i].name);
+
+            //Get the submesh from the main mesh that has this material assigned
+            //Mesh objectMesh = IsolateMeshByMaterial(meshObjects[i], material);
+        }
+
+        Mesh isolatedMesh = IsolateMeshByMaterial(meshObjects[0], material);
+
+        if(isolatedMesh == null)
+        {
+            return null;
+        }
+
         //Texture format
         TextureFormat format = TextureFormat.RGBAFloat;
 
@@ -88,9 +127,9 @@ public class ParticlePositionMapWindow : EditorWindow
         };
 
         //Get mesh bounds
-        float meshXSize = mesh.bounds.size.x / 2;
-        float meshYSize = mesh.bounds.size.y / 2;
-        float meshZSize = mesh.bounds.size.z / 2;
+        float meshXSize = isolatedMesh.bounds.size.x / 2;
+        float meshYSize = isolatedMesh.bounds.size.y / 2;
+        float meshZSize = isolatedMesh.bounds.size.z / 2;
 
         //For every pixel on the x axis
         for (int x = 0; x < textureDimensions.x; x++)
@@ -116,5 +155,63 @@ public class ParticlePositionMapWindow : EditorWindow
 
         //Return the texture
         return positionMap;
+    }
+
+    //Function to isolate the mesh when given a material
+    Mesh IsolateMeshByMaterial(GameObject meshObject, Material material)
+    {
+        //Get mesh components from prefab
+        Mesh mesh = meshObject.GetComponent<MeshFilter>().sharedMesh;
+        MeshRenderer renderer = meshObject.GetComponent<MeshRenderer>();
+
+        //This section calculates the submesh that needs to be isolated from the main mesh.
+        int submeshNumber = 0;
+
+        bool hasFoundMaterial = false;
+
+        Debug.Log(meshObject.name);
+
+        //For every material in the mesh (every material is a submesh technically)
+        for (int i = 0; i < renderer.sharedMaterials.Length; i++)
+        {
+            Debug.Log(renderer.sharedMaterials[i].name);
+
+            //Is the material at this index in the mesh material array
+            if(material.name == renderer.sharedMaterials[i].name)
+            {
+                //Set submesh number and break out of loop
+                submeshNumber = i;
+                hasFoundMaterial = true;
+                break;
+            }
+        }
+
+        //Check if the material has been found
+        if(hasFoundMaterial == false)
+        {
+            //If material was not found in the material, if the loop was not broken
+            Debug.LogWarning("ParticlePositionMapGenerator: The material was not present on the mesh.");
+            return null;
+        }
+
+        return MeshExtension.GetSubMesh(mesh, submeshNumber);
+    }
+
+    //A function to find all game objects that have a mesh filter attached to them.
+    GameObject[] GetAllObjectsWithMeshAttached(GameObject rootObject)
+    {
+        //Array creation and finding all mesh filters in all children objects
+        MeshFilter[] filters = rootObject.GetComponentsInChildren<MeshFilter>();
+        //Create game object array with the length of filter components found
+        GameObject[] gameObjectsWithMesh = new GameObject[filters.Length];
+
+        //Add all gameobjects that have a filter to the gameobject array
+        for (int i = 0; i < filters.Length; i++)
+        {
+            gameObjectsWithMesh[i] = filters[i].gameObject;
+        }
+
+        //Return the gameobject array
+        return gameObjectsWithMesh;
     }
 }

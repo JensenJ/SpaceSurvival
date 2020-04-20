@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.58257717, g: 0.39155224, b: 0.27649948, a: 1}
+  m_IndirectSpecularColor: {r: 0.5826393, g: 0.39169815, b: 0.27688715, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -872,7 +872,7 @@ VisualEffect:
       - m_Value: {fileID: 2800000, guid: d33d053915fc2a548a71dc2ad13a3e38, type: 3}
         m_Name: Input Map
         m_Overridden: 1
-      - m_Value: {fileID: 2800000, guid: 24eac2bb4a5ab774ba49d84c2c657217, type: 2}
+      - m_Value: {fileID: 2800000, guid: 6dac9d6697082da4bbaa9539c928f3d1, type: 2}
         m_Name: Position Map
         m_Overridden: 1
     m_Bool:
