@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.5828602, g: 0.39174297, b: 0.27657577, a: 1}
+  m_IndirectSpecularColor: {r: 0.58264846, g: 0.3915787, b: 0.27649376, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -197,8 +197,82 @@ Transform:
   m_Children:
   - {fileID: 699030794}
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &427744880
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1183594271074061451, guid: 7a09185cc8b2d7848aed2705dc852cc9,
+        type: 3}
+      propertyPath: sceneId
+      value: 1079562728
+      objectReference: {fileID: 0}
+    - target: {fileID: 4897605000807291106, guid: 7a09185cc8b2d7848aed2705dc852cc9,
+        type: 3}
+      propertyPath: m_Name
+      value: MiningShip1 (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8479310615563561713, guid: 7a09185cc8b2d7848aed2705dc852cc9,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8479310615563561713, guid: 7a09185cc8b2d7848aed2705dc852cc9,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8479310615563561713, guid: 7a09185cc8b2d7848aed2705dc852cc9,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8479310615563561713, guid: 7a09185cc8b2d7848aed2705dc852cc9,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8479310615563561713, guid: 7a09185cc8b2d7848aed2705dc852cc9,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8479310615563561713, guid: 7a09185cc8b2d7848aed2705dc852cc9,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8479310615563561713, guid: 7a09185cc8b2d7848aed2705dc852cc9,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8479310615563561713, guid: 7a09185cc8b2d7848aed2705dc852cc9,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8479310615563561713, guid: 7a09185cc8b2d7848aed2705dc852cc9,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8479310615563561713, guid: 7a09185cc8b2d7848aed2705dc852cc9,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8479310615563561713, guid: 7a09185cc8b2d7848aed2705dc852cc9,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 7a09185cc8b2d7848aed2705dc852cc9, type: 3}
 --- !u!1 &571039066
 GameObject:
   m_ObjectHideFlags: 0
@@ -230,7 +304,7 @@ Transform:
   - {fileID: 888296911}
   - {fileID: 1359045669}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &658863158
 GameObject:
@@ -396,7 +470,7 @@ Transform:
   - {fileID: 658863159}
   - {fileID: 1949576447}
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &699030790
 GameObject:
@@ -811,10 +885,10 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 16
+      - m_Value: 0.1
         m_Name: Velocity
         m_Overridden: 1
-      - m_Value: 0.5
+      - m_Value: 1
         m_Name: ParticleSize
         m_Overridden: 1
     m_Vector2f:
@@ -827,7 +901,7 @@ VisualEffect:
       m_Array: []
     m_Int:
       m_Array:
-      - m_Value: 13918
+      - m_Value: 10000
         m_Name: SpawnRate
         m_Overridden: 1
     m_Matrix4x4f:
@@ -872,6 +946,9 @@ VisualEffect:
       - m_Value: {fileID: 2800000, guid: d33d053915fc2a548a71dc2ad13a3e38, type: 3}
         m_Name: Input Map
         m_Overridden: 1
+      - m_Value: {fileID: 2800000, guid: 6dac9d6697082da4bbaa9539c928f3d1, type: 2}
+        m_Name: Position Map
+        m_Overridden: 1
     m_Bool:
       m_Array: []
 --- !u!4 &1560994239
@@ -882,11 +959,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1560994236}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 10, z: 0}
+  m_LocalPosition: {x: 0, y: 10, z: 3.99}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1574836231
 GameObject:
@@ -1183,5 +1260,5 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
