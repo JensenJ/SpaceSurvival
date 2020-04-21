@@ -97,9 +97,9 @@ public class ParticlePositionMapWindow : EditorWindow
     {
         //Find all gameobjects that have a mesh filter and mesh renderer as children of this gameobject
         GameObject[] meshObjects = GetAllObjectsWithMeshAttached(mesh);
-        List<float> meshVolumeList = new List<float>();
-        float[] meshVolumes;
-        float totalMeshVolume = 0;
+        List<float> meshSurfaceAreaList = new List<float>();
+        float[] meshSurfaceAreas;
+        float totalMeshSurfaceArea = 0;
 
         //For every object with the mesh attached to it
         for (int i = 0; i < meshObjects.Length; i++)
@@ -113,31 +113,31 @@ public class ParticlePositionMapWindow : EditorWindow
                 continue;
             }
 
-            //Calculate the volume of the mesh and add to list and add to total volume
-            float volume = MeshExtension.VolumeOfMesh(objectMesh);
-            meshVolumeList.Add(volume);
-            totalMeshVolume += volume;
+            //Calculate the SurfaceArea of the mesh and add to list and add to total SurfaceArea
+            float SurfaceArea = MeshExtension.SurfaceAreaOfMesh(objectMesh);
+            meshSurfaceAreaList.Add(SurfaceArea);
+            totalMeshSurfaceArea += SurfaceArea;
         }
 
-        meshVolumes = meshVolumeList.ToArray();
+        meshSurfaceAreas = meshSurfaceAreaList.ToArray();
 
-        //If the mesh volumes length is 0, if no meshes had the material found
-        if(meshVolumes.Length == 0)
+        //If the mesh SurfaceAreas length is 0, if no meshes had the material found
+        if(meshSurfaceAreas.Length == 0)
         {
             Debug.LogError("The object that was entered did not have the matching material anywhere in it's hierarchy.");
             return null;
         }
 
         //Calculating the number of pixels that should be used for each mesh
-        int[] numberOfPixelsPerMesh = new int[meshVolumes.Length];
+        int[] numberOfPixelsPerMesh = new int[meshSurfaceAreas.Length];
         int textureSize = textureDimensions.x * textureDimensions.y;
         int addedPixelCount = 0;
 
-        //For every mesh volume
-        for (int i = 0; i < meshVolumes.Length; i++)
+        //For every mesh SurfaceArea
+        for (int i = 0; i < meshSurfaceAreas.Length; i++)
         {
             //If on last index, this is important for making sure the remainder of percentage is filled out
-            if(i == meshVolumes.Length - 1)
+            if(i == meshSurfaceAreas.Length - 1)
             {
                 //Calculate the number of pixels remaining
                 numberOfPixelsPerMesh[i] = textureSize - addedPixelCount;
@@ -145,7 +145,7 @@ public class ParticlePositionMapWindow : EditorWindow
             else
             {
                 //Calculate the multiplier for the pixel count for this mesh
-                float multiplierForPixelCount = meshVolumes[i] / totalMeshVolume;
+                float multiplierForPixelCount = meshSurfaceAreas[i] / totalMeshSurfaceArea;
                 //Calculate the number of pixels that should be assigned to this mesh
                 numberOfPixelsPerMesh[i] = Mathf.FloorToInt(multiplierForPixelCount * textureSize);
                 //Add pixel count on for calculating final mesh pixel count
