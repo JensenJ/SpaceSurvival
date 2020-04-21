@@ -98,13 +98,61 @@ public class ParticlePositionMapWindow : EditorWindow
     {
         //Find all gameobjects that have a mesh filter and mesh renderer as children of this gameobject
         GameObject[] meshObjects = GetAllObjectsWithMeshAttached(mesh);
+        List<float> meshVolumeList = new List<float>();
+        float[] meshVolumes;
+        float totalMeshVolume = 0;
 
+        //For every object with the mesh attached to it
         for (int i = 0; i < meshObjects.Length; i++)
         {
             //Debug.Log(meshObjects[i].name);
-
             //Get the submesh from the main mesh that has this material assigned
-            //Mesh objectMesh = IsolateMeshByMaterial(meshObjects[i], material);
+            Mesh objectMesh = IsolateMeshByMaterial(meshObjects[i], material);
+            
+            //Null check
+            if(objectMesh == null)
+            {
+                continue;
+            }
+
+            //Calculate the volume of the mesh and add to list and add to total volume
+            float volume = MeshExtension.VolumeOfMesh(objectMesh);
+            meshVolumeList.Add(volume);
+            totalMeshVolume += volume;
+        }
+
+        meshVolumes = meshVolumeList.ToArray();
+
+        //If the mesh volumes length is 0, if no meshes had the material found
+        if(meshVolumes.Length == 0)
+        {
+            Debug.LogError("The object that was entered did not have the matching material anywhere in it's hierarchy.");
+            return null;
+        }
+
+        //Calculating the number of pixels that should be used for each mesh
+        int[] numberOfPixelsPerMesh = new int[meshVolumes.Length];
+        int textureSize = textureDimensions.x * textureDimensions.y;
+        int addedPixelCount = 0;
+
+        //For every mesh volume
+        for (int i = 0; i < meshVolumes.Length; i++)
+        {
+            //If on last index, this is important for making sure the remainder of percentage is filled out
+            if(i == meshVolumes.Length - 1)
+            {
+                //Calculate the number of pixels remaining
+                numberOfPixelsPerMesh[i] = textureSize - addedPixelCount;
+            }
+            else
+            {
+                //Calculate the multiplier for the pixel count for this mesh
+                float multiplierForPixelCount = meshVolumes[i] / totalMeshVolume;
+                //Calculate the number of pixels that should be assigned to this mesh
+                numberOfPixelsPerMesh[i] = Mathf.FloorToInt(multiplierForPixelCount * textureSize);
+                //Add pixel count on for calculating final mesh pixel count
+                addedPixelCount += numberOfPixelsPerMesh[i];
+            }
         }
 
         Mesh isolatedMesh = IsolateMeshByMaterial(meshObjects[0], material);
@@ -157,6 +205,7 @@ public class ParticlePositionMapWindow : EditorWindow
         return positionMap;
     }
 
+    //TODO: Make it so more than one submesh can be exported, some submeshes may be the same material
     //Function to isolate the mesh when given a material
     Mesh IsolateMeshByMaterial(GameObject meshObject, Material material)
     {
@@ -169,13 +218,9 @@ public class ParticlePositionMapWindow : EditorWindow
 
         bool hasFoundMaterial = false;
 
-        Debug.Log(meshObject.name);
-
         //For every material in the mesh (every material is a submesh technically)
         for (int i = 0; i < renderer.sharedMaterials.Length; i++)
         {
-            Debug.Log(renderer.sharedMaterials[i].name);
-
             //Is the material at this index in the mesh material array
             if(material.name == renderer.sharedMaterials[i].name)
             {
@@ -189,8 +234,7 @@ public class ParticlePositionMapWindow : EditorWindow
         //Check if the material has been found
         if(hasFoundMaterial == false)
         {
-            //If material was not found in the material, if the loop was not broken
-            Debug.LogWarning("ParticlePositionMapGenerator: The material was not present on the mesh.");
+            //If material was not found in the material, if the loop was not broken, then return out
             return null;
         }
 
