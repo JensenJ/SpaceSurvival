@@ -6,7 +6,6 @@ using System.IO;
 using UnityEditor.VFX;
 using JUCL.Utilities;
 
-
 public class ParticlePositionMapWindow : EditorWindow
 {
     Object meshInput = null;
@@ -105,7 +104,6 @@ public class ParticlePositionMapWindow : EditorWindow
         //For every object with the mesh attached to it
         for (int i = 0; i < meshObjects.Length; i++)
         {
-            //Debug.Log(meshObjects[i].name);
             //Get the submesh from the main mesh that has this material assigned
             Mesh objectMesh = IsolateMeshByMaterial(meshObjects[i], material);
             
@@ -205,40 +203,52 @@ public class ParticlePositionMapWindow : EditorWindow
         return positionMap;
     }
 
-    //TODO: Make it so more than one submesh can be exported, some submeshes may be the same material
     //Function to isolate the mesh when given a material
     Mesh IsolateMeshByMaterial(GameObject meshObject, Material material)
     {
         //Get mesh components from prefab
         Mesh mesh = meshObject.GetComponent<MeshFilter>().sharedMesh;
         MeshRenderer renderer = meshObject.GetComponent<MeshRenderer>();
-
+        
         //This section calculates the submesh that needs to be isolated from the main mesh.
-        int submeshNumber = 0;
+        List<int> submeshNumbers = new List<int>();
 
         bool hasFoundMaterial = false;
-
         //For every material in the mesh (every material is a submesh technically)
         for (int i = 0; i < renderer.sharedMaterials.Length; i++)
         {
             //Is the material at this index in the mesh material array
             if(material.name == renderer.sharedMaterials[i].name)
             {
-                //Set submesh number and break out of loop
-                submeshNumber = i;
+                //Add submesh number to list and mark flag as true so the function does not exit
+                submeshNumbers.Add(i);
                 hasFoundMaterial = true;
-                break;
             }
         }
 
         //Check if the material has been found
         if(hasFoundMaterial == false)
         {
-            //If material was not found in the material, if the loop was not broken, then return out
+            //If material was not found in the mesh, then return out
             return null;
         }
 
-        return MeshExtension.GetSubMesh(mesh, submeshNumber);
+        //Get the submeshes
+        CombineInstance[] combine = new CombineInstance[submeshNumbers.Count];
+
+        //Set combine submesh data
+        for (int i = 0; i < submeshNumbers.Count; i++)
+        {
+            combine[i].mesh = MeshExtension.GetSubMesh(mesh, submeshNumbers[i]);
+            combine[i].transform = meshObject.transform.localToWorldMatrix;
+        }
+
+        //Combine the meshes
+        Mesh combinedMesh = new Mesh();
+        combinedMesh.CombineMeshes(combine);
+
+        //Return the combined mesh
+        return combinedMesh;
     }
 
     //A function to find all game objects that have a mesh filter attached to them.
