@@ -102,13 +102,13 @@ public class ParticlePositionMapWindow : EditorWindow
         //For every object with the mesh attached to it
         for (int i = 0; i < meshObjects.Length; i++)
         {
-            //TODO: Performance improvement by testing if it has the material rather than submeshing it as the value is not used, create function to test for if a mesh has a material
             //Get the submesh from the main mesh that has this material assigned
-            Mesh objectMesh = IsolateMeshByMaterial(meshObjects[i], material);
+            bool isValidMesh = HasMeshGotMaterial(meshObjects[i], material);
             
-            //Null check
-            if(objectMesh == null)
+            //Check if is valid mesh
+            if(isValidMesh == false)
             {
+                //If it is not, then skip this object
                 continue;
             }
 
@@ -123,8 +123,6 @@ public class ParticlePositionMapWindow : EditorWindow
             return null;
         }
 
-        Debug.Log("Valid meshes: " + validMeshes.Count);
-
         //Combining submeshes into mesh for calculating surface area of triangles and particle mapping
         Mesh combinedMesh = new Mesh();
         CombineInstance[] combineInstances = new CombineInstance[validMeshes.Count];
@@ -135,15 +133,22 @@ public class ParticlePositionMapWindow : EditorWindow
             //Set combine instance data
             combineInstances[i].mesh = IsolateMeshByMaterial(validMeshes[i], material);
             combineInstances[i].transform = validMeshes[0].transform.localToWorldMatrix;
+            Debug.Log("Triangle Per Mesh" + combineInstances[i].mesh.triangles.Length);
         }
         //Combine the meshes
         combinedMesh.CombineMeshes(combineInstances);
 
+        //Null check
+        if (combinedMesh == null)
+        {
+            return null;
+        }
+
+        //Calculating surface area
         float totalMeshSurfaceArea = MeshExtension.SurfaceAreaOfMesh(combinedMesh);
         float[] triangleSurfaceAreas = MeshExtension.SurfaceAreaOfMeshTriangles(combinedMesh);
 
         //Calculating the number of pixels to dedicate the each triangle on the position map to ensure an even distribution
-
         int[] numberOfPixelsPerTriangle = new int[triangleSurfaceAreas.Length];
         int textureSize = textureDimensions.x * textureDimensions.y;
         int addedPixelCount = 0;
@@ -164,15 +169,30 @@ public class ParticlePositionMapWindow : EditorWindow
                 //Calculate the number of pixels that should be assigned to this triangle
                 numberOfPixelsPerTriangle[i] = Mathf.FloorToInt(multiplierForPixelCount * textureSize);
                 //Add pixel count on for calculating final triangle pixel count
-                addedPixelCount += numberOfPixelsPerTriangle[i];
             }
+            addedPixelCount += numberOfPixelsPerTriangle[i];
         }
 
-        Debug.Log("Triangle count: " + numberOfPixelsPerTriangle.Length);
+        Debug.Log("Pixel Count" + addedPixelCount);
 
-        if (combinedMesh == null)
+        //Generating position data
+
+        var meshTriangles = combinedMesh.triangles;
+
+        Vector3[] positions = new Vector3[textureDimensions.x * textureDimensions.y];
+        int count = 0;
+
+        Debug.Log("Triangle Count: " + meshTriangles.Length);
+
+        //For every triangle
+        for (int i = 0; i < meshTriangles.Length; i++)
         {
-            return null;
+            //For every pixel that should be generated in that triangle
+            for (int j = 0; j < numberOfPixelsPerTriangle[i]; j++)
+            {
+                positions[count] = MeshExtension.RandomPositionWithinTriangle(combinedMesh, meshTriangles[i]);
+                count++;
+            }
         }
 
         //Texture format
@@ -187,10 +207,8 @@ public class ParticlePositionMapWindow : EditorWindow
             name = mesh.name + " Position Map"
         };
 
-        //Get mesh bounds
-        float meshXSize = combinedMesh.bounds.size.x / 2;
-        float meshYSize = combinedMesh.bounds.size.y / 2;
-        float meshZSize = combinedMesh.bounds.size.z / 2;
+        //Binding position data to the texture
+        int positionCounter = 0;
 
         //For every pixel on the x axis
         for (int x = 0; x < textureDimensions.x; x++)
@@ -198,16 +216,15 @@ public class ParticlePositionMapWindow : EditorWindow
             //For every pixel on the y axis
             for (int y = 0; y < textureDimensions.y; y++)
             {
-                //Randomly generate new values
-                float R = Random.Range(-meshXSize, meshXSize);
-                float G = Random.Range(-meshYSize, meshYSize);
-                float B = Random.Range(-meshZSize, meshZSize);
+                //Get the position at the correct index
+                Vector3 pos = positions[positionCounter];
 
                 //Create new colour from values with alpha of 1
-                Color pixelColour = new Color(R, G, B, 1.0f);
+                Color pixelColour = new Color(pos.x, pos.y, pos.z, 1.0f);
 
                 //Set the pixel colour
                 positionMap.SetPixel(x, y, pixelColour);
+                positionCounter++;
             }
         }
 
@@ -256,6 +273,7 @@ public class ParticlePositionMapWindow : EditorWindow
         {
             combine[i].mesh = MeshExtension.GetSubMesh(mesh, submeshNumbers[i]);
             combine[i].transform = meshObject.transform.localToWorldMatrix;
+            Debug.Log("Triangle Per Mesh" + combine[i].mesh.triangles.Length);
         }
 
         //Combine the meshes
@@ -264,6 +282,25 @@ public class ParticlePositionMapWindow : EditorWindow
 
         //Return the combined mesh
         return combinedMesh;
+    }
+
+    //Function to test if a mesh has a material
+    bool HasMeshGotMaterial(GameObject meshObject, Material material)
+    {
+        MeshRenderer renderer = meshObject.GetComponent<MeshRenderer>();
+
+        //For every material in the mesh (every material is a submesh technically)
+        for (int i = 0; i < renderer.sharedMaterials.Length; i++)
+        {
+            //Is the material at this index in the mesh material array
+            if (material.name == renderer.sharedMaterials[i].name)
+            {
+                //Material has been found, return out
+                return true;
+            }
+        }
+        //Material was not found in loop, return out.
+        return false;
     }
 
     //A function to find all game objects that have a mesh filter attached to them.

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace JUCL.Utilities
 {
@@ -160,15 +161,33 @@ namespace JUCL.Utilities
 
             for (int i = 0; i < triangles.Length; i += 3)
             {
-                //Calculate SA of one triangle
-                Vector3 corner = vertices[triangles[i]];
-                Vector3 a = vertices[triangles[i + 1]] - corner;
-                Vector3 b = vertices[triangles[i + 2]] - corner;
+                Vector3 A = vertices[triangles[i + 0]];
+                Vector3 B = vertices[triangles[i + 1]];
+                Vector3 C = vertices[triangles[i + 2]];
+                Vector3 V = Vector3.Cross(A - B, A - C);
 
-                surfaceAreaOfTriangles[i] = (Vector3.Cross(a, b).magnitude) / 2.0f;
+                surfaceAreaOfTriangles[i] = V.magnitude * 0.5f;
             }
 
             return surfaceAreaOfTriangles;
+        }
+
+        public static Vector3 RandomPositionWithinTriangle(this Mesh mesh, int triangleIndex)
+        {
+            var vertices = mesh.vertices;
+            var triangles = mesh.triangles;
+
+            var r1 = Mathf.Sqrt(Random.Range(0f, 1f));
+            var r2 = Random.Range(0f, 1f);
+            var m1 = 1 - r1;
+            var m2 = r1 * (1 - r2);
+            var m3 = r2 * r1;
+
+            Vector3 p1 = vertices[triangles[triangleIndex + 0]];
+            Vector3 p2 = vertices[triangles[triangleIndex + 1]];
+            Vector3 p3 = vertices[triangles[triangleIndex + 2]];
+            return (m1 * p1) + (m2 * p2) + (m3 * p3);
+            //return (p1 + p2 + p3) / 3;
         }
     }
 }
