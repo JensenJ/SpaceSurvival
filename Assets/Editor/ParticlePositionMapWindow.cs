@@ -34,7 +34,7 @@ public class ParticlePositionMapWindow : EditorWindow
 
         //Texture Size Input Field
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("Texture Dimensions");
+        EditorGUILayout.LabelField("Texture Dimensions (MAX: 1024 X 1024)");
         textureDimensionInput = EditorGUILayout.Vector2IntField("", textureDimensionInput);
         EditorGUILayout.EndHorizontal();
         
@@ -51,7 +51,7 @@ public class ParticlePositionMapWindow : EditorWindow
         }
 
         //Texture dimension value validation
-        if(textureDimensionInput.x <= 0 || textureDimensionInput.y <= 0 || textureDimensionInput.x > 2048 || textureDimensionInput.y > 2048)
+        if(textureDimensionInput.x <= 0 || textureDimensionInput.y <= 0 || textureDimensionInput.x > 1024 || textureDimensionInput.y > 1024)
         {
             return;
         }
@@ -61,11 +61,12 @@ public class ParticlePositionMapWindow : EditorWindow
         Material material = (Material)materialInput;
 
         //Save button
-        if(GUILayout.Button("Save Texture"))
+        if(GUILayout.Button("Save Position Map"))
         {
 
             //Generate the texture
             Texture2D generatedTexture = GeneratePositionMap(mesh, material, textureDimensionInput);
+
 
             //Texture null check
             if(generatedTexture == null)
@@ -87,6 +88,7 @@ public class ParticlePositionMapWindow : EditorWindow
                     string assetPath = wholePath.Substring(pathStart);
                     //Create the asset
                     AssetDatabase.CreateAsset(generatedTexture, assetPath);
+                    Debug.Log("Successfully created position map and stored it at: " + assetPath);
                 }
             }
         }
@@ -133,7 +135,6 @@ public class ParticlePositionMapWindow : EditorWindow
             //Set combine instance data
             combineInstances[i].mesh = IsolateMeshByMaterial(validMeshes[i], material);
             combineInstances[i].transform = validMeshes[0].transform.localToWorldMatrix;
-            Debug.Log("Triangle Per Mesh" + combineInstances[i].mesh.triangles.Length);
         }
         //Combine the meshes
         combinedMesh.CombineMeshes(combineInstances);
@@ -173,27 +174,8 @@ public class ParticlePositionMapWindow : EditorWindow
             addedPixelCount += numberOfPixelsPerTriangle[i];
         }
 
-        Debug.Log("Pixel Count" + addedPixelCount);
-
         //Generating position data
-
-        var meshTriangles = combinedMesh.triangles;
-
-        Vector3[] positions = new Vector3[textureDimensions.x * textureDimensions.y];
-        int count = 0;
-
-        Debug.Log("Triangle Count: " + meshTriangles.Length);
-
-        //For every triangle
-        for (int i = 0; i < meshTriangles.Length; i++)
-        {
-            //For every pixel that should be generated in that triangle
-            for (int j = 0; j < numberOfPixelsPerTriangle[i]; j++)
-            {
-                positions[count] = MeshExtension.RandomPositionWithinTriangle(combinedMesh, meshTriangles[i]);
-                count++;
-            }
-        }
+        Vector3[] positions = MeshExtension.RandomPointsWithinMesh(combinedMesh, numberOfPixelsPerTriangle);
 
         //Texture format
         TextureFormat format = TextureFormat.RGBAFloat;
@@ -216,8 +198,21 @@ public class ParticlePositionMapWindow : EditorWindow
             //For every pixel on the y axis
             for (int y = 0; y < textureDimensions.y; y++)
             {
-                //Get the position at the correct index
-                Vector3 pos = positions[positionCounter];
+
+                
+                Vector3 pos;
+
+                if(positionCounter >= positions.Length)
+                {
+                    pos = new Vector3();
+                }
+                else
+                {
+                    //Get the position at the correct index
+                    pos = positions[positionCounter];
+
+                }
+
 
                 //Create new colour from values with alpha of 1
                 Color pixelColour = new Color(pos.x, pos.y, pos.z, 1.0f);
@@ -273,7 +268,6 @@ public class ParticlePositionMapWindow : EditorWindow
         {
             combine[i].mesh = MeshExtension.GetSubMesh(mesh, submeshNumbers[i]);
             combine[i].transform = meshObject.transform.localToWorldMatrix;
-            Debug.Log("Triangle Per Mesh" + combine[i].mesh.triangles.Length);
         }
 
         //Combine the meshes

@@ -172,22 +172,46 @@ namespace JUCL.Utilities
             return surfaceAreaOfTriangles;
         }
 
-        public static Vector3 RandomPositionWithinTriangle(this Mesh mesh, int triangleIndex)
+        public static Vector3[] RandomPointsWithinMesh(this Mesh mesh, int[] numberOfGenerationsPerTriangle)
         {
-            var vertices = mesh.vertices;
+            //List creation
+            List<Vector3> generatedPositions = new List<Vector3>();
+
+            //Get mesh data
             var triangles = mesh.triangles;
+            var vertices = mesh.vertices;
 
-            var r1 = Mathf.Sqrt(Random.Range(0f, 1f));
-            var r2 = Random.Range(0f, 1f);
-            var m1 = 1 - r1;
-            var m2 = r1 * (1 - r2);
-            var m3 = r2 * r1;
+            int count = 0;
 
-            Vector3 p1 = vertices[triangles[triangleIndex + 0]];
-            Vector3 p2 = vertices[triangles[triangleIndex + 1]];
-            Vector3 p3 = vertices[triangles[triangleIndex + 2]];
-            return (m1 * p1) + (m2 * p2) + (m3 * p3);
-            //return (p1 + p2 + p3) / 3;
+            //TODO: Fix bug where last run of triangles.Length loop causes the NumberofGenerationsPerTriangle[i] to not be set correctly
+
+            //For every triangle
+            for (int i = 0; i < triangles.Length; i += 3)
+            {
+                //Get the vertices for this triangle
+                Vector3 p1 = vertices[triangles[i + 0]];
+                Vector3 p2 = vertices[triangles[i + 1]];
+                Vector3 p3 = vertices[triangles[i + 2]];
+
+                //For every generation on this triangle
+                for (int j = 0; j < numberOfGenerationsPerTriangle[i]; j++)
+                {
+                    //Generate random data
+                    var r1 = Mathf.Sqrt(Random.Range(0f, 1f));
+                    var r2 = Random.Range(0f, 1f);
+                    var m1 = 1 - r1;
+                    var m2 = r1 * (1 - r2);
+                    var m3 = r2 * r1;
+
+                    //Calculate random point and add to list
+                    generatedPositions.Add((m1 * p1) + (m2 * p2) + (m3 * p3));
+
+                    count++;
+                }
+            }
+
+            return generatedPositions.ToArray();
+
         }
     }
 }
