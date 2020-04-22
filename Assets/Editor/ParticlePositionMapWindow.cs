@@ -97,13 +97,12 @@ public class ParticlePositionMapWindow : EditorWindow
     {
         //Find all gameobjects that have a mesh filter and mesh renderer as children of this gameobject
         GameObject[] meshObjects = GetAllObjectsWithMeshAttached(mesh);
-        List<float> meshSurfaceAreaList = new List<float>();
-        float[] meshSurfaceAreas;
-        float totalMeshSurfaceArea = 0;
+        List<GameObject> validMeshes = new List<GameObject>();
 
         //For every object with the mesh attached to it
         for (int i = 0; i < meshObjects.Length; i++)
         {
+            //TODO: Performance improvement by testing if it has the material rather than submeshing it as the value is not used, create function to test for if a mesh has a material
             //Get the submesh from the main mesh that has this material assigned
             Mesh objectMesh = IsolateMeshByMaterial(meshObjects[i], material);
             
@@ -113,49 +112,65 @@ public class ParticlePositionMapWindow : EditorWindow
                 continue;
             }
 
-            //Calculate the SurfaceArea of the mesh and add to list and add to total SurfaceArea
-            float SurfaceArea = MeshExtension.SurfaceAreaOfMesh(objectMesh);
-            meshSurfaceAreaList.Add(SurfaceArea);
-            totalMeshSurfaceArea += SurfaceArea;
+            //If mesh had the material, add to valid meshes array
+            validMeshes.Add(meshObjects[i]);
         }
-
-        meshSurfaceAreas = meshSurfaceAreaList.ToArray();
-
-        //If the mesh SurfaceAreas length is 0, if no meshes had the material found
-        if(meshSurfaceAreas.Length == 0)
+        
+        //If the valid mesh length is 0, if no meshes had the material found
+        if(validMeshes.Count == 0)
         {
             Debug.LogError("The object that was entered did not have the matching material anywhere in it's hierarchy.");
             return null;
         }
 
-        //Calculating the number of pixels that should be used for each mesh
-        int[] numberOfPixelsPerMesh = new int[meshSurfaceAreas.Length];
+        Debug.Log("Valid meshes: " + validMeshes.Count);
+
+        //Combining submeshes into mesh for calculating surface area of triangles and particle mapping
+        Mesh combinedMesh = new Mesh();
+        CombineInstance[] combineInstances = new CombineInstance[validMeshes.Count];
+
+        //For every valid mesh / combine instance
+        for (int i = 0; i < combineInstances.Length; i++)
+        {
+            //Set combine instance data
+            combineInstances[i].mesh = IsolateMeshByMaterial(validMeshes[i], material);
+            combineInstances[i].transform = validMeshes[0].transform.localToWorldMatrix;
+        }
+        //Combine the meshes
+        combinedMesh.CombineMeshes(combineInstances);
+
+        float totalMeshSurfaceArea = MeshExtension.SurfaceAreaOfMesh(combinedMesh);
+        float[] triangleSurfaceAreas = MeshExtension.SurfaceAreaOfMeshTriangles(combinedMesh);
+
+        //Calculating the number of pixels to dedicate the each triangle on the position map to ensure an even distribution
+
+        int[] numberOfPixelsPerTriangle = new int[triangleSurfaceAreas.Length];
         int textureSize = textureDimensions.x * textureDimensions.y;
         int addedPixelCount = 0;
 
-        //For every mesh SurfaceArea
-        for (int i = 0; i < meshSurfaceAreas.Length; i++)
+        //For every triangle surface area
+        for (int i = 0; i < triangleSurfaceAreas.Length; i++)
         {
             //If on last index, this is important for making sure the remainder of percentage is filled out
-            if(i == meshSurfaceAreas.Length - 1)
+            if (i == triangleSurfaceAreas.Length - 1)
             {
                 //Calculate the number of pixels remaining
-                numberOfPixelsPerMesh[i] = textureSize - addedPixelCount;
+                numberOfPixelsPerTriangle[i] = textureSize - addedPixelCount;
             }
             else
             {
-                //Calculate the multiplier for the pixel count for this mesh
-                float multiplierForPixelCount = meshSurfaceAreas[i] / totalMeshSurfaceArea;
-                //Calculate the number of pixels that should be assigned to this mesh
-                numberOfPixelsPerMesh[i] = Mathf.FloorToInt(multiplierForPixelCount * textureSize);
-                //Add pixel count on for calculating final mesh pixel count
-                addedPixelCount += numberOfPixelsPerMesh[i];
+                //Calculate the multiplier for the pixel count for this triangle
+                float multiplierForPixelCount = triangleSurfaceAreas[i] / totalMeshSurfaceArea;
+                //Calculate the number of pixels that should be assigned to this triangle
+                numberOfPixelsPerTriangle[i] = Mathf.FloorToInt(multiplierForPixelCount * textureSize);
+                //Add pixel count on for calculating final triangle pixel count
+                addedPixelCount += numberOfPixelsPerTriangle[i];
             }
         }
 
-        Mesh isolatedMesh = IsolateMeshByMaterial(meshObjects[0], material);
+        Debug.Log("Triangle count: " + numberOfPixelsPerTriangle.Length);
 
-        if(isolatedMesh == null)
+        if (combinedMesh == null)
         {
             return null;
         }
@@ -173,9 +188,9 @@ public class ParticlePositionMapWindow : EditorWindow
         };
 
         //Get mesh bounds
-        float meshXSize = isolatedMesh.bounds.size.x / 2;
-        float meshYSize = isolatedMesh.bounds.size.y / 2;
-        float meshZSize = isolatedMesh.bounds.size.z / 2;
+        float meshXSize = combinedMesh.bounds.size.x / 2;
+        float meshYSize = combinedMesh.bounds.size.y / 2;
+        float meshZSize = combinedMesh.bounds.size.z / 2;
 
         //For every pixel on the x axis
         for (int x = 0; x < textureDimensions.x; x++)

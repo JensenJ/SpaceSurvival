@@ -150,5 +150,25 @@ namespace JUCL.Utilities
 
             return (float)(sum / 2.0);
         }
+
+        public static float[] SurfaceAreaOfMeshTriangles(this Mesh mesh)
+        {
+            var triangles = mesh.triangles;
+            var vertices = mesh.vertices;
+
+            float[] surfaceAreaOfTriangles = new float[triangles.Length];
+
+            for (int i = 0; i < triangles.Length; i += 3)
+            {
+                //Calculate SA of one triangle
+                Vector3 corner = vertices[triangles[i]];
+                Vector3 a = vertices[triangles[i + 1]] - corner;
+                Vector3 b = vertices[triangles[i + 2]] - corner;
+
+                surfaceAreaOfTriangles[i] = (Vector3.Cross(a, b).magnitude) / 2.0f;
+            }
+
+            return surfaceAreaOfTriangles;
+        }
     }
 }
