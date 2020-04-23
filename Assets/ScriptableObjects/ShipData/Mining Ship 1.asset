@@ -16,6 +16,7 @@ MonoBehaviour:
     type: 3}
   maxDurability: 1000
   cameraDistance: 18
+  particleSpawnMap: {fileID: 2800000, guid: f8571cc4afb3a40488cde50a29a7511f, type: 2}
   forwardMaxSpeed: 50
   forwardAcceleration: 4
   forwardBrake: 6

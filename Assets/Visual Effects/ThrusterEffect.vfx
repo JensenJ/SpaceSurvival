@@ -102,8 +102,8 @@ MonoBehaviour:
     min: 0
     max: 1048576
     descendantCount: 0
-  - name: Position Map
-    path: Position Map
+  - name: PositionMap
+    path: PositionMap
     tooltip: 
     sheetType: m_NamedObject
     realType: Texture2D
@@ -1199,7 +1199,7 @@ VisualEffectResource:
       index: 20
     - nameId: ParticleSize
       index: 42
-    - nameId: Position Map
+    - nameId: PositionMap
       index: 41
     - nameId: SpawnRate
       index: 9
@@ -3405,7 +3405,7 @@ MonoBehaviour:
   m_InputSlots: []
   m_OutputSlots:
   - {fileID: 8926484042661615606}
-  m_ExposedName: Position Map
+  m_ExposedName: PositionMap
   m_Exposed: 1
   m_Order: 4
   m_Category: 

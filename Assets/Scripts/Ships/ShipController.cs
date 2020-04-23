@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using UnityEngine.VFX;
 
 [RequireComponent(typeof(NetworkIdentity))]
 public class ShipController : NetworkBehaviour
@@ -45,6 +46,9 @@ public class ShipController : NetworkBehaviour
     [SyncVar(hook = nameof(HookSetPlayerObject))]
     public GameObject playerObject = null;
 
+    //Thruster settings
+    VisualEffect thrusterVFX;
+
     float timeOfExitAttempt = float.MaxValue;
     float exitTime = 0.5f;
     public bool canExitShip;
@@ -67,6 +71,11 @@ public class ShipController : NetworkBehaviour
         ship.shipAsset = ship.shipAssets[shipSpawnIndex];
         ship.InitialiseShipCamera();
         ship.InitialiseComponents(gameObject);
+
+        //Particle system
+        thrusterVFX = ship.transform.GetChild(1).GetChild(1).GetComponent<VisualEffect>();
+        Texture2D positionMap = ship.shipAsset.particleSpawnMap;
+        thrusterVFX.SetTexture("PositionMap", positionMap);
 
         //Forward Movement variable setting
         forwardMaxThrust = ship.shipAsset.forwardMaxSpeed;
