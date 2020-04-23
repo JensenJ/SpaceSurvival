@@ -183,8 +183,6 @@ namespace JUCL.Utilities
 
             int count = 0;
 
-            //TODO: Fix bug where last run of triangles.Length loop causes the NumberofGenerationsPerTriangle[i] to not be set correctly
-
             //For every triangle
             for (int i = 0; i < triangles.Length; i += 3)
             {
@@ -194,7 +192,7 @@ namespace JUCL.Utilities
                 Vector3 p3 = vertices[triangles[i + 2]];
 
                 //For every generation on this triangle
-                for (int j = 0; j < numberOfGenerationsPerTriangle[i]; j++)
+                for (int j = 0; j <= numberOfGenerationsPerTriangle[i]; j++)
                 {
                     //Generate random data
                     var r1 = Mathf.Sqrt(Random.Range(0f, 1f));

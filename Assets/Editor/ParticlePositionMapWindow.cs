@@ -198,13 +198,13 @@ public class ParticlePositionMapWindow : EditorWindow
             //For every pixel on the y axis
             for (int y = 0; y < textureDimensions.y; y++)
             {
-
-                
                 Vector3 pos;
 
+                //Safety catch in order to prevent crash of program
                 if(positionCounter >= positions.Length)
                 {
                     pos = new Vector3();
+                    Debug.LogError("Position Mapping Error: Position array was not long enough for number of pixels in texture dimensions.");
                 }
                 else
                 {

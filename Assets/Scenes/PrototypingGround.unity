@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.5826494, g: 0.39158252, b: 0.2764947, a: 1}
+  m_IndirectSpecularColor: {r: 0.5831925, g: 0.39191702, b: 0.2766764, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -199,7 +199,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &427744880
+--- !u!1001 &560743284
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -209,7 +209,7 @@ PrefabInstance:
     - target: {fileID: 1183594271074061451, guid: 7a09185cc8b2d7848aed2705dc852cc9,
         type: 3}
       propertyPath: sceneId
-      value: 1079562728
+      value: 1171873165
       objectReference: {fileID: 0}
     - target: {fileID: 4897605000807291106, guid: 7a09185cc8b2d7848aed2705dc852cc9,
         type: 3}
@@ -901,7 +901,7 @@ VisualEffect:
       m_Array: []
     m_Int:
       m_Array:
-      - m_Value: 1048576
+      - m_Value: 26317
         m_Name: SpawnRate
         m_Overridden: 1
     m_Matrix4x4f:
@@ -946,7 +946,7 @@ VisualEffect:
       - m_Value: {fileID: 2800000, guid: d33d053915fc2a548a71dc2ad13a3e38, type: 3}
         m_Name: Input Map
         m_Overridden: 1
-      - m_Value: {fileID: 0}
+      - m_Value: {fileID: 2800000, guid: f8571cc4afb3a40488cde50a29a7511f, type: 2}
         m_Name: Position Map
         m_Overridden: 1
     m_Bool:
