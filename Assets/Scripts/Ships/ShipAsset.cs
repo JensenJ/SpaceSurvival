@@ -8,7 +8,10 @@ public class ShipAsset : ScriptableObject
     public GameObject shipPrefab;
     public float maxDurability;
     public float cameraDistance;
+
+    [Header("Thruster Particle Settins")]
     public Texture2D particleSpawnMap;
+    public int maxThrustParticleSpawnRate;
 
     [Header("Forward Movement Values:")]
     public float forwardMaxSpeed;

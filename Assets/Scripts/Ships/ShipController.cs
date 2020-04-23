@@ -18,6 +18,14 @@ public class ShipController : NetworkBehaviour
     //Parent ship class
     public Ship ship;
 
+    //Ship particle variables for thrusters
+    VisualEffect thrusterVFX;
+    private float velocityMultiplier;
+    private int spawnRateAtMaxThrust;
+
+    [SyncVar(hook = nameof(HookSetParticleSpawnRate))] public int particleSpawnRate;
+    [SyncVar(hook = nameof(HookSetParticleVelocity))] public float particleVelocity;
+
     //Ship forward movement variables
     [SerializeField] float forwardMaxThrust;
     [SerializeField] float forwardAcceleration;
@@ -46,9 +54,6 @@ public class ShipController : NetworkBehaviour
     [SyncVar(hook = nameof(HookSetPlayerObject))]
     public GameObject playerObject = null;
 
-    //Thruster settings
-    VisualEffect thrusterVFX;
-
     float timeOfExitAttempt = float.MaxValue;
     float exitTime = 0.5f;
     public bool canExitShip;
@@ -72,9 +77,11 @@ public class ShipController : NetworkBehaviour
         ship.InitialiseShipCamera();
         ship.InitialiseComponents(gameObject);
 
-        //Particle system
+        //Particle system setup
         thrusterVFX = ship.transform.GetChild(1).GetChild(1).GetComponent<VisualEffect>();
         Texture2D positionMap = ship.shipAsset.particleSpawnMap;
+        spawnRateAtMaxThrust = ship.shipAsset.maxThrustParticleSpawnRate;
+
         thrusterVFX.SetTexture("PositionMap", positionMap);
 
         //Forward Movement variable setting
@@ -183,6 +190,7 @@ public class ShipController : NetworkBehaviour
         ApplyYawVelocity();
     }
 
+    //Ship velocity calculations and movement controls
     #region ShipVelocityCalculations
 
     //A function to calculate the forward velocity and apply it to the ship
@@ -212,6 +220,9 @@ public class ShipController : NetworkBehaviour
 
         //Apply forward movement
         ship.transform.position -= transform.forward * forwardVelocity * Time.deltaTime;
+
+        //Update particle effect using velocity
+        UpdateThrusterParticleEffects(forwardVelocity);
     }
 
     //A function to calculate and apply the roll velocity of the ship.
@@ -346,6 +357,46 @@ public class ShipController : NetworkBehaviour
             ship.transform.Rotate(0f, Time.deltaTime * -yawVelocity, 0f, Space.Self);
         }
     }
+    #endregion
+
+
+    //A function to update the values of the particle effects to be used in the thrusters
+    public void UpdateThrusterParticleEffects(float shipVelocity)
+    {
+        float velocityMultiplier = (shipVelocity / forwardMaxThrust) * 100;
+
+        //Calculate spawn rate from current velocity
+        int rate = Mathf.FloorToInt((spawnRateAtMaxThrust * velocityMultiplier) * 0.01f);
+        CmdSetParticleData(rate, shipVelocity);
+    }
+
+    #region ShipParticleSyncing
+
+    //Command to update the particle data for the server
+    [Command]
+    public void CmdSetParticleData(int newRate, float newVelocity)
+    {
+        //Spawn rate
+        particleSpawnRate = newRate;
+        thrusterVFX.SetInt("SpawnRate", newRate);
+
+        //Particle velocity
+        particleVelocity = newVelocity;
+        thrusterVFX.SetFloat("Velocity", newVelocity);
+    }
+
+    //Hook to update the particle spawn rate for clients
+    public void HookSetParticleSpawnRate(int oldRate, int newRate)
+    {
+        thrusterVFX.SetInt("SpawnRate", newRate);
+    }
+
+    //Hook to update the particle velocity for clients
+    public void HookSetParticleVelocity(float oldVelocity, float newVelocity)
+    {
+        thrusterVFX.SetFloat("Velocity", newVelocity);
+    }
+
     #endregion
 
     //Hook function for setting the player object
