@@ -9,6 +9,7 @@ ScriptedImporter:
   assetBundleVariant: 
   script: {fileID: 232528478, guid: 43a8bbf65be290d44ba52b94476242b9, type: 3}
   version: 24
+  projectContext: 1
   mGraphInstanceData:
   - graphLabel: Rusty_Grunge_Metal_Blue
     prototypeName: Rusty_Grunge_Metal
@@ -26,9 +27,8 @@ ScriptedImporter:
     shaderName: HDRP/LitTessellation
     materialProperties:
       shader: {fileID: 4800000, guid: 756bac9090102564582875f4c7e30202, type: 3}
-      shaderKeywords: _BASECOLORMAP _DISPLACEMENT_LOCK_TILING_SCALE _HEIGHTMAP _METALLICGLOSSMAP
-        _NORMALMAP _NORMALMAP_TANGENT_SPACE _OCCLUSIONMAP _ROUGHNESSMAP _TESSELLATION_DISPLACEMENT
-        _VERTEX_DISPLACEMENT_LOCK_OBJECT_SCALE
+      shaderKeywords: _BASECOLORMAP _DISPLACEMENT_LOCK_TILING_SCALE _HEIGHTMAP _MASKMAP
+        _NORMALMAP _NORMALMAP_TANGENT_SPACE _TESSELLATION_DISPLACEMENT _VERTEX_DISPLACEMENT_LOCK_OBJECT_SCALE
       lightmapFlags: 4
       texEnvs:
       - name: _AnisotropyMap
@@ -83,7 +83,8 @@ ScriptedImporter:
         scale: {x: 1, y: 1}
         offset: {x: 0, y: 0}
       - name: _MaskMap
-        texture: {instanceID: 0}
+        texture: {fileID: 7942892451475245802, guid: dfda6425c6d89d54dbfbb85717f76ea8,
+          type: 3}
         scale: {x: 1, y: 1}
         offset: {x: 0, y: 0}
       - name: _NormalMap
@@ -179,7 +180,7 @@ ScriptedImporter:
       - name: _DistortionBlurBlendMode
         float: 0
       - name: _DistortionBlurDstBlend
-        float: 1
+        float: 0
       - name: _DistortionBlurRemapMax
         float: 1
       - name: _DistortionBlurRemapMin
@@ -187,17 +188,17 @@ ScriptedImporter:
       - name: _DistortionBlurScale
         float: 1
       - name: _DistortionBlurSrcBlend
-        float: 1
+        float: 0
       - name: _DistortionDepthTest
         float: 1
       - name: _DistortionDstBlend
-        float: 1
+        float: 0
       - name: _DistortionEnable
         float: 0
       - name: _DistortionScale
         float: 1
       - name: _DistortionSrcBlend
-        float: 1
+        float: 0
       - name: _DistortionVectorBias
         float: -1
       - name: _DistortionVectorScale
@@ -224,8 +225,6 @@ ScriptedImporter:
         float: 0
       - name: _EnergyConservingSpecularColor
         float: 1
-      - name: _HdrpVersion
-        float: 2
       - name: _HeightAmplitude
         float: 0.02
       - name: _HeightCenter
@@ -293,25 +292,25 @@ ScriptedImporter:
       - name: _SrcBlend
         float: 1
       - name: _StencilRef
-        float: 2
+        float: 0
       - name: _StencilRefDepth
         float: 0
       - name: _StencilRefDistortionVec
-        float: 64
+        float: 2
       - name: _StencilRefGBuffer
         float: 2
       - name: _StencilRefMV
-        float: 128
+        float: 32
       - name: _StencilWriteMask
         float: 3
       - name: _StencilWriteMaskDepth
-        float: 48
+        float: 8
       - name: _StencilWriteMaskDistortionVec
-        float: 64
+        float: 2
       - name: _StencilWriteMaskGBuffer
-        float: 51
+        float: 3
       - name: _StencilWriteMaskMV
-        float: 176
+        float: 32
       - name: _SubsurfaceMask
         float: 1
       - name: _SupportDecals
@@ -354,6 +353,8 @@ ScriptedImporter:
         float: 0
       - name: _TransparentWritingMotionVec
         float: 0
+      - name: _TransparentZWrite
+        float: 0
       - name: _UVBase
         float: 0
       - name: _UVDetail
@@ -365,11 +366,11 @@ ScriptedImporter:
       - name: _UseShadowThreshold
         float: 0
       - name: _ZTestDepthEqualForOpaque
-        float: 3
+        float: 4
       - name: _ZTestGBuffer
         float: 4
       - name: _ZTestModeDistortion
-        float: 4
+        float: 8
       - name: _ZTestTransparent
         float: 4
       - name: _ZWrite
@@ -440,7 +441,7 @@ ScriptedImporter:
       usageName: metallic
       channelStr: metallic
       label: Metallic
-      usage: 28
+      usage: 34
       bImage: 1
       bNumerical: 0
       bLinear: 1
@@ -541,6 +542,10 @@ ScriptedImporter:
       wrapMode: 0
       filterMode: 1
       aniso: 1
+    - textureName: Rusty_Grunge_Metal_Blue - mask
+      wrapMode: 0
+      filterMode: 1
+      aniso: 1
     colorSpaceList: []
     inputTextureMap: []
     targetSettingList:
@@ -558,6 +563,7 @@ ScriptedImporter:
     - {fileID: -7303691618043901630, guid: dfda6425c6d89d54dbfbb85717f76ea8, type: 3}
     - {fileID: -2318873379835390858, guid: dfda6425c6d89d54dbfbb85717f76ea8, type: 3}
     - {fileID: 405933664647831758, guid: dfda6425c6d89d54dbfbb85717f76ea8, type: 3}
+    - {fileID: 7942892451475245802, guid: dfda6425c6d89d54dbfbb85717f76ea8, type: 3}
   - graphLabel: Rusty_Grunge_Metal_White
     prototypeName: Rusty_Grunge_Metal
     graphDescIndex: 0
@@ -571,9 +577,8 @@ ScriptedImporter:
     shaderName: HDRP/LitTessellation
     materialProperties:
       shader: {fileID: 4800000, guid: 756bac9090102564582875f4c7e30202, type: 3}
-      shaderKeywords: _BASECOLORMAP _DISPLACEMENT_LOCK_TILING_SCALE _HEIGHTMAP _METALLICGLOSSMAP
-        _NORMALMAP _NORMALMAP_TANGENT_SPACE _OCCLUSIONMAP _ROUGHNESSMAP _TESSELLATION_DISPLACEMENT
-        _VERTEX_DISPLACEMENT_LOCK_OBJECT_SCALE
+      shaderKeywords: _BASECOLORMAP _DISPLACEMENT_LOCK_TILING_SCALE _HEIGHTMAP _MASKMAP
+        _NORMALMAP _NORMALMAP_TANGENT_SPACE _TESSELLATION_DISPLACEMENT _VERTEX_DISPLACEMENT_LOCK_OBJECT_SCALE
       lightmapFlags: 4
       texEnvs:
       - name: _AnisotropyMap
@@ -628,7 +633,8 @@ ScriptedImporter:
         scale: {x: 1, y: 1}
         offset: {x: 0, y: 0}
       - name: _MaskMap
-        texture: {instanceID: 0}
+        texture: {fileID: 8565245431232060165, guid: dfda6425c6d89d54dbfbb85717f76ea8,
+          type: 3}
         scale: {x: 1, y: 1}
         offset: {x: 0, y: 0}
       - name: _NormalMap
@@ -724,7 +730,7 @@ ScriptedImporter:
       - name: _DistortionBlurBlendMode
         float: 0
       - name: _DistortionBlurDstBlend
-        float: 1
+        float: 0
       - name: _DistortionBlurRemapMax
         float: 1
       - name: _DistortionBlurRemapMin
@@ -732,17 +738,17 @@ ScriptedImporter:
       - name: _DistortionBlurScale
         float: 1
       - name: _DistortionBlurSrcBlend
-        float: 1
+        float: 0
       - name: _DistortionDepthTest
         float: 1
       - name: _DistortionDstBlend
-        float: 1
+        float: 0
       - name: _DistortionEnable
         float: 0
       - name: _DistortionScale
         float: 1
       - name: _DistortionSrcBlend
-        float: 1
+        float: 0
       - name: _DistortionVectorBias
         float: -1
       - name: _DistortionVectorScale
@@ -769,8 +775,6 @@ ScriptedImporter:
         float: 0
       - name: _EnergyConservingSpecularColor
         float: 1
-      - name: _HdrpVersion
-        float: 2
       - name: _HeightAmplitude
         float: 0.02
       - name: _HeightCenter
@@ -838,25 +842,25 @@ ScriptedImporter:
       - name: _SrcBlend
         float: 1
       - name: _StencilRef
-        float: 2
+        float: 0
       - name: _StencilRefDepth
         float: 0
       - name: _StencilRefDistortionVec
-        float: 64
+        float: 2
       - name: _StencilRefGBuffer
         float: 2
       - name: _StencilRefMV
-        float: 128
+        float: 32
       - name: _StencilWriteMask
         float: 3
       - name: _StencilWriteMaskDepth
-        float: 48
+        float: 8
       - name: _StencilWriteMaskDistortionVec
-        float: 64
+        float: 2
       - name: _StencilWriteMaskGBuffer
-        float: 51
+        float: 3
       - name: _StencilWriteMaskMV
-        float: 176
+        float: 32
       - name: _SubsurfaceMask
         float: 1
       - name: _SupportDecals
@@ -899,6 +903,8 @@ ScriptedImporter:
         float: 0
       - name: _TransparentWritingMotionVec
         float: 0
+      - name: _TransparentZWrite
+        float: 0
       - name: _UVBase
         float: 0
       - name: _UVDetail
@@ -910,11 +916,11 @@ ScriptedImporter:
       - name: _UseShadowThreshold
         float: 0
       - name: _ZTestDepthEqualForOpaque
-        float: 3
+        float: 4
       - name: _ZTestGBuffer
         float: 4
       - name: _ZTestModeDistortion
-        float: 4
+        float: 8
       - name: _ZTestTransparent
         float: 4
       - name: _ZWrite
@@ -985,7 +991,7 @@ ScriptedImporter:
       usageName: metallic
       channelStr: metallic
       label: Metallic
-      usage: 28
+      usage: 34
       bImage: 1
       bNumerical: 0
       bLinear: 1
@@ -1086,6 +1092,10 @@ ScriptedImporter:
       wrapMode: 0
       filterMode: 1
       aniso: 1
+    - textureName: Rusty_Grunge_Metal_White - mask
+      wrapMode: 0
+      filterMode: 1
+      aniso: 1
     colorSpaceList: []
     inputTextureMap: []
     targetSettingList:
@@ -1103,3 +1113,4 @@ ScriptedImporter:
     - {fileID: 3442576067236992455, guid: dfda6425c6d89d54dbfbb85717f76ea8, type: 3}
     - {fileID: 7545307545091215960, guid: dfda6425c6d89d54dbfbb85717f76ea8, type: 3}
     - {fileID: 7287784278132444687, guid: dfda6425c6d89d54dbfbb85717f76ea8, type: 3}
+    - {fileID: 8565245431232060165, guid: dfda6425c6d89d54dbfbb85717f76ea8, type: 3}

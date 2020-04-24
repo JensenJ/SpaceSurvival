@@ -11,6 +11,7 @@ public class ParticlePositionMapWindow : EditorWindow
     Object meshInput = null;
     Object materialInput = null;
     Vector2Int textureDimensionInput = new Vector2Int();
+    Vector3 textureToleranceInput = new Vector3();
     
     [MenuItem("Window/Visual Effects/Utilities/Position Map From Mesh")]
     public static void ShowWindow()
@@ -36,6 +37,12 @@ public class ParticlePositionMapWindow : EditorWindow
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("Texture Dimensions (MAX: 1024 X 1024)");
         textureDimensionInput = EditorGUILayout.Vector2IntField("", textureDimensionInput);
+        EditorGUILayout.EndHorizontal();
+
+        //Texture tolerance input
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("");
+        textureToleranceInput = EditorGUILayout.Vector3Field("", textureToleranceInput);
         EditorGUILayout.EndHorizontal();
         
         //Check if mesh is selected
@@ -65,8 +72,7 @@ public class ParticlePositionMapWindow : EditorWindow
         {
 
             //Generate the texture
-            Texture2D generatedTexture = GeneratePositionMap(mesh, material, textureDimensionInput);
-
+            Texture2D generatedTexture = GeneratePositionMap(mesh, material, textureDimensionInput, textureToleranceInput);
 
             //Texture null check
             if(generatedTexture == null)
@@ -95,7 +101,7 @@ public class ParticlePositionMapWindow : EditorWindow
     }
 
     //Function to generate the position map.
-    Texture2D GeneratePositionMap(GameObject mesh, Material material, Vector2Int textureDimensions)
+    Texture2D GeneratePositionMap(GameObject mesh, Material material, Vector2Int textureDimensions, Vector3 textureTolerance)
     {
         //Find all gameobjects that have a mesh filter and mesh renderer as children of this gameobject
         GameObject[] meshObjects = GetAllObjectsWithMeshAttached(mesh);
@@ -176,6 +182,19 @@ public class ParticlePositionMapWindow : EditorWindow
 
         //Generating position data
         Vector3[] positions = MeshExtension.RandomPointsWithinMesh(combinedMesh, numberOfPixelsPerTriangle);
+
+        //Randomising position map slightly
+        for (int i = 0; i < positions.Length; i++)
+        {
+            Vector3 position = positions[i];
+            //Adding randomness
+            position.x += Random.Range(-textureTolerance.x, textureTolerance.x);
+            position.y += Random.Range(-textureTolerance.y, textureTolerance.y);
+            position.z += Random.Range(-textureTolerance.z, textureTolerance.z);
+
+            //Reassignment
+            positions[i] = position;
+        }
 
         //Texture format
         TextureFormat format = TextureFormat.RGBAFloat;
