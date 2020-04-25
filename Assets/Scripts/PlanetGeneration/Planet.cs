@@ -9,12 +9,17 @@ public class Planet : MonoBehaviour
     TerrainFace[] terrainFaces;
 
     public Transform player;
+
+    [HideInInspector]
     public float distanceToPlayer;
 
-    public float cullingMinAngle = 1.91986218f;
+    [HideInInspector]
+    public float distanceToPlayerPow2;
+
+    public float cullingMinAngle = 1.45f;
     public float size = 1000;
 
-    //Hardcoded detail levels
+    //Hardcoded base detail levels
     public float[] detailLevelDistances = new float[]
     {
         Mathf.Infinity,
@@ -28,13 +33,27 @@ public class Planet : MonoBehaviour
         10f
     };
 
-    private void Start()
+    public PlanetNoiseFilter noiseFilter;
+
+    private void Awake()
     {
         //Set player controller
         player = GameObject.FindGameObjectWithTag("Player").transform;
+        distanceToPlayer = Vector3.Distance(transform.position, player.position);
+    }
+
+    private void Start()
+    {
+        float detailLevelMultiplier = size / 1000;
+        //For every detail level distances except Mathf.Infinity at index 0
+        for (int i = 1; i < detailLevelDistances.Length; i++)
+        {
+            detailLevelDistances[i] = detailLevelMultiplier * detailLevelDistances[i];
+        }
 
         Initialise();
         GenerateMesh();
+
 
         StartCoroutine(PlanetGenerationLoop());
     }
@@ -42,6 +61,7 @@ public class Planet : MonoBehaviour
     private void Update()
     {
         distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        distanceToPlayerPow2 = distanceToPlayer * distanceToPlayer;
     }
 
     private IEnumerator PlanetGenerationLoop()
@@ -49,7 +69,7 @@ public class Planet : MonoBehaviour
         GenerateMesh();
         while (true)
         {
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(1.0f);
             UpdateMesh();
         }
     }

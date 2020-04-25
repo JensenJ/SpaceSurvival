@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.5665279, g: 0.3901346, b: 0.29675838, a: 1}
+  m_IndirectSpecularColor: {r: 0.58376116, g: 0.39261845, b: 0.2774851, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -180,13 +180,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 284344977}
-  m_LocalRotation: {x: 0.2588191, y: 0, z: 0, w: 0.9659258}
-  m_LocalPosition: {x: 0, y: 263.6, z: -464.5}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -15000}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 158652872}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 30, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &284344979
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -323,7 +323,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 10000
   field of view: 70
   orthographic: 0
   orthographic size: 5
@@ -418,6 +418,7 @@ GameObject:
   m_Component:
   - component: {fileID: 494494734}
   - component: {fileID: 494494733}
+  - component: {fileID: 494494735}
   m_Layer: 0
   m_Name: PlanetTest
   m_TagString: Untagged
@@ -446,8 +447,9 @@ MonoBehaviour:
   - {fileID: 0}
   player: {fileID: 0}
   distanceToPlayer: 0
-  cullingMinAngle: 1.9198622
-  size: 1000
+  distanceToPlayerPow2: 0
+  cullingMinAngle: 1.45
+  size: 10000
   detailLevelDistances:
   - Infinity
   - 6000
@@ -458,6 +460,7 @@ MonoBehaviour:
   - 70
   - 30
   - 10
+  noiseFilter: {fileID: 494494735}
 --- !u!4 &494494734
 Transform:
   m_ObjectHideFlags: 0
@@ -472,6 +475,27 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &494494735
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 494494732}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2968830775048da4283b0b35cae3050e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  strength: 0.1
+  octaves: 8
+  baseRoughness: 0.75
+  roughness: 3
+  persistance: 0.25
+  center: {x: 0, y: 0, z: 0}
+  heightMap: []
+  normalMap: []
+  planetScript: {fileID: 494494733}
 --- !u!1 &668382140
 GameObject:
   m_ObjectHideFlags: 0
@@ -544,7 +568,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 912747336}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1000, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -11000}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
