@@ -8,22 +8,25 @@ public class Planet : MonoBehaviour
     MeshFilter[] meshFilters;
     TerrainFace[] terrainFaces;
 
-    public static Transform player;
+    public Transform player;
+    public float distanceToPlayer;
 
-    public static float size = 10; //Must be set to the scale of the transform
+    public int startResolution = 9;
+    public float cullingMinAngle = 1.91986218f;
+    public float size = 1000;
 
-    //Hardcoded detail levels, first value is level, second is distance from player for this level to apply
-    public static Dictionary<int, float> detailLevelDistances = new Dictionary<int, float>()
+    //Hardcoded detail levels
+    public float[] detailLevelDistances = new float[]
     {
-        {0, Mathf.Infinity},
-        {1, 60f},
-        {2, 25f},
-        {3, 10f},
-        {4, 4f},
-        {5, 1.5f},
-        {6, 0.7f},
-        {7, 0.3f},
-        {8, 0.1f},
+        Mathf.Infinity,
+        6000f,
+        2500f,
+        1000f,
+        400f,
+        150f,
+        70f,
+        30f,
+        10f
     };
 
     private void Start()
@@ -37,12 +40,18 @@ public class Planet : MonoBehaviour
         StartCoroutine(PlanetGenerationLoop());
     }
 
+    private void Update()
+    {
+        distanceToPlayer = Vector3.Distance(transform.position, player.position);
+    }
+
     private IEnumerator PlanetGenerationLoop()
     {
+        GenerateMesh();
         while (true)
         {
-            yield return new WaitForSeconds(1f);
-            GenerateMesh();
+            yield return new WaitForSeconds(0.1f);
+            UpdateMesh();
         }
     }
 
@@ -70,15 +79,25 @@ public class Planet : MonoBehaviour
                 meshObj.AddComponent<MeshRenderer>().sharedMaterial = new Material(Shader.Find("HDRP/Lit"));
             }
 
-            terrainFaces[i] = new TerrainFace(meshFilters[i].sharedMesh, 4, directions[i], size);
+            terrainFaces[i] = new TerrainFace(meshFilters[i].sharedMesh, startResolution, directions[i], size, this);
         }
     }
 
+    //Function to generate the mesh
     void GenerateMesh()
     {
         foreach(TerrainFace face in terrainFaces)
         {
             face.ConstructTree();
+        }
+    }
+
+    //Function to update the mesh
+    void UpdateMesh()
+    {
+        foreach (TerrainFace face in terrainFaces)
+        {
+            face.UpdateTree();
         }
     }
 }
