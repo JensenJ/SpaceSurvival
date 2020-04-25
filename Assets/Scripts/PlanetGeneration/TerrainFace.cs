@@ -13,6 +13,7 @@ public class TerrainFace
     public TerrainChunk parentChunk;
     public Planet planetScript;
     public List<TerrainChunk> visibleChildren = new List<TerrainChunk>();
+    public bool devMode = false;
 
     // These will be filled with the generated data
     public List<Vector3> vertices = new List<Vector3>();
@@ -23,12 +24,13 @@ public class TerrainFace
     public Dictionary<int, bool> edgefanIndex = new Dictionary<int, bool>();
 
     // Constructor
-    public TerrainFace(Mesh mesh, Vector3 localUp, float radius, Planet planetScript)
+    public TerrainFace(Mesh mesh, Vector3 localUp, float radius, Planet planetScript, bool devMode = false)
     {
         this.mesh = mesh;
         this.localUp = localUp;
         this.radius = radius;
         this.planetScript = planetScript;
+        this.devMode = devMode;
 
         axisA = new Vector3(localUp.y, localUp.z, localUp.x);
         axisB = Vector3.Cross(localUp, axisA);
@@ -48,7 +50,7 @@ public class TerrainFace
         mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32; // Extend the resolution capabilities of the mesh
 
         // Generate chunks
-        parentChunk = new TerrainChunk(1, planetScript, this, null, localUp.normalized * planetScript.size, radius, 0, localUp, axisA, axisB, new byte[4], 0);
+        parentChunk = new TerrainChunk(1, planetScript, this, null, localUp.normalized * planetScript.size, radius, 0, localUp, axisA, axisB, new byte[4], 0, devMode);
         parentChunk.GenerateChildren();
 
         // Get chunk mesh data

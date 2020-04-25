@@ -27,9 +27,11 @@ public class TerrainChunk
     public int[] borderTriangles;
     public Vector3[] normals;
 
+    public bool devMode = false;
+
     public byte[] neighbours = new byte[4]; //East, west, north, south. True if less detailed (Lower LOD)
     // Constructor
-    public TerrainChunk(uint hashvalue, Planet planetScript, TerrainFace terrainFace, TerrainChunk[] children, Vector3 position, float radius, int detailLevel, Vector3 localUp, Vector3 axisA, Vector3 axisB, byte[] neighbours, byte corner)
+    public TerrainChunk(uint hashvalue, Planet planetScript, TerrainFace terrainFace, TerrainChunk[] children, Vector3 position, float radius, int detailLevel, Vector3 localUp, Vector3 axisA, Vector3 axisB, byte[] neighbours, byte corner, bool devMode = false)
     {
         this.hashvalue = hashvalue;
         this.planetScript = planetScript;
@@ -44,6 +46,7 @@ public class TerrainChunk
         this.neighbours = neighbours;
         this.corner = corner;
         this.normalizedPos = position.normalized;
+        this.devMode = devMode;
     }
 
     public void GenerateChildren()
@@ -57,10 +60,10 @@ public class TerrainChunk
                 // Position is calculated on a cube and based on the fact that each child has 1/2 the radius of its parent
                 // Detail level is increased by 1. This doesn't change anything itself, but rather symbolizes that something HAS been changed (the detail).
                 children = new TerrainChunk[4];
-                children[0] = new TerrainChunk(hashvalue * 4 + 0, planetScript, terrainFace, new TerrainChunk[0], position + axisA * radius * 0.5f - axisB * radius * 0.5f, radius * 0.5f, detailLevel + 1, localUp, axisA, axisB, new byte[4], 0); // TOP LEFT
-                children[1] = new TerrainChunk(hashvalue * 4 + 1, planetScript, terrainFace, new TerrainChunk[0], position + axisA * radius * 0.5f + axisB * radius * 0.5f, radius * 0.5f, detailLevel + 1, localUp, axisA, axisB, new byte[4], 1); // TOP RIGHT
-                children[2] = new TerrainChunk(hashvalue * 4 + 2, planetScript, terrainFace, new TerrainChunk[0], position - axisA * radius * 0.5f + axisB * radius * 0.5f, radius * 0.5f, detailLevel + 1, localUp, axisA, axisB, new byte[4], 2); // BOTTOM RIGHT
-                children[3] = new TerrainChunk(hashvalue * 4 + 3, planetScript, terrainFace, new TerrainChunk[0], position - axisA * radius * 0.5f - axisB * radius * 0.5f, radius * 0.5f, detailLevel + 1, localUp, axisA, axisB, new byte[4], 3); // BOTTOM LEFT
+                children[0] = new TerrainChunk(hashvalue * 4 + 0, planetScript, terrainFace, new TerrainChunk[0], position + axisA * radius * 0.5f - axisB * radius * 0.5f, radius * 0.5f, detailLevel + 1, localUp, axisA, axisB, new byte[4], 0, devMode); // TOP LEFT
+                children[1] = new TerrainChunk(hashvalue * 4 + 1, planetScript, terrainFace, new TerrainChunk[0], position + axisA * radius * 0.5f + axisB * radius * 0.5f, radius * 0.5f, detailLevel + 1, localUp, axisA, axisB, new byte[4], 1, devMode); // TOP RIGHT
+                children[2] = new TerrainChunk(hashvalue * 4 + 2, planetScript, terrainFace, new TerrainChunk[0], position - axisA * radius * 0.5f + axisB * radius * 0.5f, radius * 0.5f, detailLevel + 1, localUp, axisA, axisB, new byte[4], 2, devMode); // BOTTOM RIGHT
+                children[3] = new TerrainChunk(hashvalue * 4 + 3, planetScript, terrainFace, new TerrainChunk[0], position - axisA * radius * 0.5f - axisB * radius * 0.5f, radius * 0.5f, detailLevel + 1, localUp, axisA, axisB, new byte[4], 3, devMode); // BOTTOM LEFT
 
                 // Create grandchildren
                 foreach (TerrainChunk child in children)
@@ -110,13 +113,20 @@ public class TerrainChunk
         }
         else
         {
-            float b = Vector3.Distance(planetScript.transform.TransformDirection(normalizedPos * planetScript.size) +
-                planetScript.transform.position, planetScript.player.position);
-
-            if (Mathf.Acos(((planetScript.size * planetScript.size) + (b * b) -
-                planetScript.distanceToPlayerPow2) / (2 * planetScript.size * b)) > planetScript.cullingMinAngle)
+            if(devMode == true)
             {
                 terrainFace.visibleChildren.Add(this);
+            }
+            else
+            {
+                float b = Vector3.Distance(planetScript.transform.TransformDirection(normalizedPos * planetScript.size) +
+                    planetScript.transform.position, planetScript.player.position);
+
+                if (Mathf.Acos(((planetScript.size * planetScript.size) + (b * b) -
+                    planetScript.distanceToPlayerPow2) / (2 * planetScript.size * b)) > planetScript.cullingMinAngle)
+                {
+                    terrainFace.visibleChildren.Add(this);
+                }
             }
         }
     }

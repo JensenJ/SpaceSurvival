@@ -33,6 +33,8 @@ public class Planet : MonoBehaviour
         10f
     };
 
+    public bool devMode = false;
+
     public PlanetNoiseFilter noiseFilter;
 
     private void Awake()
@@ -98,7 +100,7 @@ public class Planet : MonoBehaviour
                 meshObj.AddComponent<MeshRenderer>().sharedMaterial = new Material(Shader.Find("HDRP/Lit"));
             }
 
-            terrainFaces[i] = new TerrainFace(meshFilters[i].sharedMesh, directions[i], size, this);
+            terrainFaces[i] = new TerrainFace(meshFilters[i].sharedMesh, directions[i], size, this, devMode);
         }
     }
 
