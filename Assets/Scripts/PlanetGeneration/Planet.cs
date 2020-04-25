@@ -11,7 +11,6 @@ public class Planet : MonoBehaviour
     public Transform player;
     public float distanceToPlayer;
 
-    public int startResolution = 9;
     public float cullingMinAngle = 1.91986218f;
     public float size = 1000;
 
@@ -79,7 +78,7 @@ public class Planet : MonoBehaviour
                 meshObj.AddComponent<MeshRenderer>().sharedMaterial = new Material(Shader.Find("HDRP/Lit"));
             }
 
-            terrainFaces[i] = new TerrainFace(meshFilters[i].sharedMesh, startResolution, directions[i], size, this);
+            terrainFaces[i] = new TerrainFace(meshFilters[i].sharedMesh, directions[i], size, this);
         }
     }
 

@@ -5,48 +5,45 @@ using UnityEngine;
 public class TerrainFace
 {
     Mesh mesh;
-    int resolution;
-    Vector3 localUp;
+    public Vector3 localUp;
     Vector3 axisA;
     Vector3 axisB;
     float radius;
-    TerrainChunk parentChunk;
-    public Planet planet;
+    public TerrainChunk parentChunk;
+    public Planet planetScript;
 
-    //These lists are going to be filled with generated data.
+    // These will be filled with the generated data
     public List<Vector3> vertices = new List<Vector3>();
     public List<int> triangles = new List<int>();
 
-    //Constructor
-    public TerrainFace(Mesh mesh, int resolution, Vector3 localUp, float radius, Planet planet)
+    // Constructor
+    public TerrainFace(Mesh mesh, Vector3 localUp, float radius, Planet planetScript)
     {
-        //Value assigning
         this.mesh = mesh;
-        this.resolution = resolution;
         this.localUp = localUp;
         this.radius = radius;
-        this.planet = planet;
+        this.planetScript = planetScript;
 
-        //Calculating axis for use in mesh construction
         axisA = new Vector3(localUp.y, localUp.z, localUp.x);
         axisB = Vector3.Cross(localUp, axisA);
     }
 
-    //Function to construct a quadtree of chunks
+    // Construct a quadtree of chunks (even though the chunks end up 3D, they start out 2D in the quadtree and are later projected onto a sphere)
     public void ConstructTree()
     {
-        //Reset mesh data lists
+        // Resets the mesh
         vertices.Clear();
         triangles.Clear();
 
-        //Generate chunks
-        parentChunk = new TerrainChunk(planet, null, null, localUp.normalized * planet.size, radius, 0, localUp, axisA, axisB);
+        // Generate chunks
+        parentChunk = new TerrainChunk(1, planetScript, this, null, localUp.normalized * planetScript.size, radius, 0, localUp, axisA, axisB, new byte[4], 0);
         parentChunk.GenerateChildren();
 
-        //Get chunk mesh data
+        // Get chunk mesh data
         int triangleOffset = 0;
-        foreach(TerrainChunk child in parentChunk.GetVisibleChildren())
+        foreach (TerrainChunk child in parentChunk.GetVisibleChildren())
         {
+            child.GetNeighbourLOD();
             (Vector3[], int[]) verticesAndTriangles = child.CalculateVerticesAndTriangles(triangleOffset);
 
             vertices.AddRange(verticesAndTriangles.Item1);
@@ -54,35 +51,37 @@ public class TerrainFace
             triangleOffset += verticesAndTriangles.Item1.Length;
         }
 
-        //Reset mesh and apply new data
+        // Reset mesh and apply new data
         mesh.Clear();
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
         mesh.RecalculateNormals();
     }
 
-    //Function to update the quadtree of chunks
+    // Update the quadtree
     public void UpdateTree()
     {
-        //Reset mesh data lists
+        // Resets the mesh
         vertices.Clear();
         triangles.Clear();
 
         parentChunk.UpdateChunk();
 
-        //Get chunk mesh data
+        // Get chunk mesh data
         int triangleOffset = 0;
         foreach (TerrainChunk child in parentChunk.GetVisibleChildren())
         {
+            child.GetNeighbourLOD();
             (Vector3[], int[]) verticesAndTriangles = (new Vector3[0], new int[0]);
-            if(child.vertices == null)
-            {
-                verticesAndTriangles = child.CalculateVerticesAndTriangles(triangleOffset);
-            }else if(child.vertices.Length == 0)
+            if (child.vertices == null)
             {
                 verticesAndTriangles = child.CalculateVerticesAndTriangles(triangleOffset);
             }
-            else
+            else if (child.vertices.Length == 0 || child.triangles != PlanetPresets.quadTemplateTriangles[(child.neighbours[0] | child.neighbours[1] * 2 | child.neighbours[2] * 4 | child.neighbours[3] * 8)])
+            {
+                verticesAndTriangles = child.CalculateVerticesAndTriangles(triangleOffset);
+            }
+            else//Check if neighbour LODS are the same or not
             {
                 verticesAndTriangles = (child.vertices, child.GetTrianglesWithOffset(triangleOffset));
             }
@@ -92,7 +91,7 @@ public class TerrainFace
             triangleOffset += verticesAndTriangles.Item1.Length;
         }
 
-        //Reset mesh and apply new data
+        // Reset mesh and apply new data
         mesh.Clear();
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
