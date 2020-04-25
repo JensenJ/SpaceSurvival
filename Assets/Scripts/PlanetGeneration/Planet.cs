@@ -4,17 +4,46 @@ using UnityEngine;
 
 public class Planet : MonoBehaviour
 {
-    [Range(2, 256)]
-    public int resolution = 10;
-
     [SerializeField, HideInInspector]
     MeshFilter[] meshFilters;
     TerrainFace[] terrainFaces;
 
-    private void OnValidate()
+    public static Transform player;
+
+    public static float size = 10; //Must be set to the scale of the transform
+
+    //Hardcoded detail levels, first value is level, second is distance from player for this level to apply
+    public static Dictionary<int, float> detailLevelDistances = new Dictionary<int, float>()
     {
+        {0, Mathf.Infinity},
+        {1, 60f},
+        {2, 25f},
+        {3, 10f},
+        {4, 4f},
+        {5, 1.5f},
+        {6, 0.7f},
+        {7, 0.3f},
+        {8, 0.1f},
+    };
+
+    private void Start()
+    {
+        //Set player controller
+        player = GameObject.FindGameObjectWithTag("Player").transform;
+
         Initialise();
         GenerateMesh();
+
+        StartCoroutine(PlanetGenerationLoop());
+    }
+
+    private IEnumerator PlanetGenerationLoop()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(1f);
+            GenerateMesh();
+        }
     }
 
     void Initialise()
@@ -36,12 +65,12 @@ public class Planet : MonoBehaviour
                 GameObject meshObj = new GameObject("Mesh");
                 meshObj.transform.parent = transform;
 
-                meshObj.AddComponent<MeshRenderer>().sharedMaterial = new Material(Shader.Find("Standard"));
                 meshFilters[i] = meshObj.AddComponent<MeshFilter>();
                 meshFilters[i].sharedMesh = new Mesh();
+                meshObj.AddComponent<MeshRenderer>().sharedMaterial = new Material(Shader.Find("HDRP/Lit"));
             }
 
-            terrainFaces[i] = new TerrainFace(meshFilters[i].sharedMesh, resolution, directions[i]);
+            terrainFaces[i] = new TerrainFace(meshFilters[i].sharedMesh, 4, directions[i], size);
         }
     }
 
@@ -49,7 +78,7 @@ public class Planet : MonoBehaviour
     {
         foreach(TerrainFace face in terrainFaces)
         {
-            face.ConstructMesh();
+            face.ConstructTree();
         }
     }
 }

@@ -9,54 +9,51 @@ public class TerrainFace
     Vector3 localUp;
     Vector3 axisA;
     Vector3 axisB;
+    float radius;
+
+    //These lists are going to be filled with generated data.
+    public List<Vector3> vertices = new List<Vector3>();
+    public List<int> triangles = new List<int>();
 
     //Constructor
-    public TerrainFace(Mesh mesh, int resolution, Vector3 localUp)
+    public TerrainFace(Mesh mesh, int resolution, Vector3 localUp, float radius)
     {
         //Value assigning
         this.mesh = mesh;
         this.resolution = resolution;
         this.localUp = localUp;
+        this.radius = radius;
 
         //Calculating axis for use in mesh construction
         axisA = new Vector3(localUp.y, localUp.z, localUp.x);
         axisB = Vector3.Cross(localUp, axisA);
     }
 
-    //A function to construct the mesh
-    public void ConstructMesh()
+    //Function to construct a quadtree of chunks
+    public void ConstructTree()
     {
-        //Array creation
-        Vector3[] vertices = new Vector3[resolution * resolution];
-        int[] triangles = new int[(resolution - 1) * (resolution - 1) * 6];
-        int triIndex = 0;
+        //Reset mesh data lists
+        vertices.Clear();
+        triangles.Clear();
 
-        for (int y = 0; y < resolution; y++)
+        //Generate chunks
+        TerrainChunk parentChunk = new TerrainChunk(null, null, localUp.normalized * Planet.size, radius, 0, localUp, axisA, axisB);
+        parentChunk.GenerateChildren();
+
+        //Get chunk mesh data
+        int triangleOffset = 0;
+        foreach(TerrainChunk child in parentChunk.GetVisibleChildren())
         {
-            for (int x = 0; x < resolution; x++)
-            {
-                int i = x + y * resolution;
-                Vector2 percent = new Vector2(x, y) / (resolution - 1);
-                Vector3 pointOnUnitCube = localUp + (percent.x - .5f) * 2 * axisA + (percent.y - .5f) * 2 * axisB;
-                Vector3 pointOnUnitSphere = pointOnUnitCube.normalized;
-                vertices[i] = pointOnUnitSphere;
-
-                if (x != resolution - 1 && y != resolution - 1)
-                {
-                    triangles[triIndex] = i;
-                    triangles[triIndex + 1] = i + resolution + 1;
-                    triangles[triIndex + 2] = i + resolution;
-
-                    triangles[triIndex + 3] = i;
-                    triangles[triIndex + 4] = i + 1;
-                    triangles[triIndex + 5] = i + resolution + 1;
-                    triIndex += 6;
-                }
-            }
+            (Vector3[], int[]) verticesAndTriangles = child.CalculateVerticesAndTriangles(triangleOffset);
+            vertices.AddRange(verticesAndTriangles.Item1);
+            triangles.AddRange(verticesAndTriangles.Item2);
+            triangleOffset += verticesAndTriangles.Item1.Length;
         }
+
+        //Reset mesh and apply new data
         mesh.Clear();
-        mesh.vertices = vertices;
-        mesh.triangles = triangles;
+        mesh.vertices = vertices.ToArray();
+        mesh.triangles = triangles.ToArray();
         mesh.RecalculateNormals();
     }
 }
