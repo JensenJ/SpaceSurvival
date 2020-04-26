@@ -18,18 +18,18 @@ MonoBehaviour:
   cameraDistance: 30
   particleSpawnMap: {fileID: 2800000, guid: f789185788be651478c9d365f4edefd2, type: 2}
   maxThrustParticleSpawnRate: 30000
-  forwardMaxSpeed: 30
-  forwardAcceleration: 10
-  forwardBrake: 8
-  rollMaxSpeed: 8
-  rollAcceleration: 2
-  rollDeceleration: 2
-  pitchMaxSpeed: 8
-  pitchAcceleration: 4
-  pitchDeceleration: 4
-  yawMaxSpeed: 6
-  yawAcceleration: 2
-  yawDeceleration: 2
+  forwardMaxSpeed: 50
+  forwardAcceleration: 6
+  forwardBrake: 16
+  rollMaxSpeed: 16
+  rollAcceleration: 6
+  rollDeceleration: 6
+  pitchMaxSpeed: 16
+  pitchAcceleration: 8
+  pitchDeceleration: 8
+  yawMaxSpeed: 12
+  yawAcceleration: 6
+  yawDeceleration: 6
   smallComponentCount: 8
   mediumComponentCount: 6
   largeComponentCount: 17

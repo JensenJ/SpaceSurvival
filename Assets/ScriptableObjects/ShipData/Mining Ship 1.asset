@@ -19,17 +19,17 @@ MonoBehaviour:
   particleSpawnMap: {fileID: 2800000, guid: f8571cc4afb3a40488cde50a29a7511f, type: 2}
   maxThrustParticleSpawnRate: 10000
   forwardMaxSpeed: 50
-  forwardAcceleration: 4
-  forwardBrake: 6
-  rollMaxSpeed: 12
-  rollAcceleration: 6
-  rollDeceleration: 6
-  pitchMaxSpeed: 16
-  pitchAcceleration: 8
-  pitchDeceleration: 8
-  yawMaxSpeed: 12
-  yawAcceleration: 8
-  yawDeceleration: 8
+  forwardAcceleration: 12
+  forwardBrake: 16
+  rollMaxSpeed: 16
+  rollAcceleration: 12
+  rollDeceleration: 12
+  pitchMaxSpeed: 24
+  pitchAcceleration: 14
+  pitchDeceleration: 14
+  yawMaxSpeed: 24
+  yawAcceleration: 16
+  yawDeceleration: 16
   smallComponentCount: 2
   mediumComponentCount: 2
   largeComponentCount: 4
